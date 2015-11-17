@@ -1,0 +1,15 @@
+% 1. Title: Test File
+% 
+% 2. Creator : Christian Lamberty
+
+@RELATION		test
+
+@ATTRIBUTE	a		NUMERIC
+@ATTRIBUTE	b		NUMERIC
+
+@DATA
+1.5,2.5
+3.5,0.0
+2.0,0.5
+1.0,2.5
+-1.0,-0.5
