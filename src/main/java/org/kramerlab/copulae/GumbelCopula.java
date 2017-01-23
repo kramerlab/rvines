@@ -1,18 +1,18 @@
-package copulae;
+package org.kramerlab.copulae;
 
 /**
- * This is a placeholder for the T copula family.
+ * This is a placeholder for the Gumpel copula family.
  * It is not implemented yet.
  * 
  * @author Christian Lamberty (clamber@students.uni-mainz.de)
  */
-public class TCopula extends AbstractCopula{
+public class GumbelCopula extends AbstractCopula{
 
 	/**
 	 * Constructor
 	 * @param params copula parameters as double array.
 	 */
-	public TCopula(double[] params) {
+	public GumbelCopula(double[] params) {
 		super(params);
 	}
 
@@ -21,7 +21,7 @@ public class TCopula extends AbstractCopula{
 		// TODO Auto-generated method stub
 		return 0;
 	}
-
+	
 	@Override
 	public double density(double x, double y) {
 		// TODO Auto-generated method stub
@@ -48,6 +48,6 @@ public class TCopula extends AbstractCopula{
 
 	@Override
 	public String name() {
-		return "T";
+		return "Gumbel";
 	}	
 }

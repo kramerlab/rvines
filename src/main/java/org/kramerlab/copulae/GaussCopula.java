@@ -1,4 +1,4 @@
-package copulae;
+package org.kramerlab.copulae;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.kramerlab.vines.Utils;
 

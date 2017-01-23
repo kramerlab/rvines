@@ -6,8 +6,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.TreeSet;
 
-import copulae.Copula;
-import copulae.GaussCopula;
+import org.kramerlab.copulae.Copula;
+import org.kramerlab.copulae.GaussCopula;
+
 import weka.classifiers.AbstractClassifier;
 import weka.core.*;
 

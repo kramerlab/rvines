@@ -1,4 +1,4 @@
-package copulae;
+package org.kramerlab.copulae;
 
 /**
  * This is a placeholder for the Frank copula family.
