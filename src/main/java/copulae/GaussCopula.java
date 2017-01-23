@@ -1,5 +1,6 @@
-package org.kramerlab.vines;
+package copulae;
 import org.apache.commons.math3.distribution.NormalDistribution;
+import org.kramerlab.vines.Utils;
 
 /**
  * This is the class to represent Gauss copula family for RVines.

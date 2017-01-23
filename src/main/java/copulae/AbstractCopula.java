@@ -1,4 +1,4 @@
-package org.kramerlab.vines;
+package copulae;
 
 /**
  * This is the abstract class to represent copula families for RVines.

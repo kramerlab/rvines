@@ -1,4 +1,4 @@
-package org.kramerlab.vines;
+package copulae;
 
 /**
  * This is an interface for bivariate copula families.

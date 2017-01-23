@@ -1,18 +1,18 @@
-package org.kramerlab.vines;
+package copulae;
 
 /**
- * This is a placeholder for the Frank copula family.
+ * This is a placeholder for the Gumpel copula family.
  * It is not implemented yet.
  * 
  * @author Christian Lamberty (clamber@students.uni-mainz.de)
  */
-public class FrankCopula extends AbstractCopula{
+public class GumbelCopula extends AbstractCopula{
 
 	/**
 	 * Constructor
 	 * @param params copula parameters as double array.
 	 */
-	public FrankCopula(double[] params) {
+	public GumbelCopula(double[] params) {
 		super(params);
 	}
 
@@ -21,7 +21,7 @@ public class FrankCopula extends AbstractCopula{
 		// TODO Auto-generated method stub
 		return 0;
 	}
-
+	
 	@Override
 	public double density(double x, double y) {
 		// TODO Auto-generated method stub
@@ -30,9 +30,10 @@ public class FrankCopula extends AbstractCopula{
 	
 	@Override
 	public double hFunction(double x, double y) {
+		// TODO Auto-generated method stub
 		return 0;
 	}
-	
+
 	@Override
 	public double inverseHFunction(double x, double y) {
 		// TODO Auto-generated method stub
@@ -47,6 +48,6 @@ public class FrankCopula extends AbstractCopula{
 
 	@Override
 	public String name() {
-		return "Frank";
-	}
+		return "Gumbel";
+	}	
 }

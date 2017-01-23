@@ -1,5 +1,7 @@
 package org.kramerlab.vines;
 
+import copulae.Copula;
+
 /**
  * This is the Edge class to for the RVine.
  * <br>

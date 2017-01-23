@@ -1,4 +1,4 @@
-package org.kramerlab.vines;
+package copulae;
 
 /**
  * This is a placeholder for the T copula family.
