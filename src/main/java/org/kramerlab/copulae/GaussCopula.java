@@ -37,11 +37,6 @@ public class GaussCopula extends AbstractCopula{
 		super.setParams(params);
 		p = params[0];
 	}
-	
-	@Override
-	public double cumulativeProbability(double x, double y){
-		return 0;
-	}
 
 	@Override
 	public double density(double x, double y) {

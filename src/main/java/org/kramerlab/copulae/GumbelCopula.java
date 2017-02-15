@@ -15,12 +15,6 @@ public class GumbelCopula extends AbstractCopula{
 	public GumbelCopula(double[] params) {
 		super(params);
 	}
-
-	@Override
-	public double cumulativeProbability(double x, double y) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
 	
 	@Override
 	public double density(double x, double y) {

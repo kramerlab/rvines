@@ -23,15 +23,6 @@ public interface Copula {
 	public double[] getParams();
 	
 	/**
-	 * The cumulative probability for a bivariate observation x, y.
-	 *
-	 * @param	x an observation from a random variable.
-	 * @param	y an observation from another random variable.
-	 * @return	returns the cumulative probability.
-	 */
-	public double cumulativeProbability(double x, double y);
-	
-	/**
 	 * The copula density for a bivariate observation x, y.
 	 *
 	 * @param	x an observation from a random variable.

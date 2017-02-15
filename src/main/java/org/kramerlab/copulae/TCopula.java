@@ -26,12 +26,6 @@ public class TCopula extends AbstractCopula{
 	}
 
 	@Override
-	public double cumulativeProbability(double x, double y) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
 	public double density(double x, double y) {
 		// Aas K. et al, Pair-copula constructions of multiple dependence
 		x = Utils.laplaceCorrection(x);
