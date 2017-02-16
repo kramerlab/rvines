@@ -53,6 +53,13 @@
 		<artifactId>commons-math3</artifactId>
 		<version>3.5</version>
 	</dependency>
+	<dependency>
+		<groupId>ch.visnet</groupId>
+		<artifactId>jgsl</artifactId>
+		<version>0.1.0</version>
+		<scope>system</scope>
+        <systemPath>${project.basedir}/src/main/resources/jgsl-0.1.0.jar</systemPath>
+	</dependency>
   </dependencies>
   
     <build>

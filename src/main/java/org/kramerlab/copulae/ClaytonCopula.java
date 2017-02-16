@@ -54,7 +54,7 @@ public class ClaytonCopula extends AbstractCopula{
 	
 	@Override
 	public double tau() {
-		return d/(d+1);
+		return d/(d+2);
 	}
 
 	@Override
