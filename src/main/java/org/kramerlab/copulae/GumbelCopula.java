@@ -3,8 +3,14 @@ package org.kramerlab.copulae;
 import org.kramerlab.vines.Utils;
 
 /**
- * This is a placeholder for the Gumpel copula family.
- * It is not implemented yet.
+ * This is the class to represent Gumbel copula family for RVines.
+ * <br>
+ * The Kendall's tau calculation is presented in J.F. Di&szlig;mann's diploma thesis (2010):
+ * Statistical inference for regular vines and application.
+ * <br>
+ * The density function, the h-function and its inverse were
+ * presented by K. Aas et al. (2009): Pair-copula constructions of
+ * multiple dependence.
  * 
  * @author Christian Lamberty (clamber@students.uni-mainz.de)
  */
@@ -54,8 +60,18 @@ public class GumbelCopula extends AbstractCopula{
 
 	@Override
 	public double inverseHFunction(double x, double y) {
-		// TODO Use Newton to solve h(x,y)-z = 0
-		return 0;
+		//Use Newton's method to solve h(x,y)-z = 0 with fixed y and z.
+		double z = x;
+		double x1 = 0.5;
+		double e = 1;
+		
+		while(e > Math.pow(10, -10)){
+			double x2 = x1-(hFunction(x1, y)-z)/density(x1, y);
+			e = Math.abs(x2 - x1);
+			x1 = x2;
+		}
+		
+		return x1;
 	}
 	
 	@Override

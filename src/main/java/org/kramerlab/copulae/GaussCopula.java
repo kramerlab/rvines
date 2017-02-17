@@ -5,8 +5,7 @@ import org.kramerlab.vines.Utils;
 /**
  * This is the class to represent Gauss copula family for RVines.
  * <br>
- * The functions for cumulative probability and Kendall's tau
- * calculation were presented in J.F. Di&szlig;mann's diploma thesis (2010):
+ * The Kendall's tau calculation is presented in J.F. Di&szlig;mann's diploma thesis (2010):
  * Statistical inference for regular vines and application.
  * <br>
  * The density function, the h-function and its inverse were

@@ -4,8 +4,14 @@ import org.apache.commons.math3.distribution.TDistribution;
 import org.kramerlab.vines.Utils;
 
 /**
- * This is a placeholder for the T copula family.
- * It is not implemented yet.
+ * This is the class to represent Student T copula family for RVines.
+ * <br>
+ * The Kendall's tau calculation is presented in J.F. Di&szlig;mann's diploma thesis (2010):
+ * Statistical inference for regular vines and application.
+ * <br>
+ * The density function, the h-function and its inverse were
+ * presented by K. Aas et al. (2009): Pair-copula constructions of
+ * multiple dependence.
  * 
  * @author Christian Lamberty (clamber@students.uni-mainz.de)
  */
@@ -16,7 +22,12 @@ public class TCopula extends AbstractCopula{
 	
 	/**
 	 * Constructor
-	 * @param params copula parameters as double array.
+	 * @param params parameter array, should be like:
+	 * <br>
+	 * params = {p, v}
+	 * <br>
+	 * p : probability | -1 &lt; p &lt; 1
+	 * v : degree of freedom | natural number > 0
 	 */
 	public TCopula(double[] params) {
 		super(params);
@@ -25,6 +36,13 @@ public class TCopula extends AbstractCopula{
 		t = new TDistribution(v);
 	}
 
+	@Override
+	public void setParams(double[] params){
+		super.setParams(params);
+		p = params[0];
+		v = params[1];
+	}
+	
 	@Override
 	public double density(double x, double y) {
 		// Aas K. et al, Pair-copula constructions of multiple dependence

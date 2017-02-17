@@ -46,8 +46,18 @@ public class GalambosCopula extends AbstractCopula{
 	
 	@Override
 	public double inverseHFunction(double x, double y) {
-		// TODO Use Newton to solve h(x,y)-z = 0
-		return 0;
+		//Use Newton's method to solve h(x,y)-z = 0 with fixed y and z.
+		double z = x;
+		double x1 = 0.5;
+		double e = 1;
+		
+		while(e > Math.pow(10, -10)){
+			double x2 = x1-(hFunction(x1, y)-z)/density(x1, y);
+			e = Math.abs(x2 - x1);
+			x1 = x2;
+		}
+		
+		return x1;
 	}
 	
 	@Override

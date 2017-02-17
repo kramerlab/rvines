@@ -3,8 +3,14 @@ package org.kramerlab.copulae;
 import org.kramerlab.vines.Utils;
 
 /**
- * This is a placeholder for the Clayton copula family.
- * It is not implemented yet.
+ * This is the class to represent Clayton copula family for RVines.
+ * <br>
+ * The Kendall's tau calculation is presented in J.F. Di&szlig;mann's diploma thesis (2010):
+ * Statistical inference for regular vines and application.
+ * <br>
+ * The density function, the h-function and its inverse were
+ * presented by K. Aas et al. (2009): Pair-copula constructions of
+ * multiple dependence.
  * 
  * @author Christian Lamberty (clamber@students.uni-mainz.de)
  */
@@ -13,13 +19,23 @@ public class ClaytonCopula extends AbstractCopula{
 	
 	/**
 	 * Constructor
-	 * @param params copula parameters as double array.
+	 * @param params parameter array, should be like:
+	 * <br>
+	 * params = {d}
+	 * <br>
+	 * d : 0 &lt; d &lt; infinity
 	 */
 	public ClaytonCopula(double[] params) {
 		super(params);
 		d = params[0];
 	}
 
+	@Override
+	public void setParams(double[] params){
+		super.setParams(params);
+		d = params[0];
+	}
+	
 	@Override
 	public double density(double x, double y) {
 		x = Utils.laplaceCorrection(x);
