@@ -1,5 +1,8 @@
 package org.kramerlab.copulae;
 
+import org.apache.commons.math3.analysis.integration.RombergIntegrator;
+import org.apache.commons.math3.analysis.integration.UnivariateIntegrator;
+import org.kramerlab.functions.GalambosTauf;
 import org.kramerlab.vines.Utils;
 
 /**
@@ -62,8 +65,8 @@ public class GalambosCopula extends AbstractCopula{
 	
 	@Override
 	public double tau() {
-		// TODO Look for suitable computation
-		return 0;
+		UnivariateIntegrator s = new RombergIntegrator(16, 32);
+		return s.integrate(1000000000, new GalambosTauf(d), 0, 1);
 	}
 
 	@Override

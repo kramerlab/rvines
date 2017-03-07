@@ -2,12 +2,8 @@ package org.kramerlab.vines;
 
 import junit.framework.*;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-
-import weka.core.Instances;
-import weka.core.converters.ConverterUtils.DataSource;
 
 /**
  * This is a JUnit Test for the Utils class.
