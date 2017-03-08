@@ -65,7 +65,7 @@ public class GumbelCopula extends AbstractCopula{
 		double x1 = 0.5;
 		double e = 1;
 		
-		while(e > Math.pow(10, -10)){
+		while(e > Math.pow(10, -1)){
 			double x2 = x1-(hFunction(x1, y)-z)/density(x1, y);
 			e = Math.abs(x2 - x1);
 			x1 = x2;

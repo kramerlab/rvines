@@ -1,14 +1,14 @@
 package org.kramerlab.vines;
 
-import org.kramerlab.copulae.FrankCopula;
+import org.kramerlab.copulae.GaussCopula;
 
 import junit.framework.TestCase;
 
-public class FrankCopulaTest extends TestCase {
+public class GaussCopulaTest extends TestCase {
     
 	public void testDensity(){
-		for(int p = -19; p < 20; p++){
-			FrankCopula g = new FrankCopula(new double[]{p});
+		for(int p = 1; p < 20; p++){
+			GaussCopula g = new GaussCopula(new double[]{p/10.0-1});
 			for(int i=1; i<10; i++){
 				for(int j=1; j<10; j++){
 					assert(g.density(i/10.0, j/10.0) >= 0);
@@ -18,8 +18,8 @@ public class FrankCopulaTest extends TestCase {
 	}
 	
 	public void testHFunction(){
-		for(int p = -19; p < 20; p++){
-			FrankCopula g = new FrankCopula(new double[]{p});
+		for(int p = 1; p < 20; p++){
+			GaussCopula g = new GaussCopula(new double[]{p/10.0-1});
 			for(int i=1; i<10; i++){
 				for(int j=1; j<10; j++){
 					assert(g.hFunction(i/10.0, j/10.0) >= 0);
@@ -29,8 +29,8 @@ public class FrankCopulaTest extends TestCase {
 	}
 	
 	public void testInverseHFunction(){
-		for(int p = -19; p < 20; p++){
-			FrankCopula g = new FrankCopula(new double[]{p});
+		for(int p = 1; p < 20; p++){
+			GaussCopula g = new GaussCopula(new double[]{p/10.0-1});
 			for(int i=1; i<10; i++){
 				for(int j=1; j<10; j++){
 					double a = g.hFunction(i/10.0, j/10.0);
@@ -42,8 +42,8 @@ public class FrankCopulaTest extends TestCase {
 	}
 	
 	public void testTau(){
-		for(int p = -19; p < 20; p++){
-			FrankCopula g = new FrankCopula(new double[]{p});
+		for(int p = 1; p < 20; p++){
+			GaussCopula g = new GaussCopula(new double[]{p/10.0-1});
 			double t = g.tau();
 			assert(t >= -1 && t <= 1);
 		}

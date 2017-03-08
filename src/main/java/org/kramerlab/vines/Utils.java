@@ -368,8 +368,8 @@ public class Utils{
 		return x;
 	}
 	
-	public static double simpsonIntegrate(UnivariateFunction f, int N, int lb, int ub){
-	      double h = (ub - lb) / (double) N;     // step size
+	public static double simpsonIntegrate(UnivariateFunction f, int N, double lb, double ub){
+	      double h = (ub - lb) / N;     // step size
 	      
 	      double sum = f.value(lb) + f.value(ub);
 	      

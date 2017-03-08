@@ -1,7 +1,6 @@
 package org.kramerlab.copulae;
 
-import ch.visnet.jgsl.Jgsl;
-import ch.visnet.jgsl.sf.Debye;
+import org.kramerlab.functions.debyeSub;
 import org.kramerlab.vines.Utils;
 
 /**
@@ -28,6 +27,11 @@ public class FrankCopula extends AbstractCopula{
 	
 	@Override
 	public double density(double x, double y) {
+		if(d == 0) return 1;
+		
+		x = Utils.laplaceCorrection(x);
+		y = Utils.laplaceCorrection(y);
+		
 		double z = d*expD(1+x+y)*(expD(1)-1);
 		z = z/(expD(1)*(1-expD(x)+expD(x+y-1)-expD(y)));
 		z = z/(expD(1)*(1-expD(x)+expD(x+y-1)-expD(y)));
@@ -36,6 +40,8 @@ public class FrankCopula extends AbstractCopula{
 	
 	@Override
 	public double hFunction(double x, double y) {
+		if(d == 0) return x;
+		
 		x = Utils.laplaceCorrection(x);
 		y = Utils.laplaceCorrection(y);
 		
@@ -47,6 +53,8 @@ public class FrankCopula extends AbstractCopula{
 	
 	@Override
 	public double inverseHFunction(double x, double y) {
+		if(d == 0) return x;
+		
 		x = Utils.laplaceCorrection(x);
 		y = Utils.laplaceCorrection(y);
 		
@@ -58,10 +66,19 @@ public class FrankCopula extends AbstractCopula{
 	
 	@Override
 	public double tau() {
-		Jgsl.init();
-		return 1-4/d+4*Debye.debye1(d)/d;
+		if(d == 0) return 0;
+		return 1 - 4 / d * (1 - debye1(d));
 	}
 
+	private double debye1(double x){
+		if(x == 0) return 1;
+		
+		double y = 1;
+		y = Utils.simpsonIntegrate(new debyeSub(), 1000, 0, x);
+		
+		return y/x;
+	}
+	
 	@Override
 	public String name() {
 		return "Frank";

@@ -19,6 +19,10 @@ public class IndependenceCopula extends AbstractCopula{
 	public IndependenceCopula(double[] params) {
 		super(params);
 	}
+	
+	public IndependenceCopula() {
+		super(new double[0]);
+	}
 
 	@Override
 	public double density(double x, double y) {
