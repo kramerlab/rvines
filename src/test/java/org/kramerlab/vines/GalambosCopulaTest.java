@@ -4,13 +4,12 @@ import org.kramerlab.copulae.GalambosCopula;
 
 import junit.framework.*;
 
-public class GalambosTest extends TestCase {
+public class GalambosCopulaTest extends TestCase {
     
 	public void testGalambosTau(){
-		for(int i=0; i<100; i++){
-			GalambosCopula g = new GalambosCopula(new double[]{i});
+		for(int i=1; i<100; i++){
+			GalambosCopula g = new GalambosCopula(new double[]{i/10.0});
 			double tau = g.tau();
-			System.out.println(tau);
 			assert(tau <= 1);
 			assert(tau >= 0);
 		}

@@ -65,8 +65,7 @@ public class GalambosCopula extends AbstractCopula{
 	
 	@Override
 	public double tau() {
-		UnivariateIntegrator s = new RombergIntegrator(16, 32);
-		return s.integrate(1000000000, new GalambosTauf(d), 0, 1);
+		return Utils.simpsonIntegrate(new GalambosTauf(d), 1000, 0, 1);
 	}
 
 	@Override

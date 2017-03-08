@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.TreeSet;
 
+import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.kramerlab.copulae.Copula;
 import org.kramerlab.copulae.GaussCopula;
 
@@ -365,5 +366,24 @@ public class Utils{
 		x = Math.min(x,0.999999);
 		x = Math.max(x,0.000001);
 		return x;
+	}
+	
+	public static double simpsonIntegrate(UnivariateFunction f, int N, int lb, int ub){
+	      double h = (ub - lb) / (double) N;     // step size
+	      
+	      double sum = f.value(lb) + f.value(ub);
+	      
+	      for (int i = 1; i < N; i++) {
+	         double x = lb + h * i;
+	         sum += 2 * f.value(x);
+	      }
+	      
+	      for (int i = 1; i <= N; i++) {
+	         double x = lb + h * (i-1);
+	         double y = lb + h * i;
+	         sum += 4 * f.value((x+y)/2);
+	      }
+	      
+	      return sum * h / 6.0;
 	}
 }

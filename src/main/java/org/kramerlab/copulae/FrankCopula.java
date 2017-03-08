@@ -22,10 +22,16 @@ public class FrankCopula extends AbstractCopula{
 		d = params[0];
 	}
 
+	private double expD(double x){
+		return Math.exp(d*x);
+	}
+	
 	@Override
 	public double density(double x, double y) {
-		// TODO Use Wavelets to solve
-		return 0;
+		double z = d*expD(1+x+y)*(expD(1)-1);
+		z = z/(expD(1)*(1-expD(x)+expD(x+y-1)-expD(y)));
+		z = z/(expD(1)*(1-expD(x)+expD(x+y-1)-expD(y)));
+		return z;
 	}
 	
 	@Override
