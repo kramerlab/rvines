@@ -42,7 +42,7 @@ public class GalambosCopulaTest extends TestCase {
 		}
 	}
 	
-	// TODO h inversion does not work
+	//Because it is symmetric, it might choose the twin point
 	public void testInverseHFunction(){
 		for(int p = 2; p < 20; p++){
 			GalambosCopula g = new GalambosCopula(new double[]{p});
@@ -50,7 +50,7 @@ public class GalambosCopulaTest extends TestCase {
 				for(int j=1; j<10; j++){
 					double a = g.hFunction(i/10.0, j/10.0);
 					double b = g.inverseHFunction(a, j/10.0);
-					// assert(Math.abs(i/10.0 - b)/p <= 0.1);
+					assert(Math.abs(i/10.0 - b)/p <= 0.1);
 				}
 			}
 		}
@@ -60,7 +60,7 @@ public class GalambosCopulaTest extends TestCase {
 				for(int j=1; j<10; j++){
 					double a = g.hFunction(i/10.0, j/10.0);
 					double b = g.inverseHFunction(a, j/10.0);
-					//assert(Math.abs(i/10.0 - b) <= 0.1);
+					assert(Math.abs(i/10.0 - b) <= 0.1);
 				}
 			}
 		}

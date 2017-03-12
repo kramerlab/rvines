@@ -35,6 +35,8 @@ public class GalambosCopula extends AbstractCopula{
 				*Math.pow(Math.log(x)* Math.log(y), -d-1)
 				*(1+d+Math.pow(Math.pow(-Math.log(x), -d) + Math.pow(-Math.log(y), -d), -1/d)));
 		
+		if(out < 0 && Math.abs(out) < Math.pow(10, -10))
+			return 0;
 		return out;
 	}
 	

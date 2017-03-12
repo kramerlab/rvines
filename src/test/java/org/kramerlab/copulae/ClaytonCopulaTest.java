@@ -42,6 +42,7 @@ public class ClaytonCopulaTest extends TestCase {
 		}
 	}
 	
+	//Because it is symmetric, it might choose the twin point
 	public void testInverseHFunction(){
 		for(int p = 1; p < 20; p++){
 			ClaytonCopula g = new ClaytonCopula(new double[]{p});

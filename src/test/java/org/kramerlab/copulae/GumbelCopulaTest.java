@@ -41,6 +41,7 @@ public class GumbelCopulaTest extends TestCase {
 		}
 	}
 	
+	//Because it is symmetric, it might choose the twin point
 	public void testInverseHFunction(){
 		for(int p = 2; p < 20; p++){
 			GumbelCopula g = new GumbelCopula(new double[]{p});
