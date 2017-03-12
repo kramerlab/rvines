@@ -42,7 +42,7 @@ public class ClaytonCopula extends AbstractCopula{
 		y = Utils.laplaceCorrection(y);
 		
 		double out = (1+d)*Math.pow(x*y, -1-d)
-				*Math.pow(Math.pow(x, -d)+Math.pow(y, d)-1, -1/d-2);
+				*Math.pow(Math.pow(x, -d)+Math.pow(y, -d)-1, -1/d-2);
 		return out;
 	}
 	

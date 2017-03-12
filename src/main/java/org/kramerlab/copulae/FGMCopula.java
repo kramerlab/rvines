@@ -56,25 +56,53 @@ public class FGMCopula extends AbstractCopula{
 		return out;
 	}
 	
-	@Override
-	public double inverseHFunction(double x, double y) {
-		//Use Newton's method to solve h(x,y)-z = 0 with fixed y and z.
-		double z = x;
-		double x1 = 0.5;
-		double e = 1;
-		
-		while(e > Math.pow(10, -10)){
-			double x2 = x1-(hFunction(x1, y)-z)/density(x1, y);
-			e = Math.abs(x2 - x1);
-			x1 = x2;
+	//https://github.com/tnagler/VineCopula/blob/master/src/hfunc.c
+		@Override
+		public double inverseHFunction(double x, double y) {
+			boolean br = false;
+		    double ans = 0.0, tol = Math.pow(10, -10), x0 = 0, x1 = 1, it=0, fl, fh, val;
+		    fl = hFunction(x0, y);
+		    fl -= x;
+		    fh = hFunction(x1, y);
+		    fh -= x;
+		    
+		    if (Math.abs(fl) <= tol) {
+		        ans = x0;
+		        br = true;
+		    }
+		    if (Math.abs(fh) <= tol) {
+		        ans = x1;
+		        br = true;
+		    }
+
+		    while (!br){
+		        ans = (x0 + x1) / 2.0;
+		        val = hFunction(ans, y);
+		        val -= x;
+
+		        //stop if values become too close (avoid infinite loop)
+		        if (Math.abs(val) <= tol) br = true;
+		        if (Math.abs(x0-x1) <= tol) br = true;
+
+		        if (val > 0.0) {
+		            x1 = ans;
+		            fh = val;
+		        } else {
+		            x0 = ans;
+		            fl = val;
+		        }
+
+		        //stop if too many iterations are required (avoid infinite loop)
+		        ++it;
+		        if (it > 50) br = true;
+		    }
+
+		    return ans;
 		}
-		
-		return x1;
-	}
 	
 	@Override
 	public double tau() {
-		return 2/9*d;
+		return 2/9.0*d;
 	}
 
 	@Override

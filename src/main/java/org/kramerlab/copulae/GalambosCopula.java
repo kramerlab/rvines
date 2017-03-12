@@ -1,7 +1,5 @@
 package org.kramerlab.copulae;
 
-import org.apache.commons.math3.analysis.integration.RombergIntegrator;
-import org.apache.commons.math3.analysis.integration.UnivariateIntegrator;
 import org.kramerlab.functions.GalambosTauf;
 import org.kramerlab.vines.Utils;
 
@@ -28,9 +26,16 @@ public class GalambosCopula extends AbstractCopula{
 		x = Utils.laplaceCorrection(x);
 		y = Utils.laplaceCorrection(y);
 		
-		GumbelCopula g = new GumbelCopula(new double[]{d});
+		double out = Math.exp(Math.pow(Math.pow(-Math.log(x), -d)
+				+Math.pow(-Math.log(y), -d), -1/d));
 		
-		return g.density(1-x, 1-y);
+		out = out*(1-Math.pow(Math.pow(-Math.log(x), -d) + Math.pow(-Math.log(y), -d), -1-1/d)
+				*(Math.pow(-Math.log(x), -d-1) + Math.pow(-Math.log(y), -d-1))
+				+Math.pow(Math.pow(-Math.log(x), -d) + Math.pow(-Math.log(y), -d), -2-1/d)
+				*Math.pow(Math.log(x)* Math.log(y), -d-1)
+				*(1+d+Math.pow(Math.pow(-Math.log(x), -d) + Math.pow(-Math.log(y), -d), -1/d)));
+		
+		return out;
 	}
 	
 	@Override
@@ -38,29 +43,57 @@ public class GalambosCopula extends AbstractCopula{
 		x = Utils.laplaceCorrection(x);
 		y = Utils.laplaceCorrection(y);
 		
-		double out = x*y*Math.exp(Math.pow(Math.pow(-Math.log(x), -d)
+		double out = x*Math.exp(Math.pow(Math.pow(-Math.log(x), -d)
 				+Math.pow(-Math.log(y), -d), -1/d));
 		
-		out = out/y*(1-Math.pow(1+
-				Math.pow(Math.log(x)/Math.log(y), d), -1-1/d));
+		out = out*(1-Math.pow(1+
+				Math.pow(Math.log(y)/Math.log(x), d), -1-1/d));
 		
 		return out;
 	}
 	
+	//https://github.com/tnagler/VineCopula/blob/master/src/hfunc.c
 	@Override
 	public double inverseHFunction(double x, double y) {
-		//Use Newton's method to solve h(x,y)-z = 0 with fixed y and z.
-		double z = x;
-		double x1 = 0.5;
-		double e = 1;
-		
-		while(e > Math.pow(10, -10)){
-			double x2 = x1-(hFunction(x1, y)-z)/density(x1, y);
-			e = Math.abs(x2 - x1);
-			x1 = x2;
-		}
-		
-		return x1;
+		boolean br = false;
+	    double ans = 0.0, tol = Math.pow(10, -10), x0 = 0, x1 = 1, it=0, fl, fh, val;
+	    fl = hFunction(x0, y);
+	    fl -= x;
+	    fh = hFunction(x1, y);
+	    fh -= x;
+	    
+	    if (Math.abs(fl) <= tol) {
+	        ans = x0;
+	        br = true;
+	    }
+	    if (Math.abs(fh) <= tol) {
+	        ans = x1;
+	        br = true;
+	    }
+
+	    while (!br){
+	        ans = (x0 + x1) / 2.0;
+	        val = hFunction(ans, y);
+	        val -= x;
+
+	        //stop if values become too close (avoid infinite loop)
+	        if (Math.abs(val) <= tol) br = true;
+	        if (Math.abs(x0-x1) <= tol) br = true;
+
+	        if (val > 0.0) {
+	            x1 = ans;
+	            fh = val;
+	        } else {
+	            x0 = ans;
+	            fl = val;
+	        }
+
+	        //stop if too many iterations are required (avoid infinite loop)
+	        ++it;
+	        if (it > 5000) br = true;
+	    }
+
+	    return ans;
 	}
 	
 	@Override

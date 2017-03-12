@@ -1,6 +1,4 @@
-package org.kramerlab.vines;
-
-import org.kramerlab.copulae.ClaytonCopula;
+package org.kramerlab.copulae;
 
 import junit.framework.TestCase;
 
@@ -51,8 +49,6 @@ public class ClaytonCopulaTest extends TestCase {
 				for(int j=1; j<10; j++){
 					double a = g.hFunction(i/10.0, j/10.0);
 					double b = g.inverseHFunction(a, j/10.0);
-					// TODO analyze me
-					// test relative error, absolute it not working (don't know why)
 					assert(Math.abs(i/10.0 - b)/p <= 0.1);
 				}
 			}

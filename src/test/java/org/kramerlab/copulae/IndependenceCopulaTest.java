@@ -1,6 +1,4 @@
-package org.kramerlab.vines;
-
-import org.kramerlab.copulae.IndependenceCopula;
+package org.kramerlab.copulae;
 
 import junit.framework.TestCase;
 

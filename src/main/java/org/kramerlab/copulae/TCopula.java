@@ -53,7 +53,7 @@ public class TCopula extends AbstractCopula{
 		double b = t.inverseCumulativeProbability(y);
 		
 		double out = 1/(2*Math.PI*t.density(a)*t.density(b)*Math.sqrt(1-p*p));
-		out = out * Math.pow(1 + (a*a + b*b + 2*p*a*b)/(v*(1-p*p)), -(v+2)/2);
+		out = out * Math.pow(1 + (a*a + b*b - 2*p*a*b)/(v*(1-p*p)), -(v+2)/2);
 		
 		return out;
 	}
