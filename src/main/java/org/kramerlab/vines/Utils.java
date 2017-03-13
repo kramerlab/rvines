@@ -6,8 +6,7 @@ import java.util.HashMap;
 import java.util.TreeSet;
 
 import org.apache.commons.math3.analysis.UnivariateFunction;
-import org.kramerlab.copulae.Copula;
-import org.kramerlab.copulae.GaussCopula;
+import org.kramerlab.copulae.*;
 
 /**
  * This class contains utility function.
@@ -171,78 +170,7 @@ public class Utils{
 	 */
 	public static Copula goodnessOfFit(Copula[] copulae,
 			double[] a, double[] b){
-		return estimateParameter(new GaussCopula(new double[]{0}), a, b);
-	}
-	
-	/**
-	 * This is a MLE function.
-	 * <br>
-	 * It optimizes the copula parameter.
-	 * <br>
-	 * Because the RVine is currently using only Gauss copulae,
-	 * this method is only applicable for those.
-	 * 
-	 * @param c a copula, whose parameters are to be optimized.
-	 * @param a an observation array.
-	 * @param b another observation array.
-	 * @return returns the copula with its optimized parameters.
-	 */
-	public static Copula estimateParameter(Copula c, double[] a, double[] b){
-		double tau = kendallsTau(a, b);
-		
-		//for GaussCopula
-		if(c.getClass() == GaussCopula.class){
-			double p = Math.random()*2-1;
-			c.setParams(new double[]{p});
-			double actualLogLik = logLikelihood(c,a,b);
-			double nextLogLik = Double.NEGATIVE_INFINITY;
-			double delta = 1.0;		//step length
-			
-			while((Math.abs(actualLogLik-nextLogLik) > Math.pow(10, -10)
-					|| actualLogLik == Double.NEGATIVE_INFINITY)
-					&& delta > Math.pow(10, -20)){
-				actualLogLik = Math.max(actualLogLik, nextLogLik);
-				nextLogLik = Double.NEGATIVE_INFINITY;
-				
-				//watch the parameters, that are in delta range
-				double p1 = p-delta;
-				double p2 = p+delta;
-				
-				double logLik1 = Double.NEGATIVE_INFINITY;
-				double logLik2 = Double.NEGATIVE_INFINITY;
-				
-				//calculate the new parameters log-likelihood
-				if(-1 < p1 && p1 < 1){
-					c.setParams(new double[]{p1});
-					logLik1 = logLikelihood(c, a, b);
-				}
-				if(-1 < p2 && p2 < 1){
-					c.setParams(new double[]{p2});
-					logLik2 = logLikelihood(c, a, b);
-				}
-				
-				//if there is no improvement
-				if(Math.max(logLik1, logLik2) <= actualLogLik){
-					delta = delta * 0.1; //reduce step length
-				}else{
-					//else set the better improvement
-					nextLogLik = Math.max(logLik1, logLik2);
-					if(nextLogLik == logLik1){
-						p = p1;
-					}else{
-						p = p2;
-					}
-				}
-			}
-			
-			c.setParams(new double[]{p});
-			if(debug){
-				System.out.println(tau+"\t"+p+"\t\t"+logLikelihood(c, a, b));
-			}
-			return c;
-		}
-		
-		return null;
+		return GumbelCopula.mle(a, b);
 	}
 	
 	/**
@@ -363,8 +291,8 @@ public class Utils{
 	 * @return returns the correction of x.
 	 */
 	public static double laplaceCorrection(double x){
-		x = Math.min(x,0.999999);
-		x = Math.max(x,0.000001);
+		x = Math.min(x,0.999999999999);
+		x = Math.max(x,0.000000000001);
 		return x;
 	}
 	

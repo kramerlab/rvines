@@ -75,72 +75,52 @@ public class GaussCopula extends AbstractCopula{
 		return standardNormal.cumulativeProbability( a*Math.sqrt(1-p*p)+p*b );
 	}
 	
-	/**
-	 * The static copula density for a bivariate observation x, y.
-	 * <br>
-	 * The static function is used for RVine-Matrix calculations.
-	 *
-	 * @param	x an observation from a random variable.
-	 * @param	y an observation from another random variable.
-	 * @param	p the Gauss copula parameter.
-	 * @return	returns the copula density.
-	 */
-	public static double density(double x, double y, double p) {
-		x = Utils.laplaceCorrection(x);
-		y = Utils.laplaceCorrection(y);
+	public static GaussCopula mle(double[] a, double[] b){
+		double p = Math.random()*2-1;
+		GaussCopula c = new GaussCopula(new double[]{p});
+		double actualLogLik = Utils.logLikelihood(c,a,b);
+		double nextLogLik = Double.NEGATIVE_INFINITY;
+		double delta = 1.0;		//step length
 		
-		double a = standardNormal.inverseCumulativeProbability(x);
-		double b = standardNormal.inverseCumulativeProbability(y);
-		double out = 1/Math.sqrt(1-p*p) *
-				Math.exp(- (p*p*(a*a+b*b)-2*p*a*b) / (2*(1-p*p)) );
+		while((Math.abs(actualLogLik-nextLogLik) > Math.pow(10, -10)
+				|| actualLogLik == Double.NEGATIVE_INFINITY)
+				&& delta > Math.pow(10, -20)){
+			actualLogLik = Math.max(actualLogLik, nextLogLik);
+			nextLogLik = Double.NEGATIVE_INFINITY;
+			
+			//watch the parameters, that are in delta range
+			double p1 = p-delta;
+			double p2 = p+delta;
+			
+			double logLik1 = Double.NEGATIVE_INFINITY;
+			double logLik2 = Double.NEGATIVE_INFINITY;
+			
+			//calculate the new parameters log-likelihood
+			if(-1 < p1 && p1 < 1){
+				c.setParams(new double[]{p1});
+				logLik1 = Utils.logLikelihood(c, a, b);
+			}
+			if(-1 < p2 && p2 < 1){
+				c.setParams(new double[]{p2});
+				logLik2 = Utils.logLikelihood(c, a, b);
+			}
+			
+			//if there is no improvement
+			if(Math.max(logLik1, logLik2) <= actualLogLik){
+				delta = delta * 0.1; //reduce step length
+			}else{
+				//else set the better improvement
+				nextLogLik = Math.max(logLik1, logLik2);
+				if(nextLogLik == logLik1){
+					p = p1;
+				}else{
+					p = p2;
+				}
+			}
+		}
 		
-		return out;
-	}
-	
-	/**
-	 * The static h-function for the copula.
-	 * It is used to create pseudo observations.
-	 * <br>
-	 * The static function is used for RVine-Matrix calculations.
-	 *
-	 * @param	x	to be conditioned parameter
-	 * @param	y	to be conditioning parameter
-	 * @param	p the Gauss copula parameter.
-	 * @return returns the constrained value x|y.
-	 */
-	public static double hFunction(double x, double y, double p) {
-		x = Utils.laplaceCorrection(x);
-		y = Utils.laplaceCorrection(y);
-		
-		double a = standardNormal.inverseCumulativeProbability(x);
-		double b = standardNormal.inverseCumulativeProbability(y);
-		
-		double out = standardNormal.cumulativeProbability(
-				( a-p*b ) / Math.sqrt(1-p*p) );
-		
-		return out;
-	}
-	
-	/**
-	 * The static inverse h-function.
-	 * It is used to de-transform the values for sampling.
-	 * <br>
-	 * The static function is used for RVine-Matrix calculations.
-	 *
-	 * @param	x	to be unconditioned parameter
-	 * @param	y	the conditioning parameter
-	 * @param	p the Gauss copula parameter.
-	 * @return returns the unconditioned value.<br>
-	 * If x is z|y, the method returns z.
-	 */
-	public static double inverseHFunction(double x, double y, double p) {
-		x = Utils.laplaceCorrection(x);
-		y = Utils.laplaceCorrection(y);
-		
-		double a = standardNormal.inverseCumulativeProbability(x);
-		double b = standardNormal.inverseCumulativeProbability(y);
-		
-		return standardNormal.cumulativeProbability( a*Math.sqrt(1-p*p)+p*b );
+		c.setParams(new double[]{p});
+		return c;
 	}
 	
 	@Override
@@ -151,5 +131,5 @@ public class GaussCopula extends AbstractCopula{
 	@Override
 	public String name() {
 		return "Gauss";
-	}	
+	}
 }

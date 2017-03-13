@@ -26,6 +26,12 @@ public class GumbelCopula extends AbstractCopula{
 		d = params[0];
 	}
 	
+	@Override
+	public void setParams(double[] params){
+		super.setParams(params);
+		d = params[0];
+	}
+	
 	private double npl(double x){
 		return Math.pow(-Math.log(x), d);
 	}
@@ -105,7 +111,54 @@ public class GumbelCopula extends AbstractCopula{
 	public double tau() {
 		return 1-1/d;
 	}
-
+	
+	public static GumbelCopula mle(double[] a, double[] b){
+		double p = 5;
+		
+		GumbelCopula c = new GumbelCopula(new double[]{p});
+		double actualLogLik = Utils.logLikelihood(c,a,b);
+		double nextLogLik = Double.NEGATIVE_INFINITY;
+		double delta = 1.0;		//step length
+		
+		while((Math.abs(actualLogLik-nextLogLik) > Math.pow(10, -10)
+				|| actualLogLik == Double.NEGATIVE_INFINITY)
+				&& delta > Math.pow(10, -20)){
+			
+			actualLogLik = Math.max(actualLogLik, nextLogLik);
+			nextLogLik = Double.NEGATIVE_INFINITY;
+			
+			//watch the parameters, that are in delta range
+			double p1 = p-delta;
+			double p2 = p+delta;
+			
+			double logLik1 = Double.NEGATIVE_INFINITY;
+			double logLik2 = Double.NEGATIVE_INFINITY;
+			
+			//calculate the new parameters log-likelihood
+			c.setParams(new double[]{p1});
+			logLik1 = Utils.logLikelihood(c, a, b);
+			
+			c.setParams(new double[]{p2});
+			logLik2 = Utils.logLikelihood(c, a, b);
+			
+			//if there is no improvement
+			if(Math.max(logLik1, logLik2) <= actualLogLik){
+				delta = delta * 0.1; //reduce step length
+			}else{
+				//else set the better improvement
+				nextLogLik = Math.max(logLik1, logLik2);
+				if(nextLogLik == logLik1){
+					p = p1;
+				}else{
+					p = p2;
+				}
+			}
+		}
+		
+		c.setParams(new double[]{p});
+		return c;
+	}
+	
 	@Override
 	public String name() {
 		return "Gumbel";

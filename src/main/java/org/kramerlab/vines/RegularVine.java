@@ -37,6 +37,7 @@ public class RegularVine extends AbstractClassifier {
 	private int classIndex;
 	private HashMap<Double, Integer> classValues;
 	private int[][] m;
+	private Copula[][] copulae;
 	private double[][] p;
 	
 	/**
@@ -365,6 +366,12 @@ public class RegularVine extends AbstractClassifier {
 			int xl = x.get(0);
 			int xr = x.get(1);
 			
+			//This is how to influence the order of the RVine Matrix
+			if(i == 1 || i == 2 || i == 7 || i == 10 || i == 12 || i == 14){
+				xl = x.get(1);
+				xr = x.get(0);
+			}
+			
 			m[i-1][i-1] = xl;
 			m[i][i-1] = xr;
 			
@@ -394,6 +401,7 @@ public class RegularVine extends AbstractClassifier {
 	private void createParameterMatrix(){
 		int n = m.length;
 		p = new double[n][n];
+		copulae = new Copula[n][n];
 		
 		for(int i=1;i<n;i++){
 			for(int k=0;k<i;k++){
@@ -411,6 +419,7 @@ public class RegularVine extends AbstractClassifier {
 					// if we found the corresponding edge
 					if(ab.getCondSet().equals(cond)){
 						// add the parameter to the parameter-matrix
+						copulae[i][k] = e.getCopula();
 						p[i][k] = e.getCopula().getParams()[0];
 					}
 				}
@@ -468,23 +477,29 @@ public class RegularVine extends AbstractClassifier {
 			x[m[n-1][n-1]-1] = u[m[n-1][n-1]-1];
 		}
 		
+		Copula c;
+		
 		for(int k=n-2;k>=0;k--){
 			if(!given[m[k][k]-1]){
 				for(int i=k+1;i<n-1;i++){
 					//run path down to get x_i with inverse h-function
-					u[m[k][k]-1] = GaussCopula.inverseHFunction(u[m[k][k]-1], v[m[i][k]-1][m[i+1][k]-1], p[i][k]);
+					c = copulae[i][k];
+					u[m[k][k]-1] = c.inverseHFunction(u[m[k][k]-1], v[m[i][k]-1][m[i+1][k]-1]);
 				}
 				//level 0, get x value from h-inverse of adjacent x-value (last entry in current column)
-				x[m[k][k]-1] = GaussCopula.inverseHFunction(u[m[k][k]-1], x[m[n-1][k]-1], p[n-1][k]);
+				c = copulae[n-1][k];
+				x[m[k][k]-1] = c.inverseHFunction(u[m[k][k]-1], x[m[n-1][k]-1]);
 			}
 			//one dimensional transformed values
-			v[m[k][k]-1][m[n-1][k]-1] = GaussCopula.hFunction(x[m[k][k]-1], x[m[n-1][k]-1], p[n-1][k]);
-			v[m[n-1][k]-1][m[k][k]-1] = GaussCopula.hFunction(x[m[n-1][k]-1], x[m[k][k]-1], p[n-1][k]);
+			c = copulae[n-1][k];
+			v[m[k][k]-1][m[n-1][k]-1] = c.hFunction(x[m[k][k]-1], x[m[n-1][k]-1]);
+			v[m[n-1][k]-1][m[k][k]-1] = c.hFunction(x[m[n-1][k]-1], x[m[k][k]-1]);
 			
 			for(int i=n-2;i>k;i--){
 				//run path up to generate transformed values
-				v[m[k][k]-1][m[i][k]-1] = GaussCopula.hFunction(v[m[k][k]-1][m[i+1][k]-1], v[m[i][k]-1][m[i+1][k]-1], p[i][k]);
-				v[m[i][k]-1][m[k][k]-1] = GaussCopula.hFunction(v[m[i][k]-1][m[i+1][k]-1], v[m[k][k]-1][m[i+1][k]-1], p[i][k]);
+				c = copulae[i][k];
+				v[m[k][k]-1][m[i][k]-1] = c.hFunction(v[m[k][k]-1][m[i+1][k]-1], v[m[i][k]-1][m[i+1][k]-1]);
+				v[m[i][k]-1][m[k][k]-1] = c.hFunction(v[m[i][k]-1][m[i+1][k]-1], v[m[k][k]-1][m[i+1][k]-1]);
 			}
 		}
 		
@@ -516,18 +531,21 @@ public class RegularVine extends AbstractClassifier {
 		int n = m.length;
 		double[] x = instance.toDoubleArray();
 		double[][] v = new double[n][n];
+		Copula c;
 		
 		for(int k=n-2;k>=0;k--){
 			//one dimensional transformed values
-			v[m[k][k]-1][m[n-1][k]-1] = GaussCopula.hFunction(x[m[k][k]-1], x[m[n-1][k]-1], p[n-1][k]);
-			v[m[n-1][k]-1][m[k][k]-1] = GaussCopula.hFunction(x[m[n-1][k]-1], x[m[k][k]-1], p[n-1][k]);
-			loglik += Math.log(GaussCopula.density(x[m[k][k]-1], x[m[n-1][k]-1], p[n-1][k]));
+			c = copulae[n-1][k];
+			v[m[k][k]-1][m[n-1][k]-1] = c.hFunction(x[m[k][k]-1], x[m[n-1][k]-1]);
+			v[m[n-1][k]-1][m[k][k]-1] = c.hFunction(x[m[n-1][k]-1], x[m[k][k]-1]);
+			loglik += Math.log(c.density(x[m[k][k]-1], x[m[n-1][k]-1]));
 			
 			for(int i=n-2;i>k;i--){
 				//run path up to generate transformed values
-				v[m[k][k]-1][m[i][k]-1] = GaussCopula.hFunction(v[m[k][k]-1][m[i+1][k]-1], v[m[i][k]-1][m[i+1][k]-1], p[i][k]);
-				v[m[i][k]-1][m[k][k]-1] = GaussCopula.hFunction(v[m[i][k]-1][m[i+1][k]-1], v[m[k][k]-1][m[i+1][k]-1], p[i][k]);
-				loglik += Math.log(GaussCopula.density(v[m[k][k]-1][m[i+1][k]-1], v[m[i][k]-1][m[i+1][k]-1], p[i][k]));
+				c = copulae[i][k];
+				v[m[k][k]-1][m[i][k]-1] = c.hFunction(v[m[k][k]-1][m[i+1][k]-1], v[m[i][k]-1][m[i+1][k]-1]);
+				v[m[i][k]-1][m[k][k]-1] = c.hFunction(v[m[i][k]-1][m[i+1][k]-1], v[m[k][k]-1][m[i+1][k]-1]);
+				loglik += Math.log(c.density(v[m[k][k]-1][m[i+1][k]-1], v[m[i][k]-1][m[i+1][k]-1]));
 			}
 		}
 		
