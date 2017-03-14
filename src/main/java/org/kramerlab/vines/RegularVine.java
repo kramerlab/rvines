@@ -396,8 +396,8 @@ public class RegularVine extends AbstractClassifier {
 			int xr = x.get(1);
 			
 			//This is how to influence the order of the RVine Matrix
-			if(i == 1 || i == 5 || i == 9 || i == 11 || i == 12){
-				xl = x.get(1);
+			if(i == 2 || i == 5 || i == 6 || i == 11 || i == 12){
+				xl =x.get(1);
 				xr = x.get(0);
 			}
 			

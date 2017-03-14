@@ -16,6 +16,7 @@ import org.kramerlab.vines.Utils;
  */
 public class GumbelCopula extends AbstractCopula{
 	double d;
+	static double tol = Math.pow(10, -6);
 	int mode=0;
 	String[] modes = new String[]{"", "90", "180", "270"};
 	
@@ -245,8 +246,6 @@ public class GumbelCopula extends AbstractCopula{
 				|| actualLogLik == Double.NEGATIVE_INFINITY)
 				&& delta > Math.pow(10, -10)){
 			
-			//if(c.mode==1) System.out.println(p+" - "+actualLogLik);
-			
 			actualLogLik = Math.max(actualLogLik, nextLogLik);
 			nextLogLik = Double.NEGATIVE_INFINITY;
 			
@@ -258,11 +257,11 @@ public class GumbelCopula extends AbstractCopula{
 			double logLik2 = Double.NEGATIVE_INFINITY;
 			
 			//calculate the new parameters log-likelihood
-			if(c.mode==1 || c.mode==3 || p1 > 1){
+			if(c.mode==1 || c.mode==3 || p1 > 1+tol){
 				c.setParams(new double[]{p1});
 				logLik1 = Utils.logLikelihood(c, a, b);
 			}
-			if(c.mode==0 || c.mode==2 || p2 < -1){
+			if(c.mode==0 || c.mode==2 || p2 < -1-tol){
 				c.setParams(new double[]{p2});
 				logLik2 = Utils.logLikelihood(c, a, b);
 			}
@@ -282,7 +281,6 @@ public class GumbelCopula extends AbstractCopula{
 		}
 		
 		c.setParams(new double[]{p});
-		//if(c.mode==1) System.out.println(p+" - "+actualLogLik+" - "+Utils.logLikelihood(c, a, b));
 		return c;
 	}
 	

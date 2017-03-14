@@ -170,7 +170,7 @@ public class Utils{
 	 */
 	public static Copula goodnessOfFit(Copula[] copulae,
 			double[] a, double[] b, double tau){
-		return GumbelCopula.mle(a, b, tau);
+		return ClaytonCopula.mle(a, b, tau);
 	}
 	
 	/**
