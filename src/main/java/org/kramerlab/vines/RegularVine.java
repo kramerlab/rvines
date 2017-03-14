@@ -39,6 +39,7 @@ public class RegularVine extends AbstractClassifier {
 	private int[][] m;
 	private Copula[][] copulae;
 	private double[][] p;
+	private double[][] tau;
 	
 	/**
 	 * Build the RVine classifier on a given training dataset.
@@ -112,7 +113,7 @@ public class RegularVine extends AbstractClassifier {
 				}
 
 				//estimate best copula with parameters
-				Copula c = Utils.goodnessOfFit(null, a, b);
+				Copula c = Utils.goodnessOfFit(null, a, b, e.getWeight());
 
 				e.setCopula(c);
 
@@ -178,7 +179,7 @@ public class RegularVine extends AbstractClassifier {
 			}
 			
 			//estimate best copula with parameters
-			Copula c = Utils.goodnessOfFit(null, a, b);
+			Copula c = Utils.goodnessOfFit(null, a, b, e.getWeight());
 			e.setCopula(c);
 		}
 		
@@ -262,8 +263,8 @@ public class RegularVine extends AbstractClassifier {
 		}
 		
 		// transform the data / create pseudo observations
-		double[] a_new = transformData(e.getCopula(), a, b);
-		double[] b_new = transformData(e.getCopula(), b, a);
+		double[] a_new = transformData2(e.getCopula(), a, b);
+		double[] b_new = transformData1(e.getCopula(), a, b);
 		
 		out.putData(val1, a_new);
 		out.putData(val2, b_new);
@@ -304,9 +305,9 @@ public class RegularVine extends AbstractClassifier {
 	 * @param a an array of observations.
 	 * @param b another array of observations.
 	 * 
-	 * @return the pseudo observations, the values are constraint a|b.
+	 * @return the pseudo observations, the values are constraint b|a.
 	 */
-	private double[] transformData(Copula c, double[] a, double[] b){
+	private double[] transformData1(Copula c, double[] a, double[] b){
 		// assert that a and b have the same size
 		if(!( a.length == b.length)){
 			return null;
@@ -316,7 +317,35 @@ public class RegularVine extends AbstractClassifier {
 		
 		// use the copula h-function to create pseudo observations
 		for(int i=0;i<a.length;i++){
-			out[i] = c.hFunction(a[i], b[i]);
+			out[i] = c.h1Function(a[i], b[i]);
+		}
+		
+		return out;
+	}
+	
+	/**
+	 * Creates pseudo observations from two observation arrays
+	 * using the copula h-function.
+	 * <br>
+	 * array a and array b need to have the same size.
+	 * 
+	 * @param c the copula from which the h-function is used.
+	 * @param a an array of observations.
+	 * @param b another array of observations.
+	 * 
+	 * @return the pseudo observations, the values are constraint a|b.
+	 */
+	private double[] transformData2(Copula c, double[] a, double[] b){
+		// assert that a and b have the same size
+		if(!( a.length == b.length)){
+			return null;
+		}
+		
+		double[] out = new double[a.length];
+		
+		// use the copula h-function to create pseudo observations
+		for(int i=0;i<a.length;i++){
+			out[i] = c.h2Function(a[i], b[i]);
 		}
 		
 		return out;
@@ -367,7 +396,7 @@ public class RegularVine extends AbstractClassifier {
 			int xr = x.get(1);
 			
 			//This is how to influence the order of the RVine Matrix
-			if(i == 1 || i == 2 || i == 7 || i == 10 || i == 12 || i == 14){
+			if(i == 1 || i == 5 || i == 9 || i == 11 || i == 12){
 				xl = x.get(1);
 				xr = x.get(0);
 			}
@@ -401,6 +430,7 @@ public class RegularVine extends AbstractClassifier {
 	private void createParameterMatrix(){
 		int n = m.length;
 		p = new double[n][n];
+		tau = new double[n][n];
 		copulae = new Copula[n][n];
 		
 		for(int i=1;i<n;i++){
@@ -420,6 +450,7 @@ public class RegularVine extends AbstractClassifier {
 					if(ab.getCondSet().equals(cond)){
 						// add the parameter to the parameter-matrix
 						copulae[i][k] = e.getCopula();
+						tau[i][k] = e.getWeight();
 						p[i][k] = e.getCopula().getParams()[0];
 					}
 				}
@@ -441,6 +472,22 @@ public class RegularVine extends AbstractClassifier {
 	 */
 	public double[][] getParameterMatrix(){
 		return p;
+	}
+	
+	/**
+	 * Get the Copula-Matrix.
+	 * @return returns the Copula-Matrix.
+	 */
+	public Copula[][] getCopulaMatrix(){
+		return copulae;
+	}
+	
+	/**
+	 * Get the Tau-Matrix.
+	 * @return returns the Tau-Matrix.
+	 */
+	public double[][] getTauMatrix(){
+		return tau;
 	}
 	
 	/**
@@ -492,14 +539,14 @@ public class RegularVine extends AbstractClassifier {
 			}
 			//one dimensional transformed values
 			c = copulae[n-1][k];
-			v[m[k][k]-1][m[n-1][k]-1] = c.hFunction(x[m[k][k]-1], x[m[n-1][k]-1]);
-			v[m[n-1][k]-1][m[k][k]-1] = c.hFunction(x[m[n-1][k]-1], x[m[k][k]-1]);
+			v[m[k][k]-1][m[n-1][k]-1] = c.h2Function(x[m[k][k]-1], x[m[n-1][k]-1]);
+			v[m[n-1][k]-1][m[k][k]-1] = c.h1Function(x[m[k][k]-1], x[m[n-1][k]-1]);
 			
 			for(int i=n-2;i>k;i--){
 				//run path up to generate transformed values
 				c = copulae[i][k];
-				v[m[k][k]-1][m[i][k]-1] = c.hFunction(v[m[k][k]-1][m[i+1][k]-1], v[m[i][k]-1][m[i+1][k]-1]);
-				v[m[i][k]-1][m[k][k]-1] = c.hFunction(v[m[i][k]-1][m[i+1][k]-1], v[m[k][k]-1][m[i+1][k]-1]);
+				v[m[k][k]-1][m[i][k]-1] = c.h2Function(v[m[k][k]-1][m[i+1][k]-1], v[m[i][k]-1][m[i+1][k]-1]);
+				v[m[i][k]-1][m[k][k]-1] = c.h1Function(v[m[k][k]-1][m[i+1][k]-1], v[m[i][k]-1][m[i+1][k]-1]);
 			}
 		}
 		
@@ -536,15 +583,15 @@ public class RegularVine extends AbstractClassifier {
 		for(int k=n-2;k>=0;k--){
 			//one dimensional transformed values
 			c = copulae[n-1][k];
-			v[m[k][k]-1][m[n-1][k]-1] = c.hFunction(x[m[k][k]-1], x[m[n-1][k]-1]);
-			v[m[n-1][k]-1][m[k][k]-1] = c.hFunction(x[m[n-1][k]-1], x[m[k][k]-1]);
+			v[m[k][k]-1][m[n-1][k]-1] = c.h2Function(x[m[k][k]-1], x[m[n-1][k]-1]);
+			v[m[n-1][k]-1][m[k][k]-1] = c.h1Function(x[m[k][k]-1], x[m[n-1][k]-1]);
 			loglik += Math.log(c.density(x[m[k][k]-1], x[m[n-1][k]-1]));
 			
 			for(int i=n-2;i>k;i--){
 				//run path up to generate transformed values
 				c = copulae[i][k];
-				v[m[k][k]-1][m[i][k]-1] = c.hFunction(v[m[k][k]-1][m[i+1][k]-1], v[m[i][k]-1][m[i+1][k]-1]);
-				v[m[i][k]-1][m[k][k]-1] = c.hFunction(v[m[i][k]-1][m[i+1][k]-1], v[m[k][k]-1][m[i+1][k]-1]);
+				v[m[k][k]-1][m[i][k]-1] = c.h2Function(v[m[k][k]-1][m[i+1][k]-1], v[m[i][k]-1][m[i+1][k]-1]);
+				v[m[i][k]-1][m[k][k]-1] = c.h1Function(v[m[k][k]-1][m[i+1][k]-1], v[m[i][k]-1][m[i+1][k]-1]);
 				loglik += Math.log(c.density(v[m[k][k]-1][m[i+1][k]-1], v[m[i][k]-1][m[i+1][k]-1]));
 			}
 		}

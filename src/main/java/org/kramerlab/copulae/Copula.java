@@ -34,12 +34,26 @@ public interface Copula {
 	/**
 	 * The h-function for the copula.
 	 * It is used to create pseudo observations.
+	 * We need two different functions because some
+	 * of them are not symmetric.
+	 *
+	 * @param	x	to be conditioning parameter
+	 * @param	y	to be conditioned parameter
+	 * @return returns the constrained value y|x.
+	 */
+	public double h1Function(double x, double y);
+	
+	/**
+	 * The h-function for the copula.
+	 * It is used to create pseudo observations.
+	 * We need two different functions because some
+	 * of them are not symmetric.
 	 *
 	 * @param	x	to be conditioned parameter
 	 * @param	y	to be conditioning parameter
 	 * @return returns the constrained value x|y.
 	 */
-	public double hFunction(double x, double y);
+	public double h2Function(double x, double y);
 	
 	/**
 	 * The inverse h-function for the copula.

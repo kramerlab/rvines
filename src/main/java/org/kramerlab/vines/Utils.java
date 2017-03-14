@@ -169,8 +169,8 @@ public class Utils{
 	 * @return returns the copula with its parameters that fits best.
 	 */
 	public static Copula goodnessOfFit(Copula[] copulae,
-			double[] a, double[] b){
-		return GumbelCopula.mle(a, b);
+			double[] a, double[] b, double tau){
+		return GumbelCopula.mle(a, b, tau);
 	}
 	
 	/**

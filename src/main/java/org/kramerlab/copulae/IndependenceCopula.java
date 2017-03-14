@@ -30,6 +30,15 @@ public class IndependenceCopula extends AbstractCopula{
 	}
 	
 	@Override
+	public double h1Function(double x, double y) {
+		return hFunction(y, x);
+	}
+
+	@Override
+	public double h2Function(double x, double y) {
+		return hFunction(x, y);
+	}
+
 	public double hFunction(double x, double y) {
 		return x;
 	}

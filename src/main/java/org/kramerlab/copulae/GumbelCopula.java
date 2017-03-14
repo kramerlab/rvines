@@ -16,6 +16,8 @@ import org.kramerlab.vines.Utils;
  */
 public class GumbelCopula extends AbstractCopula{
 	double d;
+	int mode=0;
+	String[] modes = new String[]{"", "90", "180", "270"};
 	
 	/**
 	 * Constructor
@@ -41,6 +43,32 @@ public class GumbelCopula extends AbstractCopula{
 		x = Utils.laplaceCorrection(x);
 		y = Utils.laplaceCorrection(y);
 		
+		if(mode == 1){
+			double out = 0;
+			d = -d;
+			out = density0(1-x, y);
+			d = -d;
+			return out;
+		}
+		
+		if(mode == 2)
+			return density0(1-x, 1-y);
+		
+		if(mode == 3){
+			double out = 0;
+			d = -d;
+			out = density0(x, 1-y);
+			d = -d;
+			return out;
+		}
+		
+		return density0(x, y);
+	}
+	
+	public double density0(double x, double y) {
+		x = Utils.laplaceCorrection(x);
+		y = Utils.laplaceCorrection(y);
+		
 		double out = Math.exp(-Math.pow(npl(x)+npl(y), 1/d));
 		
 		out = out/(x*y)*Math.pow(npl(x)+npl(y), 2/d-2)*
@@ -51,6 +79,59 @@ public class GumbelCopula extends AbstractCopula{
 	}
 	
 	@Override
+	public double h1Function(double x, double y) {
+		x = Utils.laplaceCorrection(x);
+		y = Utils.laplaceCorrection(y);
+		
+		if(mode == 1){
+			double out = 0;
+			d = -d;
+			out = hFunction(y, 1-x);
+			d = -d;
+			return out;
+		}
+		
+		if(mode == 2)
+			return 1-hFunction(1-y, 1-x);
+		
+		if(mode == 3){
+			double out = 0;
+			d = -d;
+			out = hFunction(1-y, x);
+			d = -d;
+			return 1-out;
+		}
+		
+		return hFunction(y, x);
+	}
+	
+	@Override
+	public double h2Function(double x, double y) {
+		x = Utils.laplaceCorrection(x);
+		y = Utils.laplaceCorrection(y);
+		
+		if(mode == 1){
+			double out = 0;
+			d = -d;
+			out = hFunction(1-x, y);
+			d = -d;
+			return 1-out;
+		}
+		
+		if(mode == 2)
+			return 1-hFunction(1-x, 1-y);
+		
+		if(mode == 3){
+			double out = 0;
+			d = -d;
+			out = hFunction(x, 1-y);
+			d = -d;
+			return out;
+		}
+		
+		return hFunction(x, y);
+	}
+	
 	public double hFunction(double x, double y) {
 		x = Utils.laplaceCorrection(x);
 		y = Utils.laplaceCorrection(y);
@@ -112,17 +193,59 @@ public class GumbelCopula extends AbstractCopula{
 		return 1-1/d;
 	}
 	
-	public static GumbelCopula mle(double[] a, double[] b){
-		double p = 5;
+	public static Copula mle(double[] a, double[] b, double tau){
+
+		GumbelCopula c0 = new GumbelCopula(new double[]{2});
+		c0.mode=0;
+		c0 = mle_sub(c0, a, b);
+		double llc0 = Utils.logLikelihood(c0, a, b);
 		
-		GumbelCopula c = new GumbelCopula(new double[]{p});
-		double actualLogLik = Utils.logLikelihood(c,a,b);
+		GumbelCopula c2 = new GumbelCopula(new double[]{2});
+		c2.mode=2;
+		c2 = mle_sub(c2, a, b);
+		double llc2 = Utils.logLikelihood(c2, a, b);
+		
+		GumbelCopula c1 = new GumbelCopula(new double[]{-2});
+		c1.mode=1;
+		c1 = mle_sub(c1, a, b);
+		double llc1 = Utils.logLikelihood(c1, a, b);
+		
+		GumbelCopula c3 = new GumbelCopula(new double[]{-2});
+		c3.mode=3;
+		c3 = mle_sub(c3, a, b);
+		double llc3 = Utils.logLikelihood(c3, a, b);
+		
+		Copula out = c0;
+		double llout = llc0;
+		
+		if(llout < llc1){
+			out = c1;
+			llout = llc1;
+		}
+		if(llout < llc2){
+			out = c2;
+			llout = llc2;
+		}
+		if(llout < llc3){
+			out = c3;
+			llout = llc3;
+		}
+		
+		return out;
+	}
+	
+	public static GumbelCopula mle_sub(GumbelCopula c, double[] a, double[] b){
+		double p = c.getParams()[0];
+		
+		double actualLogLik = Utils.logLikelihood(c, a, b);
 		double nextLogLik = Double.NEGATIVE_INFINITY;
 		double delta = 1.0;		//step length
 		
-		while((Math.abs(actualLogLik-nextLogLik) > Math.pow(10, -10)
+		while((Math.abs(actualLogLik-nextLogLik) > Math.pow(10, -6)
 				|| actualLogLik == Double.NEGATIVE_INFINITY)
-				&& delta > Math.pow(10, -20)){
+				&& delta > Math.pow(10, -10)){
+			
+			//if(c.mode==1) System.out.println(p+" - "+actualLogLik);
 			
 			actualLogLik = Math.max(actualLogLik, nextLogLik);
 			nextLogLik = Double.NEGATIVE_INFINITY;
@@ -135,11 +258,14 @@ public class GumbelCopula extends AbstractCopula{
 			double logLik2 = Double.NEGATIVE_INFINITY;
 			
 			//calculate the new parameters log-likelihood
-			c.setParams(new double[]{p1});
-			logLik1 = Utils.logLikelihood(c, a, b);
-			
-			c.setParams(new double[]{p2});
-			logLik2 = Utils.logLikelihood(c, a, b);
+			if(c.mode==1 || c.mode==3 || p1 > 1){
+				c.setParams(new double[]{p1});
+				logLik1 = Utils.logLikelihood(c, a, b);
+			}
+			if(c.mode==0 || c.mode==2 || p2 < -1){
+				c.setParams(new double[]{p2});
+				logLik2 = Utils.logLikelihood(c, a, b);
+			}
 			
 			//if there is no improvement
 			if(Math.max(logLik1, logLik2) <= actualLogLik){
@@ -156,11 +282,12 @@ public class GumbelCopula extends AbstractCopula{
 		}
 		
 		c.setParams(new double[]{p});
+		//if(c.mode==1) System.out.println(p+" - "+actualLogLik+" - "+Utils.logLikelihood(c, a, b));
 		return c;
 	}
 	
 	@Override
 	public String name() {
-		return "Gumbel";
+		return "Gu"+modes[mode];
 	}
 }

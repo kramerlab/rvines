@@ -5,6 +5,9 @@ import java.util.ArrayList;
 
 import javax.servlet.*;
 import javax.servlet.http.*;
+
+import org.kramerlab.copulae.Copula;
+
 import javax.json.*;
 
 import weka.core.Instances;
@@ -217,6 +220,46 @@ public class VineServlet extends HttpServlet {
 				}else{
 					out = String.valueOf(val);
 				}
+				if(j<p.length-1){
+					System.out.print(out+"\t&\t");
+				}else{
+					System.out.print(out+"\\\\");
+				}
+			}
+			System.out.println();
+		}
+		
+		System.out.println();
+		System.out.println();
+		Copula[][] cop = vs.rvine.getCopulaMatrix();
+		
+		System.out.println("Mode - Matrix");
+		for(int i=0;i<p.length;i++){
+			for(int j=0;j<p.length;j++){
+				Copula c = cop[i][j];
+				String out = "-";
+				if(c != null){
+					out = c.name();
+				}
+				
+				if(j<p.length-1){
+					System.out.print(out+"\t&\t");
+				}else{
+					System.out.print(out+"\\\\");
+				}
+			}
+			System.out.println();
+		}
+		
+		System.out.println();
+		System.out.println();
+		double[][] tau = vs.rvine.getTauMatrix();
+		
+		System.out.println("Tau - Matrix");
+		for(int i=0;i<p.length;i++){
+			for(int j=0;j<p.length;j++){
+				double out = tau[i][j];
+				
 				if(j<p.length-1){
 					System.out.print(out+"\t&\t");
 				}else{
