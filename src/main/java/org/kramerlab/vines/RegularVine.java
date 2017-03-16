@@ -113,7 +113,7 @@ public class RegularVine extends AbstractClassifier {
 				}
 
 				//estimate best copula with parameters
-				Copula c = Utils.goodnessOfFit(null, a, b, e.getWeight());
+				Copula c = Utils.goodnessOfFit(null, a, b);
 
 				e.setCopula(c);
 
@@ -179,7 +179,7 @@ public class RegularVine extends AbstractClassifier {
 			}
 			
 			//estimate best copula with parameters
-			Copula c = Utils.goodnessOfFit(null, a, b, e.getWeight());
+			Copula c = Utils.goodnessOfFit(null, a, b);
 			e.setCopula(c);
 		}
 		
@@ -531,11 +531,11 @@ public class RegularVine extends AbstractClassifier {
 				for(int i=k+1;i<n-1;i++){
 					//run path down to get x_i with inverse h-function
 					c = copulae[i][k];
-					u[m[k][k]-1] = c.inverseHFunction(u[m[k][k]-1], v[m[i][k]-1][m[i+1][k]-1]);
+					u[m[k][k]-1] = c.h2inverse(u[m[k][k]-1], v[m[i][k]-1][m[i+1][k]-1]);
 				}
 				//level 0, get x value from h-inverse of adjacent x-value (last entry in current column)
 				c = copulae[n-1][k];
-				x[m[k][k]-1] = c.inverseHFunction(u[m[k][k]-1], x[m[n-1][k]-1]);
+				x[m[k][k]-1] = c.h2inverse(u[m[k][k]-1], x[m[n-1][k]-1]);
 			}
 			//one dimensional transformed values
 			c = copulae[n-1][k];

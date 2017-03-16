@@ -25,6 +25,12 @@ public class IndependenceCopula extends AbstractCopula{
 	}
 
 	@Override
+	public double C(double x, double y) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	
+	@Override
 	public double density(double x, double y) {
 		return 1;
 	}
@@ -44,8 +50,13 @@ public class IndependenceCopula extends AbstractCopula{
 	}
 	
 	@Override
-	public double inverseHFunction(double x, double y) {
-		return x;
+	public double h1inverse(double x, double y) {
+		return hFunction(y, x);
+	}
+
+	@Override
+	public double h2inverse(double x, double y) {
+		return hFunction(x, y);
 	}
 	
 	@Override
@@ -56,5 +67,11 @@ public class IndependenceCopula extends AbstractCopula{
 	@Override
 	public String name() {
 		return "Independence";
+	}
+
+	@Override
+	public double mle(double[] a, double[] b) {
+		// There is no parameter to optimize
+		return 0;
 	}
 }

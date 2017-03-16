@@ -5,10 +5,10 @@ import java.io.FileReader;
 
 import junit.framework.TestCase;
 
-public class GumbelCopulaTest extends TestCase {
-	private static int mode = 0;
-	private static int sign = 1;
-	private static String add = ""; 
+public class Gumbel270CopulaTest extends TestCase {
+	private static int mode = 3;
+	private static int sign = -1;
+	private static String add = "270"; 
 	
 	public static double[][][][] readIn(String fn){
 		double[][][][] vals = new double[2][10][10][10];

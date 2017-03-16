@@ -1,6 +1,8 @@
 package org.kramerlab.copulae;
 
 import org.kramerlab.functions.GalambosTauf;
+import org.kramerlab.functions.H1;
+import org.kramerlab.functions.H2;
 import org.kramerlab.vines.Utils;
 
 /**
@@ -21,6 +23,12 @@ public class GalambosCopula extends AbstractCopula{
 		d = params[0];
 	}
 
+	@Override
+	public double C(double x, double y) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	
 	@Override
 	public double density(double x, double y) {
 		x = Utils.laplaceCorrection(x);
@@ -61,50 +69,6 @@ public class GalambosCopula extends AbstractCopula{
 				Math.pow(Math.log(y)/Math.log(x), d), -1-1/d));
 		
 		return out;
-	}
-	
-	//https://github.com/tnagler/VineCopula/blob/master/src/hfunc.c
-	@Override
-	public double inverseHFunction(double x, double y) {
-		boolean br = false;
-	    double ans = 0.0, tol = Math.pow(10, -10), x0 = 0, x1 = 1, it=0, fl, fh, val;
-	    fl = hFunction(x0, y);
-	    fl -= x;
-	    fh = hFunction(x1, y);
-	    fh -= x;
-	    
-	    if (Math.abs(fl) <= tol) {
-	        ans = x0;
-	        br = true;
-	    }
-	    if (Math.abs(fh) <= tol) {
-	        ans = x1;
-	        br = true;
-	    }
-
-	    while (!br){
-	        ans = (x0 + x1) / 2.0;
-	        val = hFunction(ans, y);
-	        val -= x;
-
-	        //stop if values become too close (avoid infinite loop)
-	        if (Math.abs(val) <= tol) br = true;
-	        if (Math.abs(x0-x1) <= tol) br = true;
-
-	        if (val > 0.0) {
-	            x1 = ans;
-	            fh = val;
-	        } else {
-	            x0 = ans;
-	            fl = val;
-	        }
-
-	        //stop if too many iterations are required (avoid infinite loop)
-	        ++it;
-	        if (it > 5000) br = true;
-	    }
-
-	    return ans;
 	}
 	
 	@Override

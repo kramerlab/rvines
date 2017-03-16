@@ -11,13 +11,15 @@ import org.kramerlab.vines.Utils;
  * The density function, the h-function and its inverse were
  * presented by K. Aas et al. (2009): Pair-copula constructions of
  * multiple dependence.
+ * <br>
+ * The rotations are presented by Brechmann, E. C. & Schepsmeier, U. (2013):
+ * Modeling dependence with C-and D-vine copulas: The R-package CDVine.
  * 
  * @author Christian Lamberty (clamber@students.uni-mainz.de)
  */
 public class ClaytonCopula extends AbstractCopula{
 	private double d;
-	static double tol = Math.pow(10, -6);
-	int mode=0;
+	private int mode=0;
 	String[] modes = new String[]{"", "90", "180", "270"};
 	
 	/**
@@ -26,11 +28,15 @@ public class ClaytonCopula extends AbstractCopula{
 	 * <br>
 	 * params = {d}
 	 * <br>
-	 * d : 0 &lt; d &lt; infinity
+	 * for mode 0 and 2 : d : 0 &lt; d &lt; infinity
+	 * for mode 1 and 3 : d : -infinity &lt; d &lt; 0
 	 */
 	public ClaytonCopula(double[] params) {
 		super(params);
 		d = params[0];
+		lb = 0;
+		ub = Double.POSITIVE_INFINITY;
+		indep = 0;
 	}
 
 	@Override
@@ -39,94 +45,63 @@ public class ClaytonCopula extends AbstractCopula{
 		d = params[0];
 	}
 	
-	public static Copula mle(double[] a, double[] b, double tau){
-
-		ClaytonCopula c0 = new ClaytonCopula(new double[]{2});
-		c0.mode=0;
-		c0 = mle_sub(c0, a, b);
-		double llc0 = Utils.logLikelihood(c0, a, b);
-		
-		ClaytonCopula c2 = new ClaytonCopula(new double[]{2});
-		c2.mode=2;
-		c2 = mle_sub(c2, a, b);
-		double llc2 = Utils.logLikelihood(c2, a, b);
-		
-		ClaytonCopula c1 = new ClaytonCopula(new double[]{-2});
-		c1.mode=1;
-		c1 = mle_sub(c1, a, b);
-		double llc1 = Utils.logLikelihood(c1, a, b);
-		
-		ClaytonCopula c3 = new ClaytonCopula(new double[]{-2});
-		c3.mode=3;
-		c3 = mle_sub(c3, a, b);
-		double llc3 = Utils.logLikelihood(c3, a, b);
-		
-		Copula out = c0;
-		double llout = llc0;
-		
-		if(llout < llc1){
-			out = c1;
-			llout = llc1;
+	/**
+	 * Mode change function to use rotated Clayton.
+	 * @param mode Rotation mode:
+	 * <br>
+	 * 0 -> no rotation
+	 * 1 -> rotation by 90 degrees
+	 * 2 -> rotation by 180 degrees
+	 * 3 -> rotation by 270 degrees
+	 * <br>
+	 * for mode 0 and 2 : d : 0 &lt; d &lt; infinity
+	 * for mode 1 and 3 : d : -infinity &lt; d &lt; 0
+	 */
+	public void changeMode(int mode){
+		if(mode == 0 || mode == 2){
+			this.mode = mode;
+			lb = 0;
+			ub = Double.POSITIVE_INFINITY;
+		}else if(mode == 1 || mode ==3){
+			this.mode = mode;
+			lb = Double.NEGATIVE_INFINITY;
+			ub = 0;
+		}else{
+			System.err.println("Illegal mode!");
 		}
-		if(llout < llc2){
-			out = c2;
-			llout = llc2;
-		}
-		if(llout < llc3){
-			out = c3;
-			llout = llc3;
-		}
-		
-		return out;
 	}
 	
-	public static ClaytonCopula mle_sub(ClaytonCopula c, double[] a, double[] b){
-		double p = c.getParams()[0];
-		
-		double actualLogLik = Utils.logLikelihood(c, a, b);
-		double nextLogLik = Double.NEGATIVE_INFINITY;
-		double delta = 1.0;		//step length
-		
-		while((Math.abs(actualLogLik-nextLogLik) > Math.pow(10, -6)
-				|| actualLogLik == Double.NEGATIVE_INFINITY)
-				&& delta > Math.pow(10, -10)){
-			
-			actualLogLik = Math.max(actualLogLik, nextLogLik);
-			nextLogLik = Double.NEGATIVE_INFINITY;
-			
-			//watch the parameters, that are in delta range
-			double p1 = p-delta;
-			double p2 = p+delta;
-			
-			double logLik1 = Double.NEGATIVE_INFINITY;
-			double logLik2 = Double.NEGATIVE_INFINITY;
-			
-			//calculate the new parameters log-likelihood
-			if(c.mode==1 || c.mode==3 || p1 > tol){
-				c.setParams(new double[]{p1});
-				logLik1 = Utils.logLikelihood(c, a, b);
-			}
-			if(c.mode==0 || c.mode==2 || p2 < -tol){
-				c.setParams(new double[]{p2});
-				logLik2 = Utils.logLikelihood(c, a, b);
-			}
-			
-			//if there is no improvement
-			if(Math.max(logLik1, logLik2) <= actualLogLik){
-				delta = delta * 0.1; //reduce step length
-			}else{
-				//else set the better improvement
-				nextLogLik = Math.max(logLik1, logLik2);
-				if(nextLogLik == logLik1){
-					p = p1;
-				}else{
-					p = p2;
-				}
-			}
+	@Override
+	public double C(double x, double y) {
+		if(mode == 1){
+			double out = 0;
+			d = -d;
+			out = y - C0(1-x, y);
+			d = -d;
+			return out;
 		}
 		
-		c.setParams(new double[]{p});
-		return c;
+		if(mode == 2)
+			return x + y - 1 + C0(1-x, 1-y);
+		
+		if(mode == 3){
+			double out = 0;
+			d = -d;
+			out = x - C0(x, 1-y);
+			d = -d;
+			return out;
+		}
+		
+		return C0(x, y);
+	}
+	
+	/**
+	 * C function for non-rotated Clayton Copula.
+	 * @param x, y input parameters.
+	 * @return returns the Copula CDF value on point x, y. 
+	 */
+	private double C0(double x, double y){
+		return Math.pow(Math.pow(x, -d)+Math.pow(y, -d)-1, -1/d);
 	}
 	
 	@Override
@@ -156,7 +131,12 @@ public class ClaytonCopula extends AbstractCopula{
 		return density0(x, y);
 	}
 	
-	public double density0(double x, double y) {
+	/**
+	 * Density function for non-rotated Clayton Copula.
+	 * @param x, y input parameters.
+	 * @return returns the Copula PDF value on point x, y. 
+	 */
+	private double density0(double x, double y) {
 		x = Utils.laplaceCorrection(x);
 		y = Utils.laplaceCorrection(y);
 		
@@ -219,23 +199,19 @@ public class ClaytonCopula extends AbstractCopula{
 		return hFunction(x, y);
 	}
 	
+	/**
+	 * H function for non-rotated Clayton Copula.
+	 * @param x, y input parameters.
+	 * @return returns the conditioned value x|y.
+	 */
 	public double hFunction(double x, double y) {
 		x = Utils.laplaceCorrection(x);
 		y = Utils.laplaceCorrection(y);
 		
-		double out = Math.pow(y, -1-d)
-				*Math.pow(Math.pow(x, -d)+Math.pow(y, -d)-1, -(d+1)/d);
+		double xpd = Math.pow(x, -d);
+		double ypd = Math.pow(y, -d);
 		
-		return out;
-	}
-	
-	@Override
-	public double inverseHFunction(double x, double y) {
-		x = Utils.laplaceCorrection(x);
-		y = Utils.laplaceCorrection(y);
-		
-		double out = Math.pow(Math.pow(x*Math.pow(y, d+1), -d/(d+1))
-				+1-Math.pow(y, -d), -1/d);
+		double out = ypd/y*Math.pow(xpd+ypd-1, -(d+1)/d);
 		
 		return out;
 	}
@@ -249,4 +225,5 @@ public class ClaytonCopula extends AbstractCopula{
 	public String name() {
 		return "C"+modes[mode];
 	}
+
 }

@@ -31,8 +31,8 @@ public class FrankCopulaTest extends TestCase {
 			FrankCopula g = new FrankCopula(new double[]{p});
 			for(int i=1; i<10; i++){
 				for(int j=1; j<10; j++){
-					double a = g.hFunction(i/10.0, j/10.0);
-					double b = g.inverseHFunction(a, j/10.0);
+					double a = g.h2Function(i/10.0, j/10.0);
+					double b = g.h2inverse(a, j/10.0);
 					assert(Math.abs(i/10.0 - b) <= 0.1);
 				}
 			}

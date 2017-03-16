@@ -1,0 +1,49 @@
+Copula Data are observed by using the R packages Copula and VineCopula.
+Using the Commands:
+
+library(VineCopula)
+
+name = "Gumbel270"
+fam = 34
+
+sink(paste(c(name, "CDF.test"), collapse=""))
+for(p in 1:9){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, BiCopCDF(i/10, j/10, fam, -1-p)))}}}
+print("#")
+for(p in 1:9){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, BiCopCDF(i/10, j/10, fam, -1-1/p)))}}}
+sink()
+
+sink(paste(c(name, "PDF.test"), collapse=""))
+for(p in 1:9){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, BiCopPDF(i/10, j/10, fam, -1-p)))}}}
+print("#")
+for(p in 1:9){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, BiCopPDF(i/10, j/10, fam, -1-1/p)))}}}
+sink()
+
+sink(paste(c(name, "H1.test"), collapse=""))
+for(p in 1:9){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, BiCopHfunc1(i/10, j/10, fam, -1-p)))}}}
+print("#")
+for(p in 1:9){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, BiCopHfunc1(i/10, j/10, fam, -1-1/p)))}}}
+sink()
+
+sink(paste(c(name, "H2.test"), collapse=""))
+for(p in 1:9){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, BiCopHfunc2(i/10, j/10, fam, -1-p)))}}}
+print("#")
+for(p in 1:9){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, BiCopHfunc2(i/10, j/10, fam, -1-1/p)))}}}
+sink()
+
+sink(paste(c(name, "H1inverse.test"), collapse=""))
+for(p in 1:9){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, BiCopHinv1(i/10, j/10, fam, -1-p)))}}}
+print("#")
+for(p in 1:9){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, BiCopHinv1(i/10, j/10, fam, -1-1/p)))}}}
+sink()
+
+sink(paste(c(name, "H2inverse.test"), collapse=""))
+for(p in 1:9){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, BiCopHinv2(i/10, j/10, fam, -1-p)))}}}
+print("#")
+for(p in 1:9){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, BiCopHinv2(i/10, j/10, fam, -1-1/p)))}}}
+sink()
+
+sink(paste(c(name, "Tau.test"), collapse=""))
+for(p in 1:9){print(paste(p, BiCopPar2Tau(fam, -1-p)))}
+print("#")
+for(p in 1:9){print(paste(p, BiCopPar2Tau(fam, -1-1/p)))}
+sink()

@@ -169,9 +169,53 @@ public class Utils{
 	 * @return returns the copula with its parameters that fits best.
 	 */
 	public static Copula goodnessOfFit(Copula[] copulae,
-			double[] a, double[] b, double tau){
-		return ClaytonCopula.mle(a, b, tau);
+			double[] a, double[] b){
+		
+		double[] p = new double[copulae.length];
+		
+		for(int i=0; i<copulae.length; i++){
+			Copula c = copulae[i];
+			p[i] = pValue(c, a, b);
+		}
+		
+		int out = 0;
+		for(int i=1; i<copulae.length; i++){
+			if(p[out] < p[i]) out = i;
+		}
+		
+		return copulae[out];
 	}
+	
+	//Bootstrap method for p-value computation
+	private static double pValue(Copula c, double[] a, double[] b){
+		int N = 100;
+		
+		c.mle(a, b);
+		
+		double sn = 0;
+		for(int i=0; i<N; i++){
+			sn += Math.pow(empCop(a, b, a[i], b[i]) - c.C(a[i], b[i]), 2);
+		}
+		
+		
+		for(int i=0; i<N; i++){
+			
+		}
+		
+		return 0;
+	}
+	
+	private static double empCop(double[] a, double[] b, double x, double y){
+		int N = a.length;
+		int obs = 0;
+		
+		for(int i=0; i<N; i++){
+			if(a[i] <= x && b[i] <= y) obs++;
+		}
+		
+		return 1.0/N*obs;
+	}
+	
 	
 	/**
 	 * Log-Likelihood calculation for copulae.
@@ -313,5 +357,98 @@ public class Utils{
 	      }
 	      
 	      return sum * h / 6.0;
+	}
+	
+	//https://github.com/tnagler/VineCopula/blob/master/src/hfunc.c
+	public static double bisectionInvert(UnivariateFunction f, double z, double lb, double ub){
+		boolean br = false;
+	    double ans = 0.0, tol = 0, x0 = lb, x1 = ub, it=0, fl, fh, val;
+	    
+	    fl = f.value(x0);
+	    fl -= z;
+	    fh = f.value(x1);
+	    fh -= z;
+	    
+	    if (Math.abs(fl) <= tol) {
+	        ans = x0;
+	        br = true;
+	    }
+	    if (Math.abs(fh) <= tol) {
+	        ans = x1;
+	        br = true;
+	    }
+
+	    while (!br){
+	        ans = (x0 + x1) / 2.0;
+	        val = f.value(ans);
+	        val -= z;
+
+	        //stop if values become too close (avoid infinite loop)
+	        if (Math.abs(val) <= tol) br = true;
+	        if (Math.abs(x0-x1) <= tol) br = true;
+
+	        if (val > 0.0) {
+	            x1 = ans;
+	            fh = val;
+	        } else {
+	            x0 = ans;
+	            fl = val;
+	        }
+
+	        //stop if too many iterations are required (avoid infinite loop)
+	        ++it;
+	        if (it > 50) br = true;
+	    }
+
+	    return ans;
+	}
+	
+	public static double mle(Copula c, double[] a, double[] b, double lb, double ub, double indep, double tol){
+		double p = c.getParams()[0];
+		double actualLogLik = Utils.logLikelihood(c, a, b);
+		double nextLogLik = Double.NEGATIVE_INFINITY;
+		double delta = 1.0;		//step length
+		
+		while((Math.abs(actualLogLik-nextLogLik) > Math.pow(10, -10)
+				|| actualLogLik == Double.NEGATIVE_INFINITY)
+				&& delta > Math.pow(10, -20)){
+			
+			actualLogLik = Math.max(actualLogLik, nextLogLik);
+			nextLogLik = Double.NEGATIVE_INFINITY;
+			
+			//watch the parameters, that are in delta range
+			double p1 = p-delta;
+			double p2 = p+delta;
+			
+			double logLik1 = Double.NEGATIVE_INFINITY;
+			double logLik2 = Double.NEGATIVE_INFINITY;
+			
+			//calculate the new parameters log-likelihood
+			if(lb < p1 && p1 < ub && Math.abs(p1-indep) > tol){
+				c.setParams(new double[]{p1});
+				logLik1 = Utils.logLikelihood(c, a, b);
+			}
+			if(lb < p2 && p2 < ub && Math.abs(p2-indep) > tol){
+				c.setParams(new double[]{p2});
+				logLik2 = Utils.logLikelihood(c, a, b);
+			}
+			
+			//if there is no improvement
+			if(Math.max(logLik1, logLik2) <= actualLogLik){
+				delta = delta * 0.1; //reduce step length
+			}else{
+				//else set the better improvement
+				nextLogLik = Math.max(logLik1, logLik2);
+				if(nextLogLik == logLik1){
+					p = p1;
+				}else{
+					p = p2;
+				}
+			}
+		}
+		
+		c.setParams(new double[]{p});
+		
+		return nextLogLik;
 	}
 }

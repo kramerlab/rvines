@@ -3,6 +3,8 @@ package org.kramerlab.copulae;
 import org.apache.commons.math3.distribution.TDistribution;
 import org.kramerlab.vines.Utils;
 
+import umontreal.ssj.probdistmulti.BiStudentDist;
+
 /**
  * This is the class to represent Student T copula family for RVines.
  * <br>
@@ -18,7 +20,7 @@ import org.kramerlab.vines.Utils;
 public class TCopula extends AbstractCopula{
 	private static TDistribution t;
 	private double p;
-	private double v;
+	private int v;
 	
 	/**
 	 * Constructor
@@ -32,28 +34,38 @@ public class TCopula extends AbstractCopula{
 	public TCopula(double[] params) {
 		super(params);
 		p = params[0];
-		v = params[1];
+		v = (int) params[1];
 		t = new TDistribution(v);
+		lb = -1;
+		ub = 1;
+		indep = 0;
 	}
 
 	@Override
 	public void setParams(double[] params){
 		super.setParams(params);
 		p = params[0];
-		v = params[1];
+		if(params.length > 1)
+			v = (int) params[1];
+	}
+	
+	@Override
+	public double C(double x, double y) {
+		return BiStudentDist.cdf(v, x, y, p);
 	}
 	
 	@Override
 	public double density(double x, double y) {
-		// Aas K. et al, Pair-copula constructions of multiple dependence
 		x = Utils.laplaceCorrection(x);
 		y = Utils.laplaceCorrection(y);
 		
 		double a = t.inverseCumulativeProbability(x);
 		double b = t.inverseCumulativeProbability(y);
 		
-		double out = 1/(2*Math.PI*t.density(a)*t.density(b)*Math.sqrt(1-p*p));
-		out = out * Math.pow(1 + (a*a + b*b - 2*p*a*b)/(v*(1-p*p)), -(v+2)/2);
+		double pp = p*p;
+		
+		double out = Math.pow(1 + (a*a + b*b - 2*p*a*b)/(v*(1-pp)), -(v+2)/2.0)
+				/(2*Math.PI*t.density(a)*t.density(b)*Math.sqrt(1-pp));
 		
 		return out;
 	}
@@ -82,18 +94,28 @@ public class TCopula extends AbstractCopula{
 	}
 
 	@Override
-	public double inverseHFunction(double x, double y) {
-		x = Utils.laplaceCorrection(x);
-		y = Utils.laplaceCorrection(y);
+	public double mle(double[] a, double[] b){
+		double ps = p;
+		double pl = p;
+		int vl = 1;
 		
-		TDistribution t2 = new TDistribution(v+1);
+		setParams(new double[]{ps, vl});
+		double ll = Utils.mle(this, a, b, lb, ub, indep, tol);
 		
-		double a = t2.inverseCumulativeProbability(x);
-		double b = t.inverseCumulativeProbability(y);
+		setParams(new double[]{ps, vl+1});
+		double lln = Utils.mle(this, a, b, lb, ub, indep, tol);
 		
-		double out = t.cumulativeProbability(a * Math.sqrt(((v+b*b)*(1-p*p))/(v+1)) + p*b);
+		while(ll < lln && vl <= 10){
+			ll = lln;
+			pl = p;
+			vl = v;
+			setParams(new double[]{ps, vl+1});
+			lln = Utils.mle(this, a, b, lb, ub, indep, tol);
+		}
 		
-		return out;
+		setParams(new double[]{pl, vl});
+		
+		return ll;
 	}
 	
 	@Override
@@ -104,5 +126,5 @@ public class TCopula extends AbstractCopula{
 	@Override
 	public String name() {
 		return "T";
-	}	
+	}
 }

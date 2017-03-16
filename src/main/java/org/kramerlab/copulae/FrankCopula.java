@@ -1,5 +1,7 @@
 package org.kramerlab.copulae;
 
+import org.kramerlab.functions.H1;
+import org.kramerlab.functions.H2;
 import org.kramerlab.functions.debyeSub;
 import org.kramerlab.vines.Utils;
 
@@ -29,6 +31,12 @@ public class FrankCopula extends AbstractCopula{
 	
 	private double expD(double x){
 		return Math.exp(d*x);
+	}
+	
+	@Override
+	public double C(double x, double y) {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 	
 	@Override
@@ -67,19 +75,6 @@ public class FrankCopula extends AbstractCopula{
 	}
 	
 	@Override
-	public double inverseHFunction(double x, double y) {
-		if(d == 0) return x;
-		
-		x = Utils.laplaceCorrection(x);
-		y = Utils.laplaceCorrection(y);
-		
-		double out = -Math.log(1-(1-Math.exp(-d))
-				/(1+Math.exp(-d*y)*(1/x-1)))/d;
-		
-		return out;
-	}
-	
-	@Override
 	public double tau() {
 		if(d == 0) return 0;
 		return 1 - 4 / d * (1 - debye1(d));
@@ -92,53 +87,6 @@ public class FrankCopula extends AbstractCopula{
 		y = Utils.simpsonIntegrate(new debyeSub(), 1000, 0, x);
 		
 		return y/x;
-	}
-	
-	public static FrankCopula mle(double[] a, double[] b){
-		double p = 0;
-		
-		FrankCopula c = new FrankCopula(new double[]{p});
-		double actualLogLik = Utils.logLikelihood(c,a,b);
-		double nextLogLik = Double.NEGATIVE_INFINITY;
-		double delta = 1.0;		//step length
-		
-		while((Math.abs(actualLogLik-nextLogLik) > Math.pow(10, -10)
-				|| actualLogLik == Double.NEGATIVE_INFINITY)
-				&& delta > Math.pow(10, -20)){
-			
-			actualLogLik = Math.max(actualLogLik, nextLogLik);
-			nextLogLik = Double.NEGATIVE_INFINITY;
-			
-			//watch the parameters, that are in delta range
-			double p1 = p-delta;
-			double p2 = p+delta;
-			
-			double logLik1 = Double.NEGATIVE_INFINITY;
-			double logLik2 = Double.NEGATIVE_INFINITY;
-			
-			//calculate the new parameters log-likelihood
-			c.setParams(new double[]{p1});
-			logLik1 = Utils.logLikelihood(c, a, b);
-			
-			c.setParams(new double[]{p2});
-			logLik2 = Utils.logLikelihood(c, a, b);
-			
-			//if there is no improvement
-			if(Math.max(logLik1, logLik2) <= actualLogLik){
-				delta = delta * 0.1; //reduce step length
-			}else{
-				//else set the better improvement
-				nextLogLik = Math.max(logLik1, logLik2);
-				if(nextLogLik == logLik1){
-					p = p1;
-				}else{
-					p = p2;
-				}
-			}
-		}
-		
-		c.setParams(new double[]{p});
-		return c;
 	}
 	
 	@Override
