@@ -246,7 +246,7 @@ public class GumbelCopula extends AbstractCopula{
 	public double tau() {
 		if(mode==0 || mode == 2)
 			return 1-1/d;
-		return -(1-1/(-d));
+		return -(1+1/d);
 	}
 	
 	@Override

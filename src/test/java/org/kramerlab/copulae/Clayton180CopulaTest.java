@@ -5,10 +5,10 @@ import java.io.FileReader;
 
 import junit.framework.TestCase;
 
-public class ClaytonCopulaTest extends TestCase {
-	private static int mode = 0;
+public class Clayton180CopulaTest extends TestCase {
+	private static int mode = 2;
 	private static int sign = 1;
-	private static String add = ""; 
+	private static String add = "180"; 
 	
 	public static double[][][][] readIn(String fn){
 		double[][][][] vals = new double[2][10][10][10];
