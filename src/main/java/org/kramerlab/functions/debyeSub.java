@@ -1,6 +1,12 @@
 package org.kramerlab.functions;
 
 import org.apache.commons.math3.analysis.UnivariateFunction;
+
+/**
+ * This class represents the inner function of Debye1 integration.
+ * 
+ * @author Christian Lamberty (clamber@students.uni-mainz.de)
+ */
 public class debyeSub implements UnivariateFunction {
 
 	public double value(double x) {

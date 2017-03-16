@@ -1,13 +1,18 @@
 package org.kramerlab.copulae;
 
-import org.kramerlab.functions.H1;
-import org.kramerlab.functions.H2;
 import org.kramerlab.functions.debyeSub;
 import org.kramerlab.vines.Utils;
 
 /**
- * This is a placeholder for the Frank copula family.
- * It is not implemented yet.
+ * This is the class to represent Frank copula family for RVines.
+ * <br>
+ * The cumulative distribution function and the Kendall's tau calculation
+ * were presented by M. Mahfoud and M. Michael (2012):
+ * Bivariate archimedean copulas: an application to two stock market indices.
+ * <br>
+ * The density function, the h-function and its inverse were presented by
+ * D. Schirmacher and E. Schirmacher (2008):
+ * Multivariate dependence modeling using pair-copulas.
  * 
  * @author Christian Lamberty (clamber@students.uni-mainz.de)
  */
@@ -16,11 +21,18 @@ public class FrankCopula extends AbstractCopula{
 	
 	/**
 	 * Constructor
-	 * @param params copula parameters as double array.
+	 * @param params parameter array, should be like:
+	 * <br>
+	 * params = {d}
+	 * <br>
+	 * d : dependence | -infinity &lt; d &lt; infinity
 	 */
 	public FrankCopula(double[] params) {
 		super(params);
 		d = params[0];
+		lb = Double.NEGATIVE_INFINITY;
+		ub = Double.POSITIVE_INFINITY;
+		indep = 0;
 	}
 
 	@Override
@@ -29,14 +41,18 @@ public class FrankCopula extends AbstractCopula{
 		d = params[0];
 	}
 	
-	private double expD(double x){
-		return Math.exp(d*x);
-	}
-	
 	@Override
 	public double C(double x, double y) {
-		// TODO Auto-generated method stub
-		return 0;
+		if(d == 0) return x*y;
+		
+		x = Utils.laplaceCorrection(x);
+		y = Utils.laplaceCorrection(y);
+		
+		double ed = Math.exp(-d)-1;
+		double edx = Math.exp(-d*x)-1;
+		double edy = Math.exp(-d*y)-1;
+		
+		return -Math.log(1+edx*edy/ed)/d;
 	}
 	
 	@Override
@@ -46,9 +62,13 @@ public class FrankCopula extends AbstractCopula{
 		x = Utils.laplaceCorrection(x);
 		y = Utils.laplaceCorrection(y);
 		
-		double z = d*expD(1+x+y)*(expD(1)-1);
-		z = z/(expD(1)*(1-expD(x)+expD(x+y-1)-expD(y)));
-		z = z/(expD(1)*(1-expD(x)+expD(x+y-1)-expD(y)));
+		double ed = Math.exp(d);
+		double edx = Math.exp(d*x);
+		double edy = Math.exp(d*y);
+		
+		double z = d*ed*edx*edy*(ed-1);
+		z = z/(ed*(1-edx+edx*edy/ed-edy));
+		z = z/(ed*(1-edx+edx*edy/ed-edy));
 		return z;
 	}
 	
@@ -62,14 +82,25 @@ public class FrankCopula extends AbstractCopula{
 		return hFunction(x, y);
 	}
 	
+	/**
+	 * H function for Frank Copula.
+	 * Since Frank Copula is symmetric, we don't need
+	 * separate h functions.
+	 * @param x, y input parameters.
+	 * @return returns the conditioned value x|y.
+	 */
 	public double hFunction(double x, double y) {
 		if(d == 0) return x;
 		
 		x = Utils.laplaceCorrection(x);
 		y = Utils.laplaceCorrection(y);
 		
-		double out = Math.exp(-d*y)/(Math.exp(-d*y)-1+
-						(1-Math.exp(-d))/(1-Math.exp(-d*x)));
+		double ed = Math.exp(-d);
+		double edx = Math.exp(-d*x);
+		double edy = Math.exp(-d*y);
+		
+		double out = edy/(edy-1+
+						(1-ed)/(1-edx));
 		
 		return out;
 	}
@@ -80,6 +111,11 @@ public class FrankCopula extends AbstractCopula{
 		return 1 - 4 / d * (1 - debye1(d));
 	}
 
+	/**
+	 * Debye1 function for tau calculation.
+	 * @param x input parameter.
+	 * @return returns the debye1(x) value.
+	 */
 	private double debye1(double x){
 		if(x == 0) return 1;
 		
@@ -91,6 +127,6 @@ public class FrankCopula extends AbstractCopula{
 	
 	@Override
 	public String name() {
-		return "Frank";
+		return "F";
 	}
 }

@@ -23,7 +23,7 @@ public interface Copula {
 	public double[] getParams();
 	
 	/**
-	 * The copula probability function for a bivariate observation x, y.
+	 * The cumulative distribution function for a bivariate Copula.
 	 *
 	 * @param	x an observation from a random variable.
 	 * @param	y an observation from another random variable.
@@ -32,7 +32,7 @@ public interface Copula {
 	public double C(double x, double y);
 	
 	/**
-	 * The copula density for a bivariate observation x, y.
+	 * The cumulative density function for a bivariate Copula.
 	 *
 	 * @param	x an observation from a random variable.
 	 * @param	y an observation from another random variable.
@@ -107,7 +107,15 @@ public interface Copula {
 	 * Get the copula name.
 	 * It is used to differentiate the copulae for visualization.
 	 *
-	 * @return	returns the copula name.
+	 * @return	returns the copula name(In short).
+	 * G = Gauss,
+	 * T = StudentT,
+	 * C[/90/180/270] = Clayton (and rotations),
+	 * Gu[/90/180/270] = Gumbel (and rotations),
+	 * F = Frank,
+	 * FGM = Farlie-Gumbel-Morgenstern,
+	 * Ga = Galambos,
+	 * In = Independent.
 	 */
 	public String name();
 }

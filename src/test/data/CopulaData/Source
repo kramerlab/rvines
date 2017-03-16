@@ -3,7 +3,7 @@ Using the Commands:
 
 library(VineCopula)
 
-(Usable for Clayton and Gumbel (Gumbel Parameters need +-1 !))
+(Suitable for Clayton and Gumbel (Gumbel Parameters need +-1 !))
 
 name = "Clayton180"
 fam = 13
@@ -49,4 +49,131 @@ sink(paste(c(name, "Tau.test"), collapse=""))
 for(p in 1:9){print(paste(p, BiCopPar2Tau(fam, sgn*p)))}
 print("#")
 for(p in 1:9){print(paste(p, BiCopPar2Tau(fam, sgn*1/p)))}
+sink()
+
+(Suitable for Gauss)
+
+name = "Gauss"
+fam = 1
+
+sink(paste(c(name, "CDF.test"), collapse=""))
+for(p in 1:19){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, BiCopCDF(i/10, j/10, fam, p/10-1)))}}}
+sink()
+
+sink(paste(c(name, "PDF.test"), collapse=""))
+for(p in 1:19){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, BiCopPDF(i/10, j/10, fam, p/10-1)))}}}
+sink()
+
+sink(paste(c(name, "H1.test"), collapse=""))
+for(p in 1:19){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, BiCopHfunc1(i/10, j/10, fam, p/10-1)))}}}
+sink()
+
+sink(paste(c(name, "H2.test"), collapse=""))
+for(p in 1:19){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, BiCopHfunc2(i/10, j/10, fam, p/10-1)))}}}
+sink()
+
+sink(paste(c(name, "H1inverse.test"), collapse=""))
+for(p in 1:19){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, BiCopHinv1(i/10, j/10, fam, p/10-1)))}}}
+sink()
+
+sink(paste(c(name, "H2inverse.test"), collapse=""))
+for(p in 1:19){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, BiCopHinv2(i/10, j/10, fam, p/10-1)))}}}
+sink()
+
+sink(paste(c(name, "Tau.test"), collapse=""))
+for(p in 1:19){print(paste(p, BiCopPar2Tau(fam, p/10-1)))}
+sink()
+
+(Suitable for Student t)
+
+name = "T"
+fam = 2
+
+sink(paste(c(name, "CDF.test"), collapse=""))
+for(v in 3:10){for(p in 1:19){for(i in 1:9){for(j in 1:9){print(paste(p, v, i, j, BiCopCDF(i/10, j/10, fam, p/10-1, v)))}}}}
+sink()
+
+sink(paste(c(name, "PDF.test"), collapse=""))
+for(v in 3:10){for(p in 1:19){for(i in 1:9){for(j in 1:9){print(paste(p, v, i, j, BiCopPDF(i/10, j/10, fam, p/10-1, v)))}}}}
+sink()
+
+sink(paste(c(name, "H1.test"), collapse=""))
+for(v in 3:10){for(p in 1:19){for(i in 1:9){for(j in 1:9){print(paste(p, v, i, j, BiCopHfunc1(i/10, j/10, fam, p/10-1, v)))}}}}
+sink()
+
+sink(paste(c(name, "H2.test"), collapse=""))
+for(v in 3:10){for(p in 1:19){for(i in 1:9){for(j in 1:9){print(paste(p, v, i, j, BiCopHfunc2(i/10, j/10, fam, p/10-1, v)))}}}}
+sink()
+
+sink(paste(c(name, "H1inverse.test"), collapse=""))
+for(v in 3:10){for(p in 1:19){for(i in 1:9){for(j in 1:9){print(paste(p, v, i, j, BiCopHinv1(i/10, j/10, fam, p/10-1, v)))}}}}
+sink()
+
+sink(paste(c(name, "H2inverse.test"), collapse=""))
+for(v in 3:10){for(p in 1:19){for(i in 1:9){for(j in 1:9){print(paste(p, v, i, j, BiCopHinv2(i/10, j/10, fam, p/10-1, v)))}}}}
+sink()
+
+sink(paste(c(name, "Tau.test"), collapse=""))
+for(v in 3:10){for(p in 1:19){print(paste(p, v, BiCopPar2Tau(fam, p/10-1, v)))}}
+sink()
+
+(Suitable for Frank)
+
+name = "Frank"
+fam = 5
+
+sink(paste(c(name, "CDF.test"), collapse=""))
+for(p in -9:-1){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, BiCopCDF(i/10, j/10, fam, p)))}}}
+for(p in 1:9){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, BiCopCDF(i/10, j/10, fam, p)))}}}
+print("#")
+for(p in -9:-1){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, BiCopCDF(i/10, j/10, fam, p/10)))}}}
+for(p in 1:9){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, BiCopCDF(i/10, j/10, fam, p/10)))}}}
+sink()
+
+sink(paste(c(name, "PDF.test"), collapse=""))
+for(p in -9:-1){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, BiCopPDF(i/10, j/10, fam, p)))}}}
+for(p in 1:9){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, BiCopPDF(i/10, j/10, fam, p)))}}}
+print("#")
+for(p in -9:-1){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, BiCopPDF(i/10, j/10, fam, p/10)))}}}
+for(p in 1:9){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, BiCopPDF(i/10, j/10, fam, p/10)))}}}
+sink()
+
+sink(paste(c(name, "H1.test"), collapse=""))
+for(p in -9:-1){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, BiCopHfunc1(i/10, j/10, fam, p)))}}}
+for(p in 1:9){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, BiCopHfunc1(i/10, j/10, fam, p)))}}}
+print("#")
+for(p in -9:-1){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, BiCopHfunc1(i/10, j/10, fam, p/10)))}}}
+for(p in 1:9){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, BiCopHfunc1(i/10, j/10, fam, p/10)))}}}
+sink()
+
+sink(paste(c(name, "H2.test"), collapse=""))
+for(p in -9:-1){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, BiCopHfunc2(i/10, j/10, fam, p)))}}}
+for(p in 1:9){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, BiCopHfunc2(i/10, j/10, fam, p)))}}}
+print("#")
+for(p in -9:-1){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, BiCopHfunc2(i/10, j/10, fam, p/10)))}}}
+for(p in 1:9){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, BiCopHfunc2(i/10, j/10, fam, p/10)))}}}
+sink()
+
+sink(paste(c(name, "H1inverse.test"), collapse=""))
+for(p in -9:-1){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, BiCopHinv1(i/10, j/10, fam, p)))}}}
+for(p in 1:9){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, BiCopHinv1(i/10, j/10, fam, p)))}}}
+print("#")
+for(p in -9:-1){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, BiCopHinv1(i/10, j/10, fam, p/10)))}}}
+for(p in 1:9){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, BiCopHinv1(i/10, j/10, fam, p/10)))}}}
+sink()
+
+sink(paste(c(name, "H2inverse.test"), collapse=""))
+for(p in -9:-1){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, BiCopHinv2(i/10, j/10, fam, p)))}}}
+for(p in 1:9){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, BiCopHinv2(i/10, j/10, fam, p)))}}}
+print("#")
+for(p in -9:-1){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, BiCopHinv2(i/10, j/10, fam, p/10)))}}}
+for(p in 1:9){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, BiCopHinv2(i/10, j/10, fam, p/10)))}}}
+sink()
+
+sink(paste(c(name, "Tau.test"), collapse=""))
+for(p in -9:-1){print(paste(p, BiCopPar2Tau(fam, p)))}
+for(p in 1:9){print(paste(p, BiCopPar2Tau(fam, p)))}
+print("#")
+for(p in -9:-1){print(paste(p, BiCopPar2Tau(fam, p/10)))}
+for(p in 1:9){print(paste(p, BiCopPar2Tau(fam, p/10)))}
 sink()

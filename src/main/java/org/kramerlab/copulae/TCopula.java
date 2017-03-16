@@ -8,11 +8,15 @@ import umontreal.ssj.probdistmulti.BiStudentDist;
 /**
  * This is the class to represent Student T copula family for RVines.
  * <br>
- * The Kendall's tau calculation is presented in J.F. Di&szlig;mann's diploma thesis (2010):
- * Statistical inference for regular vines and application.
+ * The Kendall's tau calculation was presented by H. B. Fang, K. T. Fang and S. Kotz (2002):
+ * The meta-elliptical distributions with given marginals.
  * <br>
- * The density function, the h-function and its inverse were
- * presented by K. Aas et al. (2009): Pair-copula constructions of
+ * The cumulative distribution function was presented in P.X.-K. Song (2000):
+ * Multivariate dispersion models generated from gaussian copula.
+ * <br>
+ * <br>
+ * The cumulative distribution function, the density function, the h-function
+ * and its inverse were presented by K. Aas et al. (2009): Pair-copula constructions of
  * multiple dependence.
  * 
  * @author Christian Lamberty (clamber@students.uni-mainz.de)
@@ -45,13 +49,21 @@ public class TCopula extends AbstractCopula{
 	public void setParams(double[] params){
 		super.setParams(params);
 		p = params[0];
-		if(params.length > 1)
+		if(params.length > 1){
 			v = (int) params[1];
+			t = new TDistribution(v);
+		}
 	}
 	
 	@Override
 	public double C(double x, double y) {
-		return BiStudentDist.cdf(v, x, y, p);
+		x = Utils.laplaceCorrection(x);
+		y = Utils.laplaceCorrection(y);
+		
+		double a = t.inverseCumulativeProbability(x);
+		double b = t.inverseCumulativeProbability(y);
+		
+		return BiStudentDist.cdf(v, a, b, p);
 	}
 	
 	@Override
@@ -80,6 +92,13 @@ public class TCopula extends AbstractCopula{
 		return hFunction(x, y);
 	}
 	
+	/**
+	 * H function for T Copula.
+	 * Since T Copula is symmetric, we don't need
+	 * separate h functions.
+	 * @param x, y input parameters.
+	 * @return returns the conditioned value x|y.
+	 */
 	public double hFunction(double x, double y) {
 		x = Utils.laplaceCorrection(x);
 		y = Utils.laplaceCorrection(y);

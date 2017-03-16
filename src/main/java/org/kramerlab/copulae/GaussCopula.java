@@ -7,8 +7,11 @@ import umontreal.ssj.probdistmulti.BiNormalDist;
 /**
  * This is the class to represent Gauss copula family for RVines.
  * <br>
- * The Kendall's tau calculation is presented in J.F. Di&szlig;mann's diploma thesis (2010):
- * Statistical inference for regular vines and application.
+ * The Kendall's tau calculation was presented by H. B. Fang, K. T. Fang and S. Kotz (2002):
+ * The meta-elliptical distributions with given marginals.
+ * <br>
+ * The cumulative distribution function was presented in P.X.-K. Song (2000):
+ * Multivariate dispersion models generated from gaussian copula.
  * <br>
  * The density function, the h-function and its inverse were
  * presented by K. Aas et al. (2009): Pair-copula constructions of
@@ -75,6 +78,13 @@ public class GaussCopula extends AbstractCopula{
 		return hFunction(x, y);
 	}
 	
+	/**
+	 * H function for Gauss Copula.
+	 * Since Gauss Copula is symmetric, we don't need
+	 * separate h functions.
+	 * @param x, y input parameters.
+	 * @return returns the conditioned value x|y.
+	 */
 	public double hFunction(double x, double y) {
 		x = Utils.laplaceCorrection(x);
 		y = Utils.laplaceCorrection(y);
@@ -93,6 +103,6 @@ public class GaussCopula extends AbstractCopula{
 	}
 	
 	public String name() {
-		return "Gauss";
+		return "G";
 	}
 }

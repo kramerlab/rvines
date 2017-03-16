@@ -5,12 +5,12 @@ import org.kramerlab.vines.Utils;
 /**
  * This is the class to represent Clayton copula family for RVines.
  * <br>
- * The Kendall's tau calculation is presented in J.F. Di&szlig;mann's diploma thesis (2010):
- * Statistical inference for regular vines and application.
+ * The Kendall's tau calculation was presented by M. Mahfoud and M. Michael (2012):
+ * Bivariate archimedean copulas: an application to two stock market indices.
  * <br>
- * The density function, the h-function and its inverse were
- * presented by K. Aas et al. (2009): Pair-copula constructions of
- * multiple dependence.
+ * The cumulative distribution function, the density function, the h-function
+ * and its inverse werepresented by K. Aas et al. (2009):
+ * Pair-copula constructions of multiple dependence.
  * <br>
  * The rotations are presented by Brechmann, E. C. & Schepsmeier, U. (2013):
  * Modeling dependence with C-and D-vine copulas: The R-package CDVine.
