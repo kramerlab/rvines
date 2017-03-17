@@ -1,8 +1,7 @@
 package org.kramerlab.copulae;
 
-import org.apache.commons.math3.distribution.TDistribution;
 import org.kramerlab.vines.Utils;
-
+import umontreal.ssj.probdist.StudentDist;
 import umontreal.ssj.probdistmulti.BiStudentDist;
 
 /**
@@ -22,7 +21,6 @@ import umontreal.ssj.probdistmulti.BiStudentDist;
  * @author Christian Lamberty (clamber@students.uni-mainz.de)
  */
 public class TCopula extends AbstractCopula{
-	private static TDistribution t;
 	private double p;
 	private int v;
 	
@@ -39,7 +37,6 @@ public class TCopula extends AbstractCopula{
 		super(params);
 		p = params[0];
 		v = (int) params[1];
-		t = new TDistribution(v);
 		lb = -1;
 		ub = 1;
 		indep = 0;
@@ -49,10 +46,8 @@ public class TCopula extends AbstractCopula{
 	public void setParams(double[] params){
 		super.setParams(params);
 		p = params[0];
-		if(params.length > 1){
+		if(params.length > 1)
 			v = (int) params[1];
-			t = new TDistribution(v);
-		}
 	}
 	
 	@Override
@@ -60,8 +55,8 @@ public class TCopula extends AbstractCopula{
 		x = Utils.laplaceCorrection(x);
 		y = Utils.laplaceCorrection(y);
 		
-		double a = t.inverseCumulativeProbability(x);
-		double b = t.inverseCumulativeProbability(y);
+		double a = StudentDist.inverseF(v, x);
+		double b = StudentDist.inverseF(v, y);
 		
 		return BiStudentDist.cdf(v, a, b, p);
 	}
@@ -71,13 +66,16 @@ public class TCopula extends AbstractCopula{
 		x = Utils.laplaceCorrection(x);
 		y = Utils.laplaceCorrection(y);
 		
-		double a = t.inverseCumulativeProbability(x);
-		double b = t.inverseCumulativeProbability(y);
+		double a = StudentDist.inverseF(v, x);
+		double b = StudentDist.inverseF(v, y);
 		
 		double pp = p*p;
 		
+		double ad = StudentDist.density(v, a);
+		double bd = StudentDist.density(v, b);
+		
 		double out = Math.pow(1 + (a*a + b*b - 2*p*a*b)/(v*(1-pp)), -(v+2)/2.0)
-				/(2*Math.PI*t.density(a)*t.density(b)*Math.sqrt(1-pp));
+				/(2*Math.PI*ad*bd*Math.sqrt(1-pp));
 		
 		return out;
 	}
@@ -103,12 +101,10 @@ public class TCopula extends AbstractCopula{
 		x = Utils.laplaceCorrection(x);
 		y = Utils.laplaceCorrection(y);
 		
-		double a = t.inverseCumulativeProbability(x);
-		double b = t.inverseCumulativeProbability(y);
+		double a = StudentDist.inverseF(v, x);
+		double b = StudentDist.inverseF(v, y);
 		
-		TDistribution t2 = new TDistribution(v+1);
-		
-		double out = t2.cumulativeProbability((a-p*b)/Math.sqrt(((v+b*b)*(1-p*p))/(v+1)));
+		double out = StudentDist.cdf(v+1, ((a-p*b)/Math.sqrt(((v+b*b)*(1-p*p))/(v+1))));
 		return out;
 	}
 

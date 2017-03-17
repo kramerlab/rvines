@@ -177,3 +177,83 @@ print("#")
 for(p in -9:-1){print(paste(p, BiCopPar2Tau(fam, p/10)))}
 for(p in 1:9){print(paste(p, BiCopPar2Tau(fam, p/10)))}
 sink()
+
+(Suitable for FGM)
+
+library(vines)
+
+name = "FGM"
+
+sink(paste(c(name, "CDF.test"), collapse=""))
+for(p in 1:19){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, pCopula(c(i/10, j/10), fgmCopula(p/10-1))))}}}
+sink()
+
+sink(paste(c(name, "PDF.test"), collapse=""))
+for(p in 1:19){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, dCopula(c(i/10, j/10), fgmCopula(p/10-1))))}}}
+sink()
+
+sink(paste(c(name, "H1.test"), collapse=""))
+for(p in 1:19){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, h(fgmCopula(p/10-1), j/10, i/10)))}}}
+sink()
+
+sink(paste(c(name, "H2.test"), collapse=""))
+for(p in 1:19){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, h(fgmCopula(p/10-1), i/10, j/10)))}}}
+sink()
+
+sink(paste(c(name, "H1inverse.test"), collapse=""))
+for(p in 1:19){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, hinverse(fgmCopula(p/10-1), j/10, i/10)))}}}
+sink()
+
+sink(paste(c(name, "H2inverse.test"), collapse=""))
+for(p in 1:19){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, hinverse(fgmCopula(p/10-1), i/10, j/10)))}}}
+sink()
+
+sink(paste(c(name, "Tau.test"), collapse=""))
+for(p in 1:19){print(paste(p, tau(fgmCopula(p/10-1))))}
+sink()
+
+(Suitable for Galambos)
+
+name = "Galambos"
+
+sink(paste(c(name, "CDF.test"), collapse=""))
+for(p in 1:9){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, pCopula(c(i/10, j/10), galambosCopula(p))))}}}
+print("#")
+for(p in 1:9){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, pCopula(c(i/10, j/10), galambosCopula(1/p))))}}}
+sink()
+
+sink(paste(c(name, "PDF.test"), collapse=""))
+for(p in 1:9){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, dCopula(c(i/10, j/10), galambosCopula(p))))}}}
+print("#")
+for(p in 1:9){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, dCopula(c(i/10, j/10), galambosCopula(1/p))))}}}
+sink()
+
+sink(paste(c(name, "H1.test"), collapse=""))
+for(p in 1:9){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, h(galambosCopula(p), j/10, i/10)))}}}
+print("#")
+for(p in 1:9){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, h(galambosCopula(1/p), j/10, i/10)))}}}
+sink()
+
+sink(paste(c(name, "H2.test"), collapse=""))
+for(p in 1:9){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, h(galambosCopula(p), i/10, j/10)))}}}
+print("#")
+for(p in 1:9){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, h(galambosCopula(1/p), i/10, j/10)))}}}
+sink()
+
+sink(paste(c(name, "H1inverse.test"), collapse=""))
+for(p in 1:9){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, hinverse(galambosCopula(p), j/10, i/10)))}}}
+print("#")
+for(p in 1:9){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, hinverse(galambosCopula(1/p), j/10, i/10)))}}}
+sink()
+
+sink(paste(c(name, "H2inverse.test"), collapse=""))
+for(p in 1:9){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, hinverse(galambosCopula(p), i/10, j/10)))}}}
+print("#")
+for(p in 1:9){for(i in 1:9){for(j in 1:9){print(paste(p, i, j, hinverse(galambosCopula(1/p), i/10, j/10)))}}}
+sink()
+
+sink(paste(c(name, "Tau.test"), collapse=""))
+for(p in 1:9){print(paste(p, tau(galambosCopula(p))))}
+print("#")
+for(p in 1:9){print(paste(p, tau(galambosCopula(1/p))))}
+sink()

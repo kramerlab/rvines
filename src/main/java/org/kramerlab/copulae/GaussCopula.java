@@ -1,7 +1,7 @@
 package org.kramerlab.copulae;
 
-import org.apache.commons.math3.distribution.NormalDistribution;
 import org.kramerlab.vines.Utils;
+import umontreal.ssj.probdist.NormalDist;
 import umontreal.ssj.probdistmulti.BiNormalDist;
 
 /**
@@ -20,7 +20,6 @@ import umontreal.ssj.probdistmulti.BiNormalDist;
  * @author Christian Lamberty (clamber@students.uni-mainz.de)
  */
 public class GaussCopula extends AbstractCopula{
-	private static NormalDistribution standardNormal = new NormalDistribution();
 	private double p;
 	
 	/**
@@ -49,8 +48,8 @@ public class GaussCopula extends AbstractCopula{
 		x = Utils.laplaceCorrection(x);
 		y = Utils.laplaceCorrection(y);
 		
-		double a = standardNormal.inverseCumulativeProbability(x);
-		double b = standardNormal.inverseCumulativeProbability(y);
+		double a = NormalDist.inverseF01(x);
+		double b = NormalDist.inverseF01(y);
 		
 		return BiNormalDist.cdf(a, b, p);
 	}
@@ -59,8 +58,8 @@ public class GaussCopula extends AbstractCopula{
 		x = Utils.laplaceCorrection(x);
 		y = Utils.laplaceCorrection(y);
 		
-		double a = standardNormal.inverseCumulativeProbability(x);
-		double b = standardNormal.inverseCumulativeProbability(y);
+		double a = NormalDist.inverseF01(x);
+		double b = NormalDist.inverseF01(y);
 		
 		double pp = p*p;
 		
@@ -89,10 +88,10 @@ public class GaussCopula extends AbstractCopula{
 		x = Utils.laplaceCorrection(x);
 		y = Utils.laplaceCorrection(y);
 		
-		double a = standardNormal.inverseCumulativeProbability(x);
-		double b = standardNormal.inverseCumulativeProbability(y);
+		double a = NormalDist.inverseF01(x);
+		double b = NormalDist.inverseF01(y);
 		
-		double out = standardNormal.cumulativeProbability(
+		double out = NormalDist.cdf01(
 				( a-p*b ) / Math.sqrt(1-p*p) );
 		
 		return out;

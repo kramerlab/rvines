@@ -6,8 +6,11 @@ import org.kramerlab.functions.H2;
 import org.kramerlab.vines.Utils;
 
 /**
- * This is a placeholder for the Galambos copula family.
- * It is not implemented yet.
+ * This is the class to represent Galambos copula family for RVines.
+ * <br>
+ * The cumulative distribution function, the density function and the 
+ * h-function were presented by D. Schirmacher and E. Schirmacher (2008):
+ * Multivariate dependence modeling using pair-copulas.
  * 
  * @author Christian Lamberty (clamber@students.uni-mainz.de)
  */
@@ -24,9 +27,23 @@ public class GalambosCopula extends AbstractCopula{
 	}
 
 	@Override
+	public void setParams(double[] params){
+		super.setParams(params);
+		d = params[0];
+	}
+	
+	@Override
 	public double C(double x, double y) {
-		// TODO Auto-generated method stub
-		return 0;
+		x = Utils.laplaceCorrection(x);
+		y = Utils.laplaceCorrection(y);
+		
+		double xl = -Math.log(x);
+		double yl = -Math.log(y);
+		
+		double xt = Math.pow(xl, -d);
+		double yt = Math.pow(yl, -d);
+		
+		return x*y*Math.exp(Math.pow(xt+yt, -1/d));
 	}
 	
 	@Override
@@ -34,17 +51,18 @@ public class GalambosCopula extends AbstractCopula{
 		x = Utils.laplaceCorrection(x);
 		y = Utils.laplaceCorrection(y);
 		
-		double out = Math.exp(Math.pow(Math.pow(-Math.log(x), -d)
-				+Math.pow(-Math.log(y), -d), -1/d));
+		double xl = -Math.log(x);
+		double yl = -Math.log(y);
 		
-		out = out*(1-Math.pow(Math.pow(-Math.log(x), -d) + Math.pow(-Math.log(y), -d), -1-1/d)
-				*(Math.pow(-Math.log(x), -d-1) + Math.pow(-Math.log(y), -d-1))
-				+Math.pow(Math.pow(-Math.log(x), -d) + Math.pow(-Math.log(y), -d), -2-1/d)
-				*Math.pow(Math.log(x)* Math.log(y), -d-1)
-				*(1+d+Math.pow(Math.pow(-Math.log(x), -d) + Math.pow(-Math.log(y), -d), -1/d)));
+		double xt = Math.pow(xl, -d);
+		double yt = Math.pow(yl, -d);
 		
-		if(out < 0 && Math.abs(out) < Math.pow(10, -10))
-			return 0;
+		double xtyt = xt+yt;
+		double xtytd = Math.pow(xt+yt, -1/d);
+		
+		double out = Math.exp(xtytd)*(1 - xtytd/xtyt * (xt/xl + yt/yl)
+				+ xtytd/(xtyt*xtyt)*Math.pow(xl*yl, -d-1)*(1+d+xtytd));
+		
 		return out;
 	}
 	
@@ -62,13 +80,15 @@ public class GalambosCopula extends AbstractCopula{
 		x = Utils.laplaceCorrection(x);
 		y = Utils.laplaceCorrection(y);
 		
-		double out = x*Math.exp(Math.pow(Math.pow(-Math.log(x), -d)
-				+Math.pow(-Math.log(y), -d), -1/d));
+		double xl = -Math.log(x);
+		double yl = -Math.log(y);
 		
-		out = out*(1-Math.pow(1+
-				Math.pow(Math.log(y)/Math.log(x), d), -1-1/d));
+		double xt = Math.pow(xl, -d);
+		double yt = Math.pow(yl, -d);
 		
-		return out;
+		return x*Math.exp(Math.pow(xt+yt, -1/d))*
+				(1 - Math.pow(1 + xt/yt, -1-1/d));
+		
 	}
 	
 	@Override

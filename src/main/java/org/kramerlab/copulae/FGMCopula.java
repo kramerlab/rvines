@@ -1,7 +1,5 @@
 package org.kramerlab.copulae;
 
-import org.kramerlab.functions.H1;
-import org.kramerlab.functions.H2;
 import org.kramerlab.vines.Utils;
 
 /**
@@ -40,8 +38,10 @@ public class FGMCopula extends AbstractCopula{
 	
 	@Override
 	public double C(double x, double y) {
-		// TODO Auto-generated method stub
-		return 0;
+		x = Utils.laplaceCorrection(x);
+		y = Utils.laplaceCorrection(y);
+		
+		return x*y+d*x*y*(1-x)*(1-y);
 	}
 	
 	@Override
@@ -49,9 +49,7 @@ public class FGMCopula extends AbstractCopula{
 		x = Utils.laplaceCorrection(x);
 		y = Utils.laplaceCorrection(y);
 		
-		double out = 1+d*(1-2*x)*(1-2*y);
-		
-		return out;
+		return 1+d*(1-2*x)*(1-2*y);
 	}
 	
 	@Override
@@ -68,9 +66,7 @@ public class FGMCopula extends AbstractCopula{
 		x = Utils.laplaceCorrection(x);
 		y = Utils.laplaceCorrection(y);
 		
-		double out = x*(1+d*(1-x)*(1-2*y));
-		
-		return out;
+		return x*(1+d*(1-x)*(1-2*y));
 	}
 	
 	@Override
