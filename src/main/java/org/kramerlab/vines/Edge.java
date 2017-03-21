@@ -15,6 +15,7 @@ public class Edge {
 	private Node to;
 	private double weight;
 	private Copula copula;
+	private String label;
 	
 	/**
 	 * Constructor
@@ -82,5 +83,13 @@ public class Edge {
 	 */
 	public void setCopula(Copula copula) {
 		this.copula = copula;
+	}
+
+	public String getLabel() {
+		return label;
+	}
+
+	public void setLabel(String label) {
+		this.label = label;
 	}
 }

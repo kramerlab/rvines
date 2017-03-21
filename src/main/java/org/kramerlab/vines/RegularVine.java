@@ -40,6 +40,16 @@ public class RegularVine extends AbstractClassifier {
 	private Copula[][] copulae;
 	private double[][] p;
 	private double[][] tau;
+	private boolean[] chosenCopulae = new boolean[]{true, true, true, true, true, true, true, true};
+	private boolean timestamps = false;
+	
+	public RegularVine(){
+		chosenCopulae = new boolean[]{true, true, true, true, true, true, true, true};
+	}
+	
+	public RegularVine(boolean[] chosenCopulae){
+		this.chosenCopulae = chosenCopulae;
+	}
 	
 	/**
 	 * Build the RVine classifier on a given training dataset.
@@ -71,6 +81,14 @@ public class RegularVine extends AbstractClassifier {
 			}
 		}
 		
+		double start = System.currentTimeMillis();
+		double stamp = start;
+		
+		if(timestamps){
+			System.out.println("Building T1 ...");
+			System.out.print("\t Compute Kendall's tau... ");
+		}
+		
 		//calculate kendall's tau and add edges to graph
 		for(Node i : g.getNodeList()){
 			for(Node j : g.getNodeList()){
@@ -81,15 +99,28 @@ public class RegularVine extends AbstractClassifier {
 			}
 		}
 		
+		if(timestamps){
+			double time = System.currentTimeMillis();
+			System.out.println("finished! ~ "+(time-stamp)+"ms");
+			System.out.print("\t Compute max. spanning tree... ");
+			stamp = time;
+		}
+		
 		//calculate maximal spanning tree of graph
 		g = Utils.maxSpanTree(g);
+		
+		if(timestamps){
+			double time = System.currentTimeMillis();
+			System.out.println("finished! ~ "+(time-stamp)+"ms");
+			System.out.print("\t Compute fitting Copulae... ");
+			stamp = time;
+		}
 		
 		//add graph to rvine
 		rvine.add(g);
 		
 		//until regular vine is fully specified, do:
 		for(int count = 1; count < data.numAttributes()-1; count++){
-			//System.out.println("Built T"+count);
 			
 			//prepare next graph
 			Graph g2 = new Graph();
@@ -113,14 +144,21 @@ public class RegularVine extends AbstractClassifier {
 				}
 
 				//estimate best copula with parameters
-				Copula c = Utils.goodnessOfFit(null, a, b);
+				Copula c = Utils.fitCopula(Utils.copulae(chosenCopulae), a, b);
 
 				e.setCopula(c);
 
 				//create new node out of the edges
 				Node n = mergeNodes(e);
-				//System.out.println("Created Node: "+n);
 				g2.addNode(n);
+			}
+			
+			if(timestamps){
+				double time = System.currentTimeMillis();
+				System.out.println("finished! ~ "+(time-stamp)+"ms");
+				System.out.println("Building T"+(count+1)+"... ");
+				System.out.print("\t Compute Kendall's tau... ");
+				stamp = time;
 			}
 			
 			//calculate kendall's tau and add edges to graph,
@@ -152,8 +190,22 @@ public class RegularVine extends AbstractClassifier {
 				}
 			}
 			
+			if(timestamps){
+				double time = System.currentTimeMillis();
+				System.out.println("finished! ~ "+(time-stamp)+"ms");
+				System.out.print("\t Compute max. spanning tree... ");
+				stamp = time;
+			}
+			
 			//calculate maximal spanning tree of graph
 			g2 = Utils.maxSpanTree(g2);
+			
+			if(timestamps){
+				double time = System.currentTimeMillis();
+				System.out.println("finished! ~ "+(time-stamp)+"ms");
+				System.out.print("\t Compute fitting Copulae... ");
+				stamp = time;
+			}
 			
 			//add graph to rvine
 			rvine.add(g2);
@@ -179,12 +231,30 @@ public class RegularVine extends AbstractClassifier {
 			}
 			
 			//estimate best copula with parameters
-			Copula c = Utils.goodnessOfFit(null, a, b);
+			Copula c = Utils.fitCopula(Utils.copulae(chosenCopulae), a, b);
 			e.setCopula(c);
+			
+			//just to add label to the last edge
+			mergeNodes(e);
+		}
+		
+		if(timestamps){
+			double time = System.currentTimeMillis();
+			System.out.println("finished! ~ "+(time-stamp)+"ms");
+			System.out.print("Building Matrices... ");
+			stamp = time;
 		}
 		
 		createRVineMatrix();
 		createParameterMatrix();
+		
+		if(timestamps){
+			double time = System.currentTimeMillis();
+			System.out.println("finished! ~ "+(time-stamp)+"ms");
+			System.out.println("Total time: "+(time-start)+"ms");
+			System.out.println();
+		}
+		
 	}
 	
 	/**
@@ -292,7 +362,11 @@ public class RegularVine extends AbstractClassifier {
 		C.addAll(U_b);
 		C.removeAll(D);
 		
-		return new Node(C,D);
+		Node n = new Node(C,D);
+		
+		e.setLabel(n.getName());
+		
+		return n;
 	}
 	
 	/**
@@ -396,7 +470,7 @@ public class RegularVine extends AbstractClassifier {
 			int xr = x.get(1);
 			
 			//This is how to influence the order of the RVine Matrix
-			if(i == 2 || i == 5 || i == 6 || i == 11 || i == 12){
+			if(i == 2 || i == 5 || i == 7){
 				xl =x.get(1);
 				xr = x.get(0);
 			}
@@ -451,7 +525,8 @@ public class RegularVine extends AbstractClassifier {
 						// add the parameter to the parameter-matrix
 						copulae[i][k] = e.getCopula();
 						tau[i][k] = e.getWeight();
-						p[i][k] = e.getCopula().getParams()[0];
+						if(e.getCopula().getParams().length > 0)
+							p[i][k] = e.getCopula().getParams()[0];
 					}
 				}
 			}

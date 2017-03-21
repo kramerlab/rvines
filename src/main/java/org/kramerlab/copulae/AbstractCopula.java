@@ -13,9 +13,9 @@ import org.kramerlab.vines.Utils;
 public abstract class AbstractCopula implements Copula{
 	protected double[] params;
 	public final static double tol = Math.pow(10, -6);
-	public static double lb = -1;
-	public static double ub = 1;
-	public static double indep = 0;
+	public double lb = -1;
+	public double ub = 1;
+	public double indep = 0;
 	
 	/**
 	 * Constructor

@@ -66,7 +66,7 @@ public class VineServlet extends HttpServlet {
 			
 			DataSource source = new DataSource(
 					"src"+File.separator+"main"+File.separator+
-					"data"+File.separator+"daxreturns.arff");
+					"data"+File.separator+"random"+File.separator+"random2.arff");
 			instances = source.getDataSet();
 			instances.setClassIndex(0);
 			rvine.buildClassifier(instances);
@@ -183,103 +183,105 @@ public class VineServlet extends HttpServlet {
 	 */
 	public static void main(String[] args){
 		VineServlet vs = new VineServlet();
-		double start = System.currentTimeMillis();
 		vs.initialize();
-		double end = System.currentTimeMillis();
 		
-		System.out.println("Time : "+(end-start)+" ms");
+		boolean matrixOut = false;
 		
 		System.out.println("Log-Likelihood : "
 				+vs.rvine.logLikelihood(vs.instances));
 		System.out.println();
-		int[][] m = vs.rvine.getRVineMatrix();
 		
-		System.out.println("RVine - Matrix");
-		for(int i=0;i<m.length;i++){
-			for(int j=0;j<m.length;j++){
-				if(j < m.length-1){
-					System.out.print(m[i][j]+"\t&\t");
-				}else{
-					System.out.print(m[i][j]+"\\\\");
+		if(matrixOut){
+			int[][] m = vs.rvine.getRVineMatrix();
+			
+			System.out.println("RVine - Matrix");
+			for(int i=0;i<m.length;i++){
+				for(int j=0;j<m.length;j++){
+					if(j < m.length-1){
+						System.out.print(m[i][j]+"\t&\t");
+					}else{
+						System.out.print(m[i][j]+"\\\\");
+					}
+				}
+				System.out.println();
+			}
+			
+			System.out.println();
+			System.out.println();
+			double[][] p = vs.rvine.getParameterMatrix();
+			
+			System.out.println("Parameter - Matrix");
+			for(int i=0;i<p.length;i++){
+				for(int j=0;j<p.length;j++){
+					double val = Math.round(p[i][j]*1000)/1000.0;
+					String out = "";
+					if( (int) val == val){
+						out = Integer.toString( (int) val);
+					}else{
+						out = String.valueOf(val);
+					}
+					if(j<p.length-1){
+						System.out.print(out+"\t&\t");
+					}else{
+						System.out.print(out+"\\\\");
+					}
+				}
+				System.out.println();
+			}
+			
+			System.out.println();
+			System.out.println();
+			Copula[][] cop = vs.rvine.getCopulaMatrix();
+			
+			System.out.println("Family - Matrix");
+			for(int i=0;i<p.length;i++){
+				for(int j=0;j<p.length;j++){
+					Copula c = cop[i][j];
+					String out = "-";
+					if(c != null){
+						out = c.name();
+					}
+					
+					if(j<p.length-1){
+						System.out.print(out+"\t&\t");
+					}else{
+						System.out.print(out+"\\\\");
+					}
+				}
+				System.out.println();
+			}
+			
+			System.out.println();
+			System.out.println();
+			double[][] tau = vs.rvine.getTauMatrix();
+			
+			System.out.println("Tau - Matrix");
+			for(int i=0;i<p.length;i++){
+				for(int j=0;j<p.length;j++){
+					double out = tau[i][j];
+					
+					if(j<p.length-1){
+						System.out.print(out+"\t&\t");
+					}else{
+						System.out.print(out+"\\\\");
+					}
+				}
+				System.out.println();
+			}
+		}else{
+			for(int i=0; i<vs.rvine.getRegularVine().size(); i++){
+				Graph g = vs.rvine.getRegularVine().get(i);
+				System.out.println("Tree "+(i+1)+":");
+				for(Edge e : g.getUndirectedEdgeList()){
+					System.out.print(e.getLabel()+" : "+e.getCopula().name()+" ( par1= "+round(e.getCopula().getParams()[0]));
+					if (e.getCopula().getParams().length == 2) System.out.print(", par2="+round(e.getCopula().getParams()[1]));
+					System.out.println(", tau="+round(e.getCopula().tau())+", emptau="+round(e.getWeight())+")");
 				}
 			}
-			System.out.println();
 		}
-		
-		System.out.println();
-		System.out.println();
-		double[][] p = vs.rvine.getParameterMatrix();
-		
-		System.out.println("Parameter - Matrix");
-		for(int i=0;i<p.length;i++){
-			for(int j=0;j<p.length;j++){
-				double val = Math.round(p[i][j]*1000)/1000.0;
-				String out = "";
-				if( (int) val == val){
-					out = Integer.toString( (int) val);
-				}else{
-					out = String.valueOf(val);
-				}
-				if(j<p.length-1){
-					System.out.print(out+"\t&\t");
-				}else{
-					System.out.print(out+"\\\\");
-				}
-			}
-			System.out.println();
-		}
-		
-		System.out.println();
-		System.out.println();
-		Copula[][] cop = vs.rvine.getCopulaMatrix();
-		
-		System.out.println("Mode - Matrix");
-		for(int i=0;i<p.length;i++){
-			for(int j=0;j<p.length;j++){
-				Copula c = cop[i][j];
-				String out = "-";
-				if(c != null){
-					out = c.name();
-				}
-				
-				if(j<p.length-1){
-					System.out.print(out+"\t&\t");
-				}else{
-					System.out.print(out+"\\\\");
-				}
-			}
-			System.out.println();
-		}
-		
-		System.out.println();
-		System.out.println();
-		double[][] tau = vs.rvine.getTauMatrix();
-		
-		System.out.println("Tau - Matrix");
-		for(int i=0;i<p.length;i++){
-			for(int j=0;j<p.length;j++){
-				double out = tau[i][j];
-				
-				if(j<p.length-1){
-					System.out.print(out+"\t&\t");
-				}else{
-					System.out.print(out+"\\\\");
-				}
-			}
-			System.out.println();
-		}
-		
-//		System.out.println();
-//		System.out.println("Random Sample");
-//		double[] x = vs.rvine.createRandomSample();
-//		for(int i=0;i<x.length;i++){
-//				System.out.print(x[i]+"\t");
-//		}
-//		
-//		System.out.println();
-//		for(int i=0;i<20;i++){
-//			System.out.println(vs.instances.get(0).classValue()+" predicted: "
-//					+vs.rvine.classifyInstance(vs.instances.get(0)));
-//		}
+	}
+	
+	private static double round(double val){
+		return Math.round(val*1000)/1000.0;
 	}
 }

@@ -153,6 +153,89 @@ public class Utils{
 		return (P-Q) / Math.sqrt(n*m);
 	}
 	
+	public static Copula[] copulae(boolean[] c){
+		int k=0;
+		/*
+		 * 0 - Independence Copula
+		 * 1 - Gauss Copula
+		 * 2 - T Copula
+		 * 3 - Clayton Copula
+		 * 4 - Frank Copula
+		 * 5 - Gumbel Copula
+		 * 6 - FGM Copula
+		 * 7 - Galambos Copula
+		 */
+		
+		for(int i=0; i<c.length; i++){
+			if(c[i]){
+				// rotations for Clayton (3) and Gumbel (5)
+				if(i==3 || i==5) k+=3;
+				k++;
+			}
+		}
+		
+		Copula[] out = new Copula[k];
+		
+		k=0;
+		for(int i=0; i<c.length; i++){
+			if(c[i]){
+				if(i==0) out[k] = new IndependenceCopula();
+				if(i==1) out[k] = new GaussCopula(new double[]{0.5});
+				if(i==2) out[k] = new TCopula(new double[]{0.5, 1});
+				if(i==3){
+					out[k] = new ClaytonCopula(new double[]{2});
+					ClaytonCopula c1 = new ClaytonCopula(new double[]{-2});
+					c1.changeMode(1);
+					out[k+1] = c1;
+					ClaytonCopula c2 = new ClaytonCopula(new double[]{2});
+					c2.changeMode(2);
+					out[k+2] = c2;
+					ClaytonCopula c3 = new ClaytonCopula(new double[]{-2});
+					c3.changeMode(3);
+					out[k+3] = c3;
+					k+=3;
+				}
+				if(i==4) out[k] = new FrankCopula(new double[]{0.5});
+				if(i==5){
+					out[k] = new GumbelCopula(new double[]{3});
+					GumbelCopula c1 = new GumbelCopula(new double[]{-3});
+					c1.changeMode(1);
+					out[k+1] = c1;
+					GumbelCopula c2 = new GumbelCopula(new double[]{3});
+					c2.changeMode(2);
+					out[k+2] = c2;
+					GumbelCopula c3 = new GumbelCopula(new double[]{-3});
+					c3.changeMode(3);
+					out[k+3] = c3;
+					k+=3;
+				}
+				if(i==6) out[k] = new FGMCopula(new double[]{0});
+				if(i==7) out[k] = new GalambosCopula(new double[]{0});
+				k++;
+			}
+		}
+		
+		return out;
+	}
+	
+	public static Copula fitCopula(Copula[] copulae,
+			double[] a, double[] b){
+		
+		double[] lls = new double[copulae.length];
+		
+		for(int i=0; i<copulae.length; i++){
+			Copula c = copulae[i];
+			lls[i] = c.mle(a, b);
+		}
+		
+		int out = 0;
+		for(int i=1; i<copulae.length; i++){
+			if(lls[out] < lls[i]) out = i;
+		}
+		
+		return copulae[out];
+	}
+	
 	/**
 	 * This is a placeholder for a goodness of fit test.
 	 * <br>
@@ -189,20 +272,42 @@ public class Utils{
 	//Bootstrap method for p-value computation
 	private static double pValue(Copula c, double[] a, double[] b){
 		int N = 100;
+		int n = a.length;
 		
 		c.mle(a, b);
 		
 		double sn = 0;
-		for(int i=0; i<N; i++){
+		for(int i=0; i<n; i++){
 			sn += Math.pow(empCop(a, b, a[i], b[i]) - c.C(a[i], b[i]), 2);
 		}
 		
+		int hitCount = 0;
 		
-		for(int i=0; i<N; i++){
+		for(int k=0; k<N; k++){
+			// generate random samples
+			double[] a2 = new double[n];
+			double[] b2 = new double[n];
+			
+			for(int i=0; i<n; i++){
+				a2[i] = Math.random();
+				b2[i] = c.h2inverse(a2[i], Math.random());
+			}
+			
+			double[] u1 = rankNormalization(a2);
+			double[] u2 = rankNormalization(b2);
+			
+			c.mle(u1, u2);
+			
+			double sn2 = 0;
+			for(int i=0; i<n; i++){
+				sn2 += Math.pow(empCop(u1, u2, u1[i], u2[i]) - c.C(u1[i], u2[i]), 2);
+			}
+			
+			if(sn2 > sn) hitCount++;
 			
 		}
 		
-		return 0;
+		return hitCount/((double) N);
 	}
 	
 	private static double empCop(double[] a, double[] b, double x, double y){

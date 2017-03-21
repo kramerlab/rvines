@@ -28,6 +28,9 @@ public class FGMCopula extends AbstractCopula{
 	public FGMCopula(double[] params) {
 		super(params);
 		d = params[0];
+		lb = -1;
+		ub = 1;
+		indep = 0;
 	}
 
 	@Override

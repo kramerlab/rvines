@@ -26,8 +26,7 @@ public class IndependenceCopula extends AbstractCopula{
 
 	@Override
 	public double C(double x, double y) {
-		// TODO Auto-generated method stub
-		return 0;
+		return x*y;
 	}
 	
 	@Override
@@ -50,23 +49,13 @@ public class IndependenceCopula extends AbstractCopula{
 	}
 	
 	@Override
-	public double h1inverse(double x, double y) {
-		return hFunction(y, x);
-	}
-
-	@Override
-	public double h2inverse(double x, double y) {
-		return hFunction(x, y);
-	}
-	
-	@Override
 	public double tau() {
 		return 0;
 	}
 
 	@Override
 	public String name() {
-		return "Independence";
+		return "In";
 	}
 
 	@Override
