@@ -1,6 +1,8 @@
 package org.kramerlab.copulae;
 
+import org.kramerlab.functions.CopulaMLE;
 import org.kramerlab.vines.Utils;
+
 import umontreal.ssj.probdist.NormalDist;
 import umontreal.ssj.probdistmulti.BiNormalDist;
 
@@ -95,6 +97,30 @@ public class GaussCopula extends AbstractCopula{
 				( a-p*b ) / Math.sqrt(1-p*p) );
 		
 		return out;
+	}
+	
+	private double tauInv(double tau){
+		return Math.sin(tau*Math.PI/2);
+	}
+	
+	@Override
+	public double mle(double[] a, double[] b){
+		double tau = Utils.kendallsTau(a, b);
+		
+		CopulaMLE cmle = new CopulaMLE(this, a, b);
+		double[] initX = new double[]{tauInv(tau)};
+		double[][] constr;
+		if(tau > 0)
+			constr = new double[][]{{0.0001}, {0.9999}};
+		else
+			constr = new double[][]{{-0.9999}, {-0.0001}};
+		
+		try {
+			cmle.findArgmin(initX, constr);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return -cmle.getMinFunction();
 	}
 	
 	public double tau(){

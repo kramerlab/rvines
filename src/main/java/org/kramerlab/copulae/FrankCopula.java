@@ -1,5 +1,6 @@
 package org.kramerlab.copulae;
 
+import org.kramerlab.functions.CopulaMLE;
 import org.kramerlab.functions.debyeSub;
 import org.kramerlab.vines.Utils;
 
@@ -110,7 +111,27 @@ public class FrankCopula extends AbstractCopula{
 		if(d == 0) return 0;
 		return 1 - 4 / d * (1 - debye1(d));
 	}
-
+	
+	@Override
+	public double mle(double[] a, double[] b){
+		double tau = Utils.kendallsTau(a, b);
+		
+		CopulaMLE cmle = new CopulaMLE(this, a, b);
+		double[] initX = new double[]{tau > 0 ? 2 : -2};
+		double[][] constr;
+		if(tau > 0)
+			constr = new double[][]{{0.0001}, {Double.POSITIVE_INFINITY}};
+		else
+			constr = new double[][]{{Double.NEGATIVE_INFINITY}, {-0.0001}};
+		
+		try {
+			cmle.findArgmin(initX, constr);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return -cmle.getMinFunction();
+	}
+	
 	/**
 	 * Debye1 function for tau calculation.
 	 * @param x input parameter.

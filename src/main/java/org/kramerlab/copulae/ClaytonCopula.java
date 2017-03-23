@@ -1,5 +1,6 @@
 package org.kramerlab.copulae;
 
+import org.kramerlab.functions.CopulaMLE;
 import org.kramerlab.vines.Utils;
 
 /**
@@ -223,6 +224,42 @@ public class ClaytonCopula extends AbstractCopula{
 		return d/(-d+2);
 	}
 
+	private double tauInv(double tau){
+		if(mode==0 || mode == 2)
+			return 2/(1-tau)-2;
+		return 2-2/(1+tau);
+	}
+	
+	@Override
+	public double mle(double[] a, double[] b){
+		double tau = Utils.kendallsTau(a, b);
+		
+		// 90 and 270 rotated can't model positive dependency
+		if(tau > 0 && (mode==1 || mode==3)){
+			return Double.NEGATIVE_INFINITY;
+		}
+		
+		// 0 and 180 rotated can't model negative dependency
+		if(tau < 0 && (mode==0 || mode==2)){
+			return Double.NEGATIVE_INFINITY;
+		}
+		
+		CopulaMLE cmle = new CopulaMLE(this, a, b);
+		double[] initX = new double[]{tauInv(tau)};
+		double[][] constr;
+		if(mode==0 || mode==2)
+			constr = new double[][]{{1.0001}, {Double.POSITIVE_INFINITY}};
+		else
+			constr = new double[][]{{Double.NEGATIVE_INFINITY}, {-1.0001}};
+		
+		try {
+			cmle.findArgmin(initX, constr);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return -cmle.getMinFunction();
+	}
+	
 	@Override
 	public String name() {
 		return "C"+modes[mode];

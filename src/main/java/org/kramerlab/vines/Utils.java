@@ -15,6 +15,7 @@ import org.kramerlab.copulae.*;
  */
 public class Utils{
 	private static boolean debug = false;
+	private static boolean timestamps = true;
 	
 	/**
 	 * Get the maximum spanning tree.

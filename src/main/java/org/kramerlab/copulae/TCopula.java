@@ -1,8 +1,11 @@
 package org.kramerlab.copulae;
 
+import org.kramerlab.functions.CopulaMLE;
 import org.kramerlab.vines.Utils;
+
 import umontreal.ssj.probdist.StudentDist;
 import umontreal.ssj.probdistmulti.BiStudentDist;
+import umontreal.ssj.util.SystemTimeChrono;
 
 /**
  * This is the class to represent Student T copula family for RVines.
@@ -108,8 +111,28 @@ public class TCopula extends AbstractCopula{
 		return out;
 	}
 
+	private double tauInv(double tau){
+		return Math.sin(tau*Math.PI/2);
+	}
+	
 	@Override
 	public double mle(double[] a, double[] b){
+		double tau = Utils.kendallsTau(a, b);
+		
+		CopulaMLE cmle = new CopulaMLE(this, a, b);
+		cmle.setMaxIteration(1000);
+		double[] initX = new double[]{tauInv(tau), 8};
+		double[][] constr= new double[][]{{-0.9999, 1}, {0.9999, 30}};
+		
+		try {
+			cmle.findArgmin(initX, constr);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return -cmle.getMinFunction();
+	}
+	
+	public double mle_old(double[] a, double[] b){
 		double ps = p;
 		double pl = p;
 		int vl = 1;
@@ -120,7 +143,7 @@ public class TCopula extends AbstractCopula{
 		setParams(new double[]{ps, vl+1});
 		double lln = Utils.mle(this, a, b, lb, ub, indep, tol);
 		
-		while(ll < lln && vl <= 10){
+		while(ll < lln && vl <= 10){			
 			ll = lln;
 			pl = p;
 			vl = v;
