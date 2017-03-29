@@ -24,9 +24,8 @@ public class GalambosCopula extends AbstractCopula{
 	public GalambosCopula(double[] params) {
 		super(params);
 		d = params[0];
-		lb = 0;
-		ub = Double.POSITIVE_INFINITY;
-		indep = 0;
+		lb = 0+tol;
+		ub = 100;
 	}
 
 	@Override
@@ -102,5 +101,10 @@ public class GalambosCopula extends AbstractCopula{
 	@Override
 	public String name() {
 		return "Ga";
+	}
+	
+	@Override
+	public double[] getParBounds() {
+		return new double[]{lb, ub};
 	}
 }

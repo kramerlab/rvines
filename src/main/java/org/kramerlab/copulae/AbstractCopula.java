@@ -1,5 +1,6 @@
 package org.kramerlab.copulae;
 
+import org.kramerlab.functions.CopulaMLE;
 import org.kramerlab.functions.H1;
 import org.kramerlab.functions.H2;
 import org.kramerlab.vines.Utils;
@@ -13,9 +14,10 @@ import org.kramerlab.vines.Utils;
 public abstract class AbstractCopula implements Copula{
 	protected double[] params;
 	public final static double tol = Math.pow(10, -6);
+	public final static boolean WEKA_OPTIMIZATION = true;
 	public double lb = -1;
 	public double ub = 1;
-	public double indep = 0;
+	public double start = 0;
 	
 	/**
 	 * Constructor
@@ -44,6 +46,29 @@ public abstract class AbstractCopula implements Copula{
 	}
 	
 	public double mle(double[] a, double[] b){
-		return Utils.mle(this, a, b, lb, ub, indep, tol);
+		CopulaMLE cmle = new CopulaMLE(this, a, b);
+		
+		if(WEKA_OPTIMIZATION){
+		double[] initX = new double[]{start};
+		double[][] constr = new double[][]{{lb}, {ub}};
+		try {
+			double[] x = cmle.findArgmin(initX, constr); 
+			 while(x == null){  // 200 iterations are not enough
+			    x = cmle.getVarbValues();  // Try another 200 iterations
+			    x = cmle.findArgmin(x, constr);
+			 }
+		} catch (Exception e) {
+			// e.printStackTrace();
+		}
+		return -cmle.getMinFunction();
+		} else{
+		try {
+			setParams(new double[]{cmle.optimize(lb, ub, start)});
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return Utils.logLikelihood(this, a, b);
+		}
 	}
 }

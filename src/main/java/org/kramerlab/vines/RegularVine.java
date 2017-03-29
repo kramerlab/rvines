@@ -7,7 +7,6 @@ import java.util.Iterator;
 import java.util.TreeSet;
 
 import org.kramerlab.copulae.Copula;
-import org.kramerlab.copulae.GaussCopula;
 
 import weka.classifiers.AbstractClassifier;
 import weka.core.*;
@@ -40,6 +39,7 @@ public class RegularVine extends AbstractClassifier {
 	private Copula[][] copulae;
 	private double[][] p;
 	private double[][] tau;
+	private double[][] pairLogLiks;
 	private boolean[] chosenCopulae = new boolean[]{true, true, true, true, true, true, true, true};
 	private boolean timestamps = false;
 	
@@ -469,11 +469,12 @@ public class RegularVine extends AbstractClassifier {
 			int xl = x.get(0);
 			int xr = x.get(1);
 			
-			//This is how to influence the order of the RVine Matrix
-			if(i == 2 || i == 5 || i == 7){
-				xl =x.get(1);
+			/*
+			if(i == 1){
+				xl = x.get(1);
 				xr = x.get(0);
 			}
+			*/
 			
 			m[i-1][i-1] = xl;
 			m[i][i-1] = xr;
@@ -506,6 +507,7 @@ public class RegularVine extends AbstractClassifier {
 		p = new double[n][n];
 		tau = new double[n][n];
 		copulae = new Copula[n][n];
+		pairLogLiks  = new double[n][n];
 		
 		for(int i=1;i<n;i++){
 			for(int k=0;k<i;k++){
@@ -641,6 +643,14 @@ public class RegularVine extends AbstractClassifier {
 	}
 	
 	/**
+	 * Get the Pair-LogLiks-Matrix.
+	 * @return returns the Pair-LogLiks-Matrix.
+	 */
+	public double[][] getPairLogLiksMatrix(){
+		return pairLogLiks;
+	}
+	
+	/**
 	 * The log-likelihood for a given instance.
 	 * <br>
 	 * The method is based on an
@@ -660,14 +670,27 @@ public class RegularVine extends AbstractClassifier {
 			c = copulae[n-1][k];
 			v[m[k][k]-1][m[n-1][k]-1] = c.h2Function(x[m[k][k]-1], x[m[n-1][k]-1]);
 			v[m[n-1][k]-1][m[k][k]-1] = c.h1Function(x[m[k][k]-1], x[m[n-1][k]-1]);
-			loglik += Math.log(c.density(x[m[k][k]-1], x[m[n-1][k]-1]));
+			if(m[k][k] > m[n-1][k]){
+				loglik += Math.log(c.density(x[m[n-1][k]-1], x[m[k][k]-1]));
+				pairLogLiks[n-1][k] += Math.log(c.density(x[m[n-1][k]-1], x[m[k][k]-1]));
+			}else{
+				loglik += Math.log(c.density(x[m[k][k]-1], x[m[n-1][k]-1]));
+				pairLogLiks[n-1][k] += Math.log(c.density(x[m[k][k]-1], x[m[n-1][k]-1]));
+			}
 			
 			for(int i=n-2;i>k;i--){
 				//run path up to generate transformed values
 				c = copulae[i][k];
 				v[m[k][k]-1][m[i][k]-1] = c.h2Function(v[m[k][k]-1][m[i+1][k]-1], v[m[i][k]-1][m[i+1][k]-1]);
 				v[m[i][k]-1][m[k][k]-1] = c.h1Function(v[m[k][k]-1][m[i+1][k]-1], v[m[i][k]-1][m[i+1][k]-1]);
-				loglik += Math.log(c.density(v[m[k][k]-1][m[i+1][k]-1], v[m[i][k]-1][m[i+1][k]-1]));
+				
+				if(m[k][k] > m[i][k]){
+					loglik += Math.log(c.density(v[m[i][k]-1][m[i+1][k]-1], v[m[k][k]-1][m[i+1][k]-1]));
+					pairLogLiks[i][k] += Math.log(c.density(v[m[i][k]-1][m[i+1][k]-1], v[m[k][k]-1][m[i+1][k]-1]));
+				}else{
+					loglik += Math.log(c.density(v[m[k][k]-1][m[i+1][k]-1], v[m[i][k]-1][m[i+1][k]-1]));
+					pairLogLiks[i][k] += Math.log(c.density(v[m[k][k]-1][m[i+1][k]-1], v[m[i][k]-1][m[i+1][k]-1]));
+				}
 			}
 		}
 		

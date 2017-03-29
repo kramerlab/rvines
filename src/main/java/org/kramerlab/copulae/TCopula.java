@@ -2,10 +2,8 @@ package org.kramerlab.copulae;
 
 import org.kramerlab.functions.CopulaMLE;
 import org.kramerlab.vines.Utils;
-
 import umontreal.ssj.probdist.StudentDist;
 import umontreal.ssj.probdistmulti.BiStudentDist;
-import umontreal.ssj.util.SystemTimeChrono;
 
 /**
  * This is the class to represent Student T copula family for RVines.
@@ -42,7 +40,7 @@ public class TCopula extends AbstractCopula{
 		v = (int) params[1];
 		lb = -1;
 		ub = 1;
-		indep = 0;
+		start = 0;
 	}
 
 	@Override
@@ -65,7 +63,7 @@ public class TCopula extends AbstractCopula{
 	}
 	
 	@Override
-	public double density(double x, double y) {
+	public double density(double x, double y) {		
 		x = Utils.laplaceCorrection(x);
 		y = Utils.laplaceCorrection(y);
 		
@@ -84,12 +82,12 @@ public class TCopula extends AbstractCopula{
 	}
 	
 	@Override
-	public double h1Function(double x, double y) {
+	public double h1Function(double x, double y) {		
 		return hFunction(y, x);
 	}
 
 	@Override
-	public double h2Function(double x, double y) {
+	public double h2Function(double x, double y) {		
 		return hFunction(x, y);
 	}
 	
@@ -110,50 +108,24 @@ public class TCopula extends AbstractCopula{
 		double out = StudentDist.cdf(v+1, ((a-p*b)/Math.sqrt(((v+b*b)*(1-p*p))/(v+1))));
 		return out;
 	}
-
-	private double tauInv(double tau){
-		return Math.sin(tau*Math.PI/2);
-	}
 	
 	@Override
 	public double mle(double[] a, double[] b){
-		double tau = Utils.kendallsTau(a, b);
-		
 		CopulaMLE cmle = new CopulaMLE(this, a, b);
-		cmle.setMaxIteration(1000);
-		double[] initX = new double[]{tauInv(tau), 8};
-		double[][] constr= new double[][]{{-0.9999, 1}, {0.9999, 30}};
+		double[] initX = new double[]{0, 8};
+		double[][] constr= new double[][]{{lb+tol, 2+tol}, {ub-tol, 30}};
+		// cmle.setDebug(true);
 		
 		try {
-			cmle.findArgmin(initX, constr);
+			double[] x = cmle.findArgmin(initX, constr); 
+			 while(x == null){  // 200 iterations are not enough
+			    x = cmle.getVarbValues();  // Try another 200 iterations
+			    x = cmle.findArgmin(x, constr);
+			 }
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return -cmle.getMinFunction();
-	}
-	
-	public double mle_old(double[] a, double[] b){
-		double ps = p;
-		double pl = p;
-		int vl = 1;
-		
-		setParams(new double[]{ps, vl});
-		double ll = Utils.mle(this, a, b, lb, ub, indep, tol);
-		
-		setParams(new double[]{ps, vl+1});
-		double lln = Utils.mle(this, a, b, lb, ub, indep, tol);
-		
-		while(ll < lln && vl <= 10){			
-			ll = lln;
-			pl = p;
-			vl = v;
-			setParams(new double[]{ps, vl+1});
-			lln = Utils.mle(this, a, b, lb, ub, indep, tol);
-		}
-		
-		setParams(new double[]{pl, vl});
-		
-		return ll;
 	}
 	
 	@Override
@@ -164,5 +136,10 @@ public class TCopula extends AbstractCopula{
 	@Override
 	public String name() {
 		return "T";
+	}
+	
+	@Override
+	public double[] getParBounds() {
+		return new double[]{lb, ub, 1, 30};
 	}
 }

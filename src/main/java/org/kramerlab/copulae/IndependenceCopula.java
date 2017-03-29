@@ -63,4 +63,9 @@ public class IndependenceCopula extends AbstractCopula{
 		// There is no parameter to optimize
 		return 0;
 	}
+	
+	@Override
+	public double[] getParBounds() {
+		return new double[]{};
+	}
 }

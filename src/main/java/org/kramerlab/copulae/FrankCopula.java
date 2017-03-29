@@ -31,9 +31,9 @@ public class FrankCopula extends AbstractCopula{
 	public FrankCopula(double[] params) {
 		super(params);
 		d = params[0];
-		lb = Double.NEGATIVE_INFINITY;
-		ub = Double.POSITIVE_INFINITY;
-		indep = 0;
+		lb = -100;
+		ub = 100;
+		start = 0;
 	}
 
 	@Override
@@ -112,26 +112,6 @@ public class FrankCopula extends AbstractCopula{
 		return 1 - 4 / d * (1 - debye1(d));
 	}
 	
-	@Override
-	public double mle(double[] a, double[] b){
-		double tau = Utils.kendallsTau(a, b);
-		
-		CopulaMLE cmle = new CopulaMLE(this, a, b);
-		double[] initX = new double[]{tau > 0 ? 2 : -2};
-		double[][] constr;
-		if(tau > 0)
-			constr = new double[][]{{0.0001}, {Double.POSITIVE_INFINITY}};
-		else
-			constr = new double[][]{{Double.NEGATIVE_INFINITY}, {-0.0001}};
-		
-		try {
-			cmle.findArgmin(initX, constr);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return -cmle.getMinFunction();
-	}
-	
 	/**
 	 * Debye1 function for tau calculation.
 	 * @param x input parameter.
@@ -149,5 +129,10 @@ public class FrankCopula extends AbstractCopula{
 	@Override
 	public String name() {
 		return "F";
+	}
+
+	@Override
+	public double[] getParBounds() {
+		return new double[]{lb, ub};
 	}
 }

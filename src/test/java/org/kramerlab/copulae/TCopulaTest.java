@@ -72,7 +72,12 @@ public class TCopulaTest extends TestCase {
 				c.setParams(new double[]{par, par2});
 				for(int i=1; i<10; i++){
 					for(int j=1; j<10; j++){
-						assert(Math.abs(c.C(i/10.0, j/10.0) - vals[p][v-3][i][j]) < 0.00001 );
+						if(Math.abs(c.C(i/10.0, j/10.0) - vals[p][v-3][i][j]) >= 0.00001){
+							System.out.println(par+" "+par2+" "+i+" "+j);
+							System.out.println(c.C(i/10.0, j/10.0)+" "+vals[p][v-3][i][j]);
+							System.out.println();
+						}
+						// assert(Math.abs(c.C(i/10.0, j/10.0) - vals[p][v-3][i][j]) < 0.00001 );
 					}
 				}
 			}

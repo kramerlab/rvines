@@ -15,7 +15,6 @@ import org.kramerlab.copulae.*;
  */
 public class Utils{
 	private static boolean debug = false;
-	private static boolean timestamps = true;
 	
 	/**
 	 * Get the maximum spanning tree.
@@ -185,28 +184,22 @@ public class Utils{
 				if(i==2) out[k] = new TCopula(new double[]{0.5, 1});
 				if(i==3){
 					out[k] = new ClaytonCopula(new double[]{2});
-					ClaytonCopula c1 = new ClaytonCopula(new double[]{-2});
-					c1.changeMode(1);
+					Clayton90RotatedCopula c1 = new Clayton90RotatedCopula(new double[]{-2});
 					out[k+1] = c1;
-					ClaytonCopula c2 = new ClaytonCopula(new double[]{2});
-					c2.changeMode(2);
+					Clayton180RotatedCopula c2 = new Clayton180RotatedCopula(new double[]{2});
 					out[k+2] = c2;
-					ClaytonCopula c3 = new ClaytonCopula(new double[]{-2});
-					c3.changeMode(3);
+					Clayton270RotatedCopula c3 = new Clayton270RotatedCopula(new double[]{-2});
 					out[k+3] = c3;
 					k+=3;
 				}
 				if(i==4) out[k] = new FrankCopula(new double[]{0.5});
 				if(i==5){
 					out[k] = new GumbelCopula(new double[]{3});
-					GumbelCopula c1 = new GumbelCopula(new double[]{-3});
-					c1.changeMode(1);
+					Gumbel90RotatedCopula c1 = new Gumbel90RotatedCopula(new double[]{-3});
 					out[k+1] = c1;
-					GumbelCopula c2 = new GumbelCopula(new double[]{3});
-					c2.changeMode(2);
+					Gumbel180RotatedCopula c2 = new Gumbel180RotatedCopula(new double[]{3});
 					out[k+2] = c2;
-					GumbelCopula c3 = new GumbelCopula(new double[]{-3});
-					c3.changeMode(3);
+					Gumbel270RotatedCopula c3 = new Gumbel270RotatedCopula(new double[]{-3});
 					out[k+3] = c3;
 					k+=3;
 				}
@@ -227,7 +220,9 @@ public class Utils{
 		for(int i=0; i<copulae.length; i++){
 			Copula c = copulae[i];
 			lls[i] = c.mle(a, b);
+			// System.out.println(c.name()+" with par="+c.getParams()[0]+" produces "+lls[i]+" log-likelihood.");
 		}
+		// System.out.println();
 		
 		int out = 0;
 		for(int i=1; i<copulae.length; i++){
@@ -427,8 +422,9 @@ public class Utils{
 		TreeSet<Integer> C = new TreeSet<Integer>(U_a);
 		C.addAll(U_b);
 		C.removeAll(D);
-		
-		return  new ArrayList<Integer>(C);
+		ArrayList<Integer> Ca = new ArrayList<Integer>(C);
+		Collections.sort(Ca);
+		return Ca;
 	}
 	
 	/**
@@ -441,8 +437,8 @@ public class Utils{
 	 * @return returns the correction of x.
 	 */
 	public static double laplaceCorrection(double x){
-		x = Math.min(x,0.999999999999);
-		x = Math.max(x,0.000000000001);
+		x = Math.min(x,1-Math.pow(10, -4));
+		x = Math.max(x,Math.pow(10, -4));
 		return x;
 	}
 	
@@ -507,54 +503,5 @@ public class Utils{
 	    }
 
 	    return ans;
-	}
-	
-	public static double mle(Copula c, double[] a, double[] b, double lb, double ub, double indep, double tol){
-		double p = c.getParams()[0];
-		double actualLogLik = Utils.logLikelihood(c, a, b);
-		double nextLogLik = Double.NEGATIVE_INFINITY;
-		double delta = 1.0;		//step length
-		
-		while((Math.abs(actualLogLik-nextLogLik) > Math.pow(10, -10)
-				|| actualLogLik == Double.NEGATIVE_INFINITY)
-				&& delta > Math.pow(10, -20)){
-			
-			actualLogLik = Math.max(actualLogLik, nextLogLik);
-			nextLogLik = Double.NEGATIVE_INFINITY;
-			
-			//watch the parameters, that are in delta range
-			double p1 = p-delta;
-			double p2 = p+delta;
-			
-			double logLik1 = Double.NEGATIVE_INFINITY;
-			double logLik2 = Double.NEGATIVE_INFINITY;
-			
-			//calculate the new parameters log-likelihood
-			if(lb < p1 && p1 < ub && Math.abs(p1-indep) > tol){
-				c.setParams(new double[]{p1});
-				logLik1 = Utils.logLikelihood(c, a, b);
-			}
-			if(lb < p2 && p2 < ub && Math.abs(p2-indep) > tol){
-				c.setParams(new double[]{p2});
-				logLik2 = Utils.logLikelihood(c, a, b);
-			}
-			
-			//if there is no improvement
-			if(Math.max(logLik1, logLik2) <= actualLogLik){
-				delta = delta * 0.1; //reduce step length
-			}else{
-				//else set the better improvement
-				nextLogLik = Math.max(logLik1, logLik2);
-				if(nextLogLik == logLik1){
-					p = p1;
-				}else{
-					p = p2;
-				}
-			}
-		}
-		
-		c.setParams(new double[]{p});
-		
-		return nextLogLik;
 	}
 }

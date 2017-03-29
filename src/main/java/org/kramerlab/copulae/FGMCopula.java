@@ -28,9 +28,9 @@ public class FGMCopula extends AbstractCopula{
 	public FGMCopula(double[] params) {
 		super(params);
 		d = params[0];
-		lb = -1;
-		ub = 1;
-		indep = 0;
+		lb = -1+tol;
+		ub = 1-tol;
+		start = 0;
 	}
 
 	@Override
@@ -80,5 +80,10 @@ public class FGMCopula extends AbstractCopula{
 	@Override
 	public String name() {
 		return "FGM";
+	}
+	
+	@Override
+	public double[] getParBounds() {
+		return new double[]{lb, ub};
 	}
 }

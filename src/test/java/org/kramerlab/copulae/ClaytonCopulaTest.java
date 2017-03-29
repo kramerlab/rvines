@@ -6,7 +6,6 @@ import java.io.FileReader;
 import junit.framework.TestCase;
 
 public class ClaytonCopulaTest extends TestCase {
-	private static int mode = 0;
 	private static int sign = 1;
 	private static String add = ""; 
 	
@@ -91,7 +90,6 @@ public class ClaytonCopulaTest extends TestCase {
 	public void testCDF(){
 		double[][][][] vals = readIn("CDF");
 		ClaytonCopula c = new ClaytonCopula(new double[]{sign*2});
-		c.changeMode(mode);
 		
 		for(int run=0; run <2; run++){
 			for(int p=1; p<10; p++){
@@ -111,7 +109,6 @@ public class ClaytonCopulaTest extends TestCase {
 	public void testDensity(){
 		double[][][][] vals = readIn("PDF");
 		ClaytonCopula c = new ClaytonCopula(new double[]{sign*2});
-		c.changeMode(mode);
 		
 		for(int run=0; run <2; run++){
 			for(int p=1; p<10; p++){
@@ -131,7 +128,6 @@ public class ClaytonCopulaTest extends TestCase {
 	public void testH1Function(){
 		double[][][][] vals = readIn("H1");
 		ClaytonCopula c = new ClaytonCopula(new double[]{sign*2});
-		c.changeMode(mode);
 		
 		for(int run=0; run <2; run++){
 			for(int p=1; p<10; p++){
@@ -151,7 +147,6 @@ public class ClaytonCopulaTest extends TestCase {
 	public void testH2Function(){
 		double[][][][] vals = readIn("H2");
 		ClaytonCopula c = new ClaytonCopula(new double[]{sign*2});
-		c.changeMode(mode);
 		
 		for(int run=0; run <2; run++){
 			for(int p=1; p<10; p++){
@@ -171,7 +166,6 @@ public class ClaytonCopulaTest extends TestCase {
 	public void testInverseH1Function(){
 		double[][][][] vals = readIn("H1inverse");
 		ClaytonCopula c = new ClaytonCopula(new double[]{sign*2});
-		c.changeMode(mode);
 		
 		for(int run=0; run <2; run++){
 			for(int p=1; p<10; p++){
@@ -191,7 +185,6 @@ public class ClaytonCopulaTest extends TestCase {
 	public void testInverseH2Function(){
 		double[][][][] vals = readIn("H2inverse");
 		ClaytonCopula c = new ClaytonCopula(new double[]{sign*2});
-		c.changeMode(mode);
 		
 		for(int run=0; run <2; run++){
 			for(int p=1; p<10; p++){
@@ -211,7 +204,6 @@ public class ClaytonCopulaTest extends TestCase {
 	public void testTau(){
 		double[][] vals = readInTau();
 		ClaytonCopula c = new ClaytonCopula(new double[]{sign*2});
-		c.changeMode(mode);
 		
 		for(int run=0; run <2; run++){
 			for(int p=1; p<10; p++){

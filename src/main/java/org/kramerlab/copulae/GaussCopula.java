@@ -1,8 +1,6 @@
 package org.kramerlab.copulae;
 
-import org.kramerlab.functions.CopulaMLE;
 import org.kramerlab.vines.Utils;
-
 import umontreal.ssj.probdist.NormalDist;
 import umontreal.ssj.probdistmulti.BiNormalDist;
 
@@ -35,9 +33,9 @@ public class GaussCopula extends AbstractCopula{
 	public GaussCopula(double[] params) {
 		super(params);
 		p = params[0];
-		lb = -1;
-		ub = 1;
-		indep = 0;
+		lb = -1+tol;
+		ub = 1-tol;
+		start = 0;
 	}
 
 	@Override
@@ -47,6 +45,8 @@ public class GaussCopula extends AbstractCopula{
 	}
 
 	public double C(double x, double y) {
+		if(p==0) return x*y;
+		
 		x = Utils.laplaceCorrection(x);
 		y = Utils.laplaceCorrection(y);
 		
@@ -57,6 +57,8 @@ public class GaussCopula extends AbstractCopula{
 	}
 	
 	public double density(double x, double y) {
+		if(p==0) return 1;
+		
 		x = Utils.laplaceCorrection(x);
 		y = Utils.laplaceCorrection(y);
 		
@@ -72,10 +74,14 @@ public class GaussCopula extends AbstractCopula{
 	}
 
 	public double h1Function(double x, double y) {
+		if(p==0) return y;
+		
 		return hFunction(y, x);
 	}
 
 	public double h2Function(double x, double y) {
+		if(p==0) return x;
+		
 		return hFunction(x, y);
 	}
 	
@@ -99,35 +105,16 @@ public class GaussCopula extends AbstractCopula{
 		return out;
 	}
 	
-	private double tauInv(double tau){
-		return Math.sin(tau*Math.PI/2);
-	}
-	
-	@Override
-	public double mle(double[] a, double[] b){
-		double tau = Utils.kendallsTau(a, b);
-		
-		CopulaMLE cmle = new CopulaMLE(this, a, b);
-		double[] initX = new double[]{tauInv(tau)};
-		double[][] constr;
-		if(tau > 0)
-			constr = new double[][]{{0.0001}, {0.9999}};
-		else
-			constr = new double[][]{{-0.9999}, {-0.0001}};
-		
-		try {
-			cmle.findArgmin(initX, constr);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return -cmle.getMinFunction();
-	}
-	
 	public double tau(){
 		return 2/Math.PI*Math.asin(p);
 	}
 	
 	public String name() {
 		return "G";
+	}
+	
+	@Override
+	public double[] getParBounds() {
+		return new double[]{lb, ub};
 	}
 }

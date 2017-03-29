@@ -23,6 +23,13 @@ public interface Copula {
 	public double[] getParams();
 	
 	/**
+	 * Get the parameter bounds for the copula.
+	 *
+	 * @return	returns the copula parameter bounds as double array.
+	 */
+	public double[] getParBounds();
+	
+	/**
 	 * The cumulative distribution function for a bivariate Copula.
 	 *
 	 * @param	x an observation from a random variable.
