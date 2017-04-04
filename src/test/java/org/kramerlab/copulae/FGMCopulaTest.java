@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 
 import junit.framework.TestCase;
+import weka.estimators.vines.copulas.FGMCopula;
 
 public class FGMCopulaTest extends TestCase {
 	

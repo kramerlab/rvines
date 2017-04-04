@@ -1,6 +1,10 @@
 package org.kramerlab.vines;
 
 import junit.framework.*;
+import weka.estimators.vines.Edge;
+import weka.estimators.vines.Graph;
+import weka.estimators.vines.Node;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 

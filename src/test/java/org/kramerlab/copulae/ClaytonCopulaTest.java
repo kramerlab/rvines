@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 
 import junit.framework.TestCase;
+import weka.estimators.vines.copulas.ClaytonCopula;
 
 public class ClaytonCopulaTest extends TestCase {
 	private static int sign = 1;
