@@ -3,7 +3,6 @@ package weka.estimators.vines;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.TreeSet;
 
 import org.apache.commons.math3.analysis.UnivariateFunction;
 

@@ -2,6 +2,7 @@ package weka.estimators.vines;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.TreeSet;
 
@@ -25,36 +26,165 @@ import weka.estimators.vines.copulas.Copula;
  * @author Christian Lamberty (clamber@students.uni-mainz.de)
  */
 public class RegularVine implements MultivariateEstimator {
-	private boolean[] selected = new boolean[]{true, true, true, true, true, true, true, true, true, true, true, true, true, true};
+	private boolean[] selected = new boolean[]{false, true, false, false, false, false, false, false, false, false, false, false, false, false};
 	private Graph[] rvine;
 	private int[][] m;
-	private Copula[][] copulae;
-	private double[][] p;
-	private double[][] tau;
-	private double[][] pairLogLiks;
+	private Edge[][] edges;
+	private double[][] data;
+	private boolean built = false;
+	private boolean timestamps = true;
 	
 	public static void main(String[] args){
 		RegularVine rvine = new RegularVine();
-		try{
-			DataSource source = new DataSource("src/test/data/daxreturns.arff");//args[0]);
-			Instances instances = source.getDataSet();
-			
-			int k = instances.numAttributes();
-			
-			double[][] data = new double[k][];
-			double[] w = new double[k];
-			
-			for(int i=0; i<k; i++){
-				data[i] = instances.attributeToDoubleArray(i);
-				w[i] = 1;
-			}
-			
-			rvine.estimate(data, w);
-		} catch (Exception e) {
-			e.printStackTrace();
+		double[][] data = loadData("src/main/data/daxreturns.arff");
+		if(data == null) return;
+		
+		double[] w = new double[data.length];
+		for(int i=0; i<w.length; i++){
+			w[i] = 1;
 		}
 		
-		int[][] m = rvine.getRVineMatrix();
+		rvine.estimate(data, w);
+
+		rvine.printSummary();
+		
+		System.out.println();
+		System.out.println();
+		
+		rvine.printRVineMatrix();
+		
+		System.out.println();
+		System.out.println();
+		
+		rvine.printFamilyMatrix();
+		
+		System.out.println();
+		System.out.println();
+		
+		rvine.printParameterMatrices();
+		
+		System.out.println();
+		System.out.println();
+		
+		rvine.printLogliksMatrix();
+		
+		System.out.println();
+		System.out.println();
+		
+		rvine.printTauMatrix();
+		
+		System.out.println();
+		System.out.println();
+		
+		rvine.printEmpTauMatrix();
+	}
+	
+	public void printSummary(){
+		if(!built){
+			System.err.println("Use estimate(data, w) first to build the estimator!");
+			return;
+		}
+		System.out.println("Regular Vine Summary :");
+		System.out.println("Log-Likelihood : "+logDensity(data));
+		// prepare statistics
+		HashMap<String, Integer> stats = new HashMap<String, Integer>();
+		
+		for(int i=0;i<edges.length;i++){
+			for(int j=0;j<edges.length;j++){
+				if(edges[i][j] != null){
+					String cop = edges[i][j].getCopula().name();
+					if(!stats.containsKey(cop)){
+						stats.put(cop, 1);
+					}else{
+						stats.put(cop, stats.get(cop)+1);
+					}
+				}
+			}
+		}
+		System.out.println("Used Copulas : ");
+		for(String cop : stats.keySet())
+			System.out.println(cop+" : "+stats.get(cop));
+		
+		System.out.println();
+		// print trees
+		System.out.println("RVine Trees : ");
+		for(int i=0; i<rvine.length; i++){
+			System.out.println("Tree "+(i+1)+" : ");
+			for(Edge e : rvine[i].getUndirectedEdgeList()){
+				Copula c = e.getCopula();
+				System.out.print(e.getLabel()+" : "+c.name()+"(pars:{");
+				for(int k=0; k<c.getParams().length-1; k++){
+					System.out.print(round(c.getParams()[k])+",");
+				}
+				System.out.println(round(c.getParams()[c.getParams().length-1])+"}, tau:"+round(c.tau())+", empTau:"+round(e.getWeight())+")");
+			}
+			System.out.println();
+		}
+	}
+	
+	private void printEmpTauMatrix() {
+		if(!built){
+			System.err.println("Use estimate(data, w) first to build the estimator!");
+			return;
+		}
+		
+		System.out.println("Empirical Tau - Matrix");
+		for(int i=0;i<edges.length;i++){
+			for(int j=0;j<edges.length;j++){
+				String out = " - ";
+				if(edges[i][j] != null){
+					double val = round(edges[i][j].getWeight());
+					if( (int) val == val){
+						out = Integer.toString( (int) val);
+					}else{
+						out = String.valueOf(val);
+					}
+				}
+				if(j<edges.length-1){
+					System.out.print(out+"\t&\t");
+				}else{
+					System.out.print(out+"\\\\");
+				}
+			}
+			System.out.println();
+		}
+	}
+
+	private void printTauMatrix() {
+		if(!built){
+			System.err.println("Use estimate(data, w) first to build the estimator!");
+			return;
+		}
+		
+		System.out.println("Tau - Matrix");
+		for(int i=0;i<edges.length;i++){
+			for(int j=0;j<edges.length;j++){
+				String out = " - ";
+				if(edges[i][j] != null){
+					double val = round(edges[i][j].getCopula().tau());
+					if( (int) val == val){
+						out = Integer.toString( (int) val);
+					}else{
+						out = String.valueOf(val);
+					}
+				}
+				if(j<edges.length-1){
+					System.out.print(out+"\t&\t");
+				}else{
+					System.out.print(out+"\\\\");
+				}
+			}
+			System.out.println();
+		}
+	}
+	
+	public void printRVineMatrix(){
+		if(!built){
+			System.err.println("Use estimate(data, w) first to build the estimator!");
+			return;
+		}
+		
+		int[][] m = getRVineMatrix();
 		
 		System.out.println("RVine - Matrix");
 		for(int i=0;i<m.length;i++){
@@ -67,23 +197,49 @@ public class RegularVine implements MultivariateEstimator {
 			}
 			System.out.println();
 		}
+	}
+	
+	public void printFamilyMatrix(){
+		if(!built){
+			System.err.println("Use estimate(data, w) first to build the estimator!");
+			return;
+		}
 		
-		System.out.println();
-		System.out.println();
-		
-		double[][] p = rvine.getParameterMatrix();
-		
-		System.out.println("Parameter - Matrix");
-		for(int i=0;i<p.length;i++){
-			for(int j=0;j<p.length;j++){
-				double val = p[i][j];
-				String out = "";
-				if( (int) val == val){
-					out = Integer.toString( (int) val);
+		System.out.println("Family - Matrix");
+		for(int i=0;i<edges.length;i++){
+			for(int j=0;j<edges.length;j++){
+				String out = " - ";
+				if(edges[i][j] != null) out = edges[i][j].getCopula().name();
+				
+				if(j<edges.length-1){
+					System.out.print(out+"\t&\t");
 				}else{
-					out = String.valueOf(val);
+					System.out.print(out+"\\\\");
 				}
-				if(j<p.length-1){
+			}
+			System.out.println();
+		}
+	}
+	
+	public void printParameterMatrices(){
+		if(!built){
+			System.err.println("Use estimate(data, w) first to build the estimator!");
+			return;
+		}
+		
+		System.out.println("Parameter 1 - Matrix");
+		for(int i=0;i<edges.length;i++){
+			for(int j=0;j<edges.length;j++){
+				String out = " - ";
+				if(edges[i][j] != null){
+					double val = round(edges[i][j].getCopula().getParams()[0]);
+					if( (int) val == val){
+						out = Integer.toString( (int) val);
+					}else{
+						out = String.valueOf(val);
+					}
+				}
+				if(j<edges.length-1){
 					System.out.print(out+"\t\t\t&\t");
 				}else{
 					System.out.print(out+"\\\\");
@@ -95,19 +251,50 @@ public class RegularVine implements MultivariateEstimator {
 		System.out.println();
 		System.out.println();
 		
-		double[][] pll = rvine.getPairLogLiksMatrix();
+		System.out.println("Parameter 2 - Matrix");
+		for(int i=0;i<edges.length;i++){
+			for(int j=0;j<edges.length;j++){
+				String out = " - ";
+				if(edges[i][j] != null){
+					double[] pars = edges[i][j].getCopula().getParams();
+					if(pars.length >= 2){
+						double val = round(pars[1]);
+						if( (int) val == val){
+							out = Integer.toString( (int) val);
+						}else{
+							out = String.valueOf(val);
+						}
+					}
+				}
+				if(j<edges.length-1){
+					System.out.print(out+"\t\t\t&\t");
+				}else{
+					System.out.print(out+"\\\\");
+				}
+			}
+			System.out.println();
+		}
+	}
+	
+	public void printLogliksMatrix(){
+		if(!built){
+			System.err.println("Use estimate(data, w) first to build the estimator!");
+			return;
+		}
 		
 		System.out.println("Pairwise - LogLiks - Matrix");
-		for(int i=0;i<pll.length;i++){
-			for(int j=0;j<pll.length;j++){
-				double val = pll[i][j];
-				String out = "";
-				if( (int) val == val){
-					out = Integer.toString( (int) val);
-				}else{
-					out = String.valueOf(val);
+		for(int i=0;i<edges.length;i++){
+			for(int j=0;j<edges.length;j++){
+				String out = " - ";
+				if(edges[i][j] != null){
+					double val = round(edges[i][j].getLogLik());
+					if( (int) val == val){
+						out = Integer.toString( (int) val);
+					}else{
+						out = String.valueOf(val);
+					}
 				}
-				if(j<pll.length-1){
+				if(j<edges.length-1){
 					System.out.print(out+"\t&\t");
 				}else{
 					System.out.print(out+"\\\\");
@@ -115,6 +302,42 @@ public class RegularVine implements MultivariateEstimator {
 			}
 			System.out.println();
 		}
+	}
+	
+	private static boolean testData(double[][] data){
+		for(int i=0; i<data.length; i++){
+			for(int j=0; j<data[i].length; j++){
+				if(data[i][j] < 0 || data[i][j] > 1) return false; 
+			}
+		}
+		return true;
+	}
+	
+	public static double[][] loadData(String path){
+		double[][] data;
+		try{
+			DataSource source = new DataSource(path);
+			Instances instances = source.getDataSet();
+			
+			int k = instances.numAttributes();
+			
+			data = new double[k][];
+			
+			for(int i=0; i<k; i++){
+				data[i] = instances.attributeToDoubleArray(i);
+			}
+			
+			if(!testData(data)){
+				System.err.println("Data does not fit the [0,1] interval!");
+				return null;
+			}
+			
+			return data;
+		} catch (Exception e) {
+			System.err.println("Unable to load data!");
+			e.printStackTrace();
+		}
+		return null;
 	}
 	
 	/**
@@ -129,13 +352,22 @@ public class RegularVine implements MultivariateEstimator {
 	@Override
 	public void estimate(double[][] data, double[] w) {
 		rvine = new Graph[data.length-1];
+		this.data = data;
 		Graph g = new Graph();
 		Graph gNext = new Graph();
 		
+		double start = System.currentTimeMillis();
+		double stamp = start;
+		
+		if(timestamps){
+			System.out.println("Building T1 ...");
+			System.out.print("\t Compute Kendall's tau... ");
+		}
+		
 		// initialize nodes
-		for(int i=0;i<data.length;i++){
+		for(int i=1;i<=data.length;i++){
 			Node n = new Node(i);
-			n.putData(i, data[i]);
+			n.putData(i, data[i-1]);
 			g.addNode(n);
 		}
 		
@@ -150,8 +382,22 @@ public class RegularVine implements MultivariateEstimator {
 			}
 		}
 		
+		if(timestamps){
+			double time = System.currentTimeMillis();
+			System.out.println("finished! ~ "+(time-stamp)+"ms");
+			System.out.print("\t Compute max. spanning tree... ");
+			stamp = time;
+		}
+		
 		// calculate maximal spanning tree of graph
 		g = Utils.maxSpanTree(g);
+		
+		if(timestamps){
+			double time = System.currentTimeMillis();
+			System.out.println("finished! ~ "+(time-stamp)+"ms");
+			System.out.print("\t Compute fitting Copulae... ");
+			stamp = time;
+		}
 		
 		// fit copulas to the edges
 		for(Edge e : g.getUndirectedEdgeList()){
@@ -163,12 +409,27 @@ public class RegularVine implements MultivariateEstimator {
 		
 		//until regular vine is fully specified, do:
 		for(int count = 1; count < data.length-1; count++){
+			if(timestamps){
+				double time = System.currentTimeMillis();
+				System.out.println("finished! ~ "+(time-stamp)+"ms");
+				System.out.println("Building T"+(count+1)+"... ");
+				System.out.print("\t Merge Nodes... ");
+				stamp = time;
+			}
+			
 			//prepare next graph
 			gNext = new Graph();
 			
 			//for all edges of MST, do
 			for(Edge e : g.getUndirectedEdgeList()){
 				gNext.addNode(mergeNodes(e));
+			}
+			
+			if(timestamps){
+				double time = System.currentTimeMillis();
+				System.out.println("finished! ~ "+(time-stamp)+"ms");
+				System.out.print("\t Compute Kendall's tau... ");
+				stamp = time;
 			}
 			
 			//calculate kendall's tau and add edges to graph,
@@ -185,8 +446,22 @@ public class RegularVine implements MultivariateEstimator {
 				}
 			}
 			
+			if(timestamps){
+				double time = System.currentTimeMillis();
+				System.out.println("finished! ~ "+(time-stamp)+"ms");
+				System.out.print("\t Compute max. spanning tree... ");
+				stamp = time;
+			}
+			
 			//calculate maximal spanning tree of graph
 			gNext = Utils.maxSpanTree(gNext);
+			
+			if(timestamps){
+				double time = System.currentTimeMillis();
+				System.out.println("finished! ~ "+(time-stamp)+"ms");
+				System.out.print("\t Compute fitting Copulae... ");
+				stamp = time;
+			}
 			
 			// fit copulas to the edges
 			for(Edge e : gNext.getUndirectedEdgeList()){
@@ -198,8 +473,27 @@ public class RegularVine implements MultivariateEstimator {
 			g = gNext;
 		}
 		
+		// Use merge only to set last Edge label
+		for(Edge e : g.getUndirectedEdgeList()){
+			mergeNodes(e);
+		}
+		
+		if(timestamps){
+			double time = System.currentTimeMillis();
+			System.out.println("finished! ~ "+(time-stamp)+"ms");
+			System.out.print("Building Matrices... ");
+			stamp = time;
+		}
+		
 		createRVineMatrix();
-		createParameterMatrix();
+		built = true;
+		
+		if(timestamps){
+			double time = System.currentTimeMillis();
+			System.out.println("finished! ~ "+(time-stamp)+"ms");
+			System.out.println("Total time: "+(time-start)+"ms");
+			System.out.println();
+		}
 	}
 
 	/**
@@ -212,6 +506,10 @@ public class RegularVine implements MultivariateEstimator {
 	 */
 	@Override
 	public double logDensity(double[] x){
+		if(!built){
+			System.err.println("Use estimate(data, w) first to build the estimator!");
+			return 0;
+		}
 		double loglik = 0;
 		int n = m.length;
 		double[][] v = new double[n][n];
@@ -219,29 +517,25 @@ public class RegularVine implements MultivariateEstimator {
 		
 		for(int k=n-2;k>=0;k--){
 			//one dimensional transformed values
-			c = copulae[n-1][k];
-			v[m[k][k]][m[n-1][k]] = c.h2Function(x[m[k][k]], x[m[n-1][k]]);
-			v[m[n-1][k]][m[k][k]] = c.h1Function(x[m[k][k]], x[m[n-1][k]]);
+			c = edges[n-1][k].getCopula();
+			v[m[k][k]-1][m[n-1][k]-1] = c.h2Function(x[m[k][k]-1], x[m[n-1][k]-1]);
+			v[m[n-1][k]-1][m[k][k]-1] = c.h1Function(x[m[k][k]-1], x[m[n-1][k]-1]);
 			if(m[k][k] > m[n-1][k]){
-				loglik += Math.log(c.density(x[m[n-1][k]], x[m[k][k]]));
-				pairLogLiks[n-1][k] += Math.log(c.density(x[m[n-1][k]], x[m[k][k]]));
+				loglik += Math.log(c.density(x[m[n-1][k]-1], x[m[k][k]-1]));
 			}else{
-				loglik += Math.log(c.density(x[m[k][k]], x[m[n-1][k]]));
-				pairLogLiks[n-1][k] += Math.log(c.density(x[m[k][k]], x[m[n-1][k]]));
+				loglik += Math.log(c.density(x[m[k][k]-1], x[m[n-1][k]-1]));
 			}
 			
 			for(int i=n-2;i>k;i--){
 				//run path up to generate transformed values
-				c = copulae[i][k];
-				v[m[k][k]][m[i][k]] = c.h2Function(v[m[k][k]][m[i+1][k]], v[m[i][k]][m[i+1][k]]);
-				v[m[i][k]][m[k][k]] = c.h1Function(v[m[k][k]][m[i+1][k]], v[m[i][k]][m[i+1][k]]);
+				c = edges[i][k].getCopula();
+				v[m[k][k]-1][m[i][k]-1] = c.h2Function(v[m[k][k]-1][m[i+1][k]-1], v[m[i][k]-1][m[i+1][k]-1]);
+				v[m[i][k]-1][m[k][k]-1] = c.h1Function(v[m[k][k]-1][m[i+1][k]-1], v[m[i][k]-1][m[i+1][k]-1]);
 				
 				if(m[k][k] > m[i][k]){
-					loglik += Math.log(c.density(v[m[i][k]][m[i+1][k]], v[m[k][k]][m[i+1][k]]));
-					pairLogLiks[i][k] += Math.log(c.density(v[m[i][k]][m[i+1][k]], v[m[k][k]][m[i+1][k]]));
+					loglik += Math.log(c.density(v[m[i][k]-1][m[i+1][k]-1], v[m[k][k]-1][m[i+1][k]-1]));
 				}else{
-					loglik += Math.log(c.density(v[m[k][k]][m[i+1][k]], v[m[i][k]][m[i+1][k]]));
-					pairLogLiks[i][k] += Math.log(c.density(v[m[k][k]][m[i+1][k]], v[m[i][k]][m[i+1][k]]));
+					loglik += Math.log(c.density(v[m[k][k]-1][m[i+1][k]-1], v[m[i][k]-1][m[i+1][k]-1]));
 				}
 			}
 		}
@@ -258,6 +552,10 @@ public class RegularVine implements MultivariateEstimator {
 	 * @return returns the log-likelihood for the instances.
 	 */
 	public double logDensity(double[][] data){
+		if(!built){
+			System.err.println("Use estimate(data, w) first to build the estimator!");
+			return 0;
+		}
 		double loglik = 0;
 		double[] x = new double[data.length];
 		for(int j=0; j<data[0].length; j++){
@@ -287,6 +585,7 @@ public class RegularVine implements MultivariateEstimator {
 	private void createRVineMatrix(){
 		int n = rvine.length+1;
 		m = new int[n][n];
+		edges = new Edge[n][n];
 		
 		TreeSet<Integer> B = new TreeSet<Integer>();
 		TreeSet<Integer> items = new TreeSet<Integer>();
@@ -298,19 +597,18 @@ public class RegularVine implements MultivariateEstimator {
 		
 		//Create CV, Set of constraint sets of RVine
 		@SuppressWarnings("unchecked")
-		ArrayList<ArrayList<Integer>>[] CV = new ArrayList[n-1];
+		ArrayList<Edge>[] CV = new ArrayList[n-1];
 		
 		for(int i=0;i<n-1;i++){
-			CV[i] = new ArrayList<ArrayList<Integer>>();
-			for(Edge e : rvine[i].getUndirectedEdgeList()){
-				CV[i].add(createConditionedSet(e.getFrom(), e.getTo()));
-			}
+			CV[i] = new ArrayList<Edge>();
+			CV[i].addAll(rvine[i].getUndirectedEdgeList());
 		}
 		//CV creation completed
 		
 		//Matrix creation loop
 		for(int i=1;i<n;i++){
-			ArrayList<Integer> x =  CV[n-1-i].get(0);
+			Edge es = CV[n-1-i].get(0);
+			ArrayList<Integer> x =  createConditionedSet(es.getFrom(), es.getTo());
 			CV[n-1-i].remove(x);
 			
 			int xl = x.get(0);
@@ -318,62 +616,28 @@ public class RegularVine implements MultivariateEstimator {
 			
 			m[i-1][i-1] = xl;
 			m[i][i-1] = xr;
+			edges[i][i-1] = es;
 			
 			for(int k=i+2;k<=n;k++){
-				Iterator<ArrayList<Integer>> it = CV[n-k].iterator();
-				ArrayList<Integer> x2 = it.next();
+				Iterator<Edge> it = CV[n-k].iterator();
+				Edge e = it.next();
+				ArrayList<Integer> x2 = createConditionedSet(e.getFrom(), e.getTo());
 				while(!x2.contains(xl)){
-					x2 = it.next();
+					e = it.next();
+					x2 = createConditionedSet(e.getFrom(), e.getTo());
 				}
-				CV[n-k].remove(x2);
+				CV[n-k].remove(e);
 				
 				int xs = x2.get(0) == xl? x2.get(1) : x2.get(0);
 				
 				m[k-1][i-1] = xs;
+				edges[k-1][i-1] = e;
 			}
 			B.add(xl);
 		}
 		items.removeAll(B);
 		int x = items.first();
 		m[n-1][n-1] = x;
-	}
-	
-	
-	/**
-	 * Creates the Parameter-Matrix if the RVine-Matrix is set.
-	 * It is stored in a global variable p.
-	 */
-	private void createParameterMatrix(){
-		int n = m.length;
-		p = new double[n][n];
-		tau = new double[n][n];
-		copulae = new Copula[n][n];
-		pairLogLiks  = new double[n][n];
-		
-		for(int i=1;i<n;i++){
-			for(int k=0;k<i;k++){
-				/* cond is the conditioned part of the edge.
-				 * it is used to get the corresponding edge from the
-				 * rvine edge set.
-			 	 */
-				ArrayList<Integer> cond = new ArrayList<Integer>();
-				cond.add(m[k][k]);
-				cond.add(m[i][k]);
-				Collections.sort(cond);
-
-				for(Edge e : rvine[n-1-i].getUndirectedEdgeList()){
-					ArrayList<Integer> cond2 = createConditionedSet(e.getFrom(), e.getTo());
-					// if we found the corresponding edge
-					if(cond2.equals(cond)){
-						// add the parameter to the parameter-matrix
-						copulae[i][k] = e.getCopula();
-						tau[i][k] = e.getWeight();
-						if(e.getCopula().getParams().length > 0)
-							p[i][k] = e.getCopula().getParams()[0];
-					}
-				}
-			}
-		}
 	}
 	
 	private void kendallWeight(Edge e) {
@@ -427,6 +691,7 @@ public class RegularVine implements MultivariateEstimator {
 		}
 		
 		e.setCopula(copSet[out]);
+		e.setLogLik(lls[out]);
 	}
 	
 	/**
@@ -437,39 +702,12 @@ public class RegularVine implements MultivariateEstimator {
 		return m;
 	}
 	
-	
 	/**
-	 * Get the Parameter-Matrix.
-	 * @return returns the Parameter-Matrix.
+	 * Get the Edge-Matrix.
+	 * @return returns the Edge-Matrix.
 	 */
-	public double[][] getParameterMatrix(){
-		return p;
-	}
-	
-	
-	/**
-	 * Get the Copula-Matrix.
-	 * @return returns the Copula-Matrix.
-	 */
-	public Copula[][] getCopulaMatrix(){
-		return copulae;
-	}
-	
-	
-	/**
-	 * Get the Tau-Matrix.
-	 * @return returns the Tau-Matrix.
-	 */
-	public double[][] getTauMatrix(){
-		return tau;
-	}
-	
-	/**
-	 * Get the Pair-LogLiks-Matrix.
-	 * @return returns the Pair-LogLiks-Matrix.
-	 */
-	public double[][] getPairLogLiksMatrix(){
-		return pairLogLiks;
+	public Edge[][] getEdgeMatrix(){
+		return edges;
 	}
 	
 	/**
@@ -612,5 +850,9 @@ public class RegularVine implements MultivariateEstimator {
 		ArrayList<Integer> Ca = new ArrayList<Integer>(C);
 		Collections.sort(Ca);
 		return Ca;
+	}
+	
+	private static double round(double val){
+		return Math.round(val*Math.pow(10, 4))/Math.pow(10, 4);
 	}
 }

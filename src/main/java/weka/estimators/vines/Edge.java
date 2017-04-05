@@ -16,6 +16,7 @@ public class Edge {
 	private double weight;
 	private Copula copula;
 	private String label;
+	private double logLik;
 	
 	/**
 	 * Constructor
@@ -91,5 +92,13 @@ public class Edge {
 
 	public void setLabel(String label) {
 		this.label = label;
+	}
+
+	public double getLogLik() {
+		return logLik;
+	}
+
+	public void setLogLik(double logLik) {
+		this.logLik = logLik;
 	}
 }
