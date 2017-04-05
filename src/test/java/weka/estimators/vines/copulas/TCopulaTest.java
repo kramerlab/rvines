@@ -1,4 +1,4 @@
-package org.kramerlab.copulae;
+package weka.estimators.vines.copulas;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

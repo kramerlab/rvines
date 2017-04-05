@@ -1,18 +1,18 @@
-package org.kramerlab.copulae;
+package weka.estimators.vines.copulas;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 
 import junit.framework.TestCase;
-import weka.estimators.vines.copulas.GaussCopula;
+import weka.estimators.vines.copulas.FGMCopula;
 
-public class GaussCopulaTest extends TestCase {
+public class FGMCopulaTest extends TestCase {
 	
 	public static double[][][] readIn(String fn){
 		double[][][] vals = new double[20][10][10];
 		
 		try{
-			BufferedReader br = new BufferedReader(new FileReader("src/test/data/CopulaData/GaussData/Gauss"+fn+".test"));
+			BufferedReader br = new BufferedReader(new FileReader("src/test/data/CopulaData/FGMData/FGM"+fn+".test"));
 			String str = br.readLine();
 			
 			while(str != null && !str.equals("[1] \"#\"") ){
@@ -39,7 +39,7 @@ public class GaussCopulaTest extends TestCase {
 		double[] vals = new double[20];
 		
 		try{
-			BufferedReader br = new BufferedReader(new FileReader("src/test/data/CopulaData/GaussData/GaussTau.test"));
+			BufferedReader br = new BufferedReader(new FileReader("src/test/data/CopulaData/FGMData/FGMTau.test"));
 			String str = br.readLine();
 			
 			while(str != null && !str.equals("[1] \"#\"") ){
@@ -61,7 +61,7 @@ public class GaussCopulaTest extends TestCase {
 	
 	public void testCDF(){
 		double[][][] vals = readIn("CDF");
-		GaussCopula c = new GaussCopula(new double[]{0});
+		FGMCopula c = new FGMCopula(new double[]{0});
 		
 		for(int p=1; p<20; p++){
 			double par = p/10.0-1;
@@ -77,7 +77,7 @@ public class GaussCopulaTest extends TestCase {
 	
 	public void testDensity(){
 		double[][][] vals = readIn("PDF");
-		GaussCopula c = new GaussCopula(new double[]{0});
+		FGMCopula c = new FGMCopula(new double[]{0});
 		
 		for(int p=1; p<20; p++){
 			double par = p/10.0-1;
@@ -93,7 +93,7 @@ public class GaussCopulaTest extends TestCase {
 	
 	public void testH1Function(){
 		double[][][] vals = readIn("H1");
-		GaussCopula c = new GaussCopula(new double[]{0});
+		FGMCopula c = new FGMCopula(new double[]{0});
 		
 		for(int p=1; p<20; p++){
 			double par = p/10.0-1;
@@ -109,7 +109,7 @@ public class GaussCopulaTest extends TestCase {
 	
 	public void testH2Function(){
 		double[][][] vals = readIn("H2");
-		GaussCopula c = new GaussCopula(new double[]{0});
+		FGMCopula c = new FGMCopula(new double[]{0});
 		
 		for(int p=1; p<20; p++){
 			double par = p/10.0-1;
@@ -125,7 +125,7 @@ public class GaussCopulaTest extends TestCase {
 	
 	public void testInverseH1Function(){
 		double[][][] vals = readIn("H1inverse");
-		GaussCopula c = new GaussCopula(new double[]{0});
+		FGMCopula c = new FGMCopula(new double[]{0});
 		
 		for(int p=1; p<20; p++){
 			double par = p/10.0-1;
@@ -133,7 +133,10 @@ public class GaussCopulaTest extends TestCase {
 			c.setParams(new double[]{par});
 			for(int i=1; i<10; i++){
 				for(int j=1; j<10; j++){
-					assert(Math.abs(c.h1inverse(i/10.0, j/10.0) - vals[p][i][j]) < 0.00001 );
+					// the R package 'vines' uses the uniroot function for inversion,
+					// which is a bit weaker than our method
+					// (because ours works very good in the given [0, 1] interval)
+					assert(Math.abs(c.h1inverse(i/10.0, j/10.0) - vals[p][i][j]) < 0.01 );
 				}
 			}
 		}
@@ -141,7 +144,7 @@ public class GaussCopulaTest extends TestCase {
 	
 	public void testInverseH2Function(){
 		double[][][] vals = readIn("H2inverse");
-		GaussCopula c = new GaussCopula(new double[]{0});
+		FGMCopula c = new FGMCopula(new double[]{0});
 		
 		for(int p=1; p<20; p++){
 		double par = p/10.0-1;
@@ -149,7 +152,10 @@ public class GaussCopulaTest extends TestCase {
 		c.setParams(new double[]{par});
 			for(int i=1; i<10; i++){
 				for(int j=1; j<10; j++){
-					assert(Math.abs(c.h2inverse(i/10.0, j/10.0) - vals[p][i][j]) < 0.00001 );
+					// the R package 'vines' uses the uniroot function for inversion,
+					// which is a bit weaker than our method
+					// (because ours works very good in the given [0, 1] interval)
+					assert(Math.abs(c.h2inverse(i/10.0, j/10.0) - vals[p][i][j]) < 0.01 );
 				}
 			}
 		}
@@ -157,7 +163,7 @@ public class GaussCopulaTest extends TestCase {
 	
 	public void testTau(){
 		double[] vals = readInTau();
-		GaussCopula c = new GaussCopula(new double[]{0});
+		FGMCopula c = new FGMCopula(new double[]{0});
 		
 		for(int p=1; p<20; p++){
 			double par = p/10.0-1;
@@ -167,4 +173,3 @@ public class GaussCopulaTest extends TestCase {
 		}
 	}
 }
-

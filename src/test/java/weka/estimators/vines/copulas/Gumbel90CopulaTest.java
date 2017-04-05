@@ -1,18 +1,20 @@
-package org.kramerlab.copulae;
+package weka.estimators.vines.copulas;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 
 import junit.framework.TestCase;
-import weka.estimators.vines.copulas.GalambosCopula;
+import weka.estimators.vines.copulas.Gumbel90RotatedCopula;
 
-public class GalambosCopulaTest extends TestCase {
+public class Gumbel90CopulaTest extends TestCase {
+	private static int sign = -1;
+	private static String add = "90"; 
 	
 	public static double[][][][] readIn(String fn){
 		double[][][][] vals = new double[2][10][10][10];
 		
 		try{
-			BufferedReader br = new BufferedReader(new FileReader("src/test/data/CopulaData/GalambosData/Galambos"+fn+".test"));
+			BufferedReader br = new BufferedReader(new FileReader("src/test/data/CopulaData/GumbelData/Gumbel"+add+fn+".test"));
 			String str = br.readLine();
 			
 			while(str != null && !str.equals("[1] \"#\"") ){
@@ -53,7 +55,7 @@ public class GalambosCopulaTest extends TestCase {
 		double[][] vals = new double[2][10];
 		
 		try{
-			BufferedReader br = new BufferedReader(new FileReader("src/test/data/CopulaData/GalambosData/GalambosTau.test"));
+			BufferedReader br = new BufferedReader(new FileReader("src/test/data/CopulaData/GumbelData/Gumbel"+add+"Tau.test"));
 			String str = br.readLine();
 			
 			while(str != null && !str.equals("[1] \"#\"") ){
@@ -88,12 +90,13 @@ public class GalambosCopulaTest extends TestCase {
 	
 	public void testCDF(){
 		double[][][][] vals = readIn("CDF");
-		GalambosCopula c = new GalambosCopula(new double[]{2});
+		Gumbel90RotatedCopula c = new Gumbel90RotatedCopula(new double[]{sign*2});
+		
 		
 		for(int run=0; run <2; run++){
 			for(int p=1; p<10; p++){
-				double par = p;
-				if(run == 1) par = 1.0/p;
+				double par = sign*1+sign*p;
+				if(run == 1) par = sign*1+sign*1.0/p;
 				
 				c.setParams(new double[]{par});
 				for(int i=1; i<10; i++){
@@ -107,12 +110,13 @@ public class GalambosCopulaTest extends TestCase {
 	
 	public void testDensity(){
 		double[][][][] vals = readIn("PDF");
-		GalambosCopula c = new GalambosCopula(new double[]{2});
+		Gumbel90RotatedCopula c = new Gumbel90RotatedCopula(new double[]{sign*2});
+		
 		
 		for(int run=0; run <2; run++){
 			for(int p=1; p<10; p++){
-				double par = p;
-				if(run == 1) par = 1.0/p;
+				double par = sign*1+sign*p;
+				if(run == 1) par = sign*1+sign*1.0/p;
 				
 				c.setParams(new double[]{par});
 				for(int i=1; i<10; i++){
@@ -126,12 +130,13 @@ public class GalambosCopulaTest extends TestCase {
 	
 	public void testH1Function(){
 		double[][][][] vals = readIn("H1");
-		GalambosCopula c = new GalambosCopula(new double[]{2});
+		Gumbel90RotatedCopula c = new Gumbel90RotatedCopula(new double[]{sign*2});
+		
 		
 		for(int run=0; run <2; run++){
 			for(int p=1; p<10; p++){
-				double par = p;
-				if(run == 1) par = 1.0/p;
+				double par = sign*1+sign*p;
+				if(run == 1) par = sign*1+sign*1.0/p;
 				
 				c.setParams(new double[]{par});
 				for(int i=1; i<10; i++){
@@ -145,12 +150,13 @@ public class GalambosCopulaTest extends TestCase {
 	
 	public void testH2Function(){
 		double[][][][] vals = readIn("H2");
-		GalambosCopula c = new GalambosCopula(new double[]{2});
+		Gumbel90RotatedCopula c = new Gumbel90RotatedCopula(new double[]{sign*2});
+		
 		
 		for(int run=0; run <2; run++){
 			for(int p=1; p<10; p++){
-				double par = p;
-				if(run == 1) par = 1.0/p;
+				double par = sign*1+sign*p;
+				if(run == 1) par = sign*1+sign*1.0/p;
 				
 				c.setParams(new double[]{par});
 				for(int i=1; i<10; i++){
@@ -164,20 +170,19 @@ public class GalambosCopulaTest extends TestCase {
 	
 	public void testInverseH1Function(){
 		double[][][][] vals = readIn("H1inverse");
-		GalambosCopula c = new GalambosCopula(new double[]{2});
+		Gumbel90RotatedCopula c = new Gumbel90RotatedCopula(new double[]{sign*2});
+		
 		
 		for(int run=0; run <2; run++){
 			for(int p=1; p<10; p++){
-				double par = p;
-				if(run == 1) par = 1.0/p;
+				double par = sign*1+sign*p;
+				if(run == 1) par = sign*1+sign*1.0/p;
 				
 				c.setParams(new double[]{par});
 				for(int i=1; i<10; i++){
 					for(int j=1; j<10; j++){
-						// the R package 'vines' uses the uniroot function for inversion,
-						// which is a bit weaker than our method
-						// (because ours works very good in the given [0, 1] interval)
-						assert(Math.abs(c.h1inverse(i/10.0, j/10.0) - vals[run][p][i][j]) < 0.01 );}
+						assert(Math.abs(c.h1inverse(i/10.0, j/10.0) - vals[run][p][i][j]) < 0.00001 );
+					}
 				}
 			}
 		}
@@ -185,20 +190,19 @@ public class GalambosCopulaTest extends TestCase {
 	
 	public void testInverseH2Function(){
 		double[][][][] vals = readIn("H2inverse");
-		GalambosCopula c = new GalambosCopula(new double[]{2});
+		Gumbel90RotatedCopula c = new Gumbel90RotatedCopula(new double[]{sign*2});
+		
 		
 		for(int run=0; run <2; run++){
 			for(int p=1; p<10; p++){
-				double par = p;
-				if(run == 1) par = 1.0/p;
+				double par = sign*1+sign*p;
+				if(run == 1) par = sign*1+sign*1.0/p;
 				
 				c.setParams(new double[]{par});
 				for(int i=1; i<10; i++){
 					for(int j=1; j<10; j++){
-						// the R package 'vines' uses the uniroot function for inversion,
-						// which is a bit weaker than our method
-						// (because ours works very good in the given [0, 1] interval)
-						assert(Math.abs(c.h2inverse(i/10.0, j/10.0) - vals[run][p][i][j]) < 0.01 );}
+						assert(Math.abs(c.h2inverse(i/10.0, j/10.0) - vals[run][p][i][j]) < 0.00001 );
+					}
 				}
 			}
 		}
@@ -206,16 +210,16 @@ public class GalambosCopulaTest extends TestCase {
 	
 	public void testTau(){
 		double[][] vals = readInTau();
-		GalambosCopula c = new GalambosCopula(new double[]{2});
+		Gumbel90RotatedCopula c = new Gumbel90RotatedCopula(new double[]{sign*2});
+		
 		
 		for(int run=0; run <2; run++){
 			for(int p=1; p<10; p++){
-				double par = p;
-				if(run == 1) par = 1.0/p;
+				double par = sign*1+sign*p;
+				if(run == 1) par = sign*1+sign*1.0/p;
 				
 				c.setParams(new double[]{par});
-				// can't get more precise, simpson's rule is too weak.
-				assert(Math.abs(c.tau() - vals[run][p]) < 0.01 );
+				assert(Math.abs(c.tau() - vals[run][p]) < 0.00001 );
 			}
 		}
 	}

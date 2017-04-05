@@ -1,4 +1,4 @@
-package org.kramerlab.vines;
+package weka.estimators.vines;
 
 import junit.framework.*;
 import weka.estimators.vines.Edge;

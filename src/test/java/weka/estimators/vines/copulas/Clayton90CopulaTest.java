@@ -1,24 +1,26 @@
-package org.kramerlab.copulae;
+package weka.estimators.vines.copulas;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 
 import junit.framework.TestCase;
-import weka.estimators.vines.copulas.FrankCopula;
+import weka.estimators.vines.copulas.Clayton90RotatedCopula;
 
-public class FrankCopulaTest extends TestCase {
+public class Clayton90CopulaTest extends TestCase {
+	private static int sign = -1;
+	private static String add = "90"; 
 	
 	public static double[][][][] readIn(String fn){
-		double[][][][] vals = new double[2][20][10][10];
+		double[][][][] vals = new double[2][10][10][10];
 		
 		try{
-			BufferedReader br = new BufferedReader(new FileReader("src/test/data/CopulaData/FrankData/Frank"+fn+".test"));
+			BufferedReader br = new BufferedReader(new FileReader("src/test/data/CopulaData/ClaytonData/Clayton"+add+fn+".test"));
 			String str = br.readLine();
 			
 			while(str != null && !str.equals("[1] \"#\"") ){
 				str = str.substring(5, str.length()-1);
 				String[] strs = str.split(" ");
-				int p = Integer.parseInt(strs[0])+10;
+				int p = Integer.parseInt(strs[0]);
 				int i = Integer.parseInt(strs[1]);
 				int j = Integer.parseInt(strs[2]);
 				double val = Double.parseDouble(strs[3]);
@@ -33,7 +35,7 @@ public class FrankCopulaTest extends TestCase {
 			while(str != null){
 				str = str.substring(5, str.length()-1);
 				String[] strs = str.split(" ");
-				int p = Integer.parseInt(strs[0])+10;
+				int p = Integer.parseInt(strs[0]);
 				int i = Integer.parseInt(strs[1]);
 				int j = Integer.parseInt(strs[2]);
 				double val = Double.parseDouble(strs[3]);
@@ -50,16 +52,16 @@ public class FrankCopulaTest extends TestCase {
 	}
 	
 	public static double[][] readInTau(){
-		double[][] vals = new double[2][20];
+		double[][] vals = new double[2][10];
 		
 		try{
-			BufferedReader br = new BufferedReader(new FileReader("src/test/data/CopulaData/FrankData/FrankTau.test"));
+			BufferedReader br = new BufferedReader(new FileReader("src/test/data/CopulaData/ClaytonData/Clayton"+add+"Tau.test"));
 			String str = br.readLine();
 			
 			while(str != null && !str.equals("[1] \"#\"") ){
 				str = str.substring(5, str.length()-1);
 				String[] strs = str.split(" ");
-				int p = Integer.parseInt(strs[0])+10;
+				int p = Integer.parseInt(strs[0]);
 				double val = Double.parseDouble(strs[1]);
 				
 				vals[0][p] = val;
@@ -72,7 +74,7 @@ public class FrankCopulaTest extends TestCase {
 			while(str != null){
 				str = str.substring(5, str.length()-1);
 				String[] strs = str.split(" ");
-				int p = Integer.parseInt(strs[0])+10;
+				int p = Integer.parseInt(strs[0]);
 				double val = Double.parseDouble(strs[1]);
 				
 				vals[1][p] = val;
@@ -88,14 +90,12 @@ public class FrankCopulaTest extends TestCase {
 	
 	public void testCDF(){
 		double[][][][] vals = readIn("CDF");
-		FrankCopula c = new FrankCopula(new double[]{0});
+		Clayton90RotatedCopula c = new Clayton90RotatedCopula(new double[]{sign*2});
 		
-		for(int run=0; run < 2; run++){
-			for(int p=1; p<20; p++){
-				double par = p-10;
-				if(run == 1) par = par/10.0;
-				
-				if(par == 0) continue;
+		for(int run=0; run <2; run++){
+			for(int p=1; p<10; p++){
+				double par = sign*p;
+				if(run == 1) par = sign*1.0/p;
 				
 				c.setParams(new double[]{par});
 				for(int i=1; i<10; i++){
@@ -109,14 +109,12 @@ public class FrankCopulaTest extends TestCase {
 	
 	public void testDensity(){
 		double[][][][] vals = readIn("PDF");
-		FrankCopula c = new FrankCopula(new double[]{0});
+		Clayton90RotatedCopula c = new Clayton90RotatedCopula(new double[]{sign*2});
 		
-		for(int run=0; run < 2; run++){
-			for(int p=1; p<20; p++){
-				double par = p-10;
-				if(run == 1) par = par/10.0;
-				
-				if(par == 0) continue;
+		for(int run=0; run <2; run++){
+			for(int p=1; p<10; p++){
+				double par = sign*p;
+				if(run == 1) par = sign*1.0/p;
 				
 				c.setParams(new double[]{par});
 				for(int i=1; i<10; i++){
@@ -130,14 +128,12 @@ public class FrankCopulaTest extends TestCase {
 	
 	public void testH1Function(){
 		double[][][][] vals = readIn("H1");
-		FrankCopula c = new FrankCopula(new double[]{0});
+		Clayton90RotatedCopula c = new Clayton90RotatedCopula(new double[]{sign*2});
 		
-		for(int run=0; run < 2; run++){
-			for(int p=1; p<20; p++){
-				double par = p-10;
-				if(run == 1) par = par/10.0;
-				
-				if(par == 0) continue;
+		for(int run=0; run <2; run++){
+			for(int p=1; p<10; p++){
+				double par = sign*p;
+				if(run == 1) par = sign*1.0/p;
 				
 				c.setParams(new double[]{par});
 				for(int i=1; i<10; i++){
@@ -151,14 +147,12 @@ public class FrankCopulaTest extends TestCase {
 	
 	public void testH2Function(){
 		double[][][][] vals = readIn("H2");
-		FrankCopula c = new FrankCopula(new double[]{0});
+		Clayton90RotatedCopula c = new Clayton90RotatedCopula(new double[]{sign*2});
 		
-		for(int run=0; run < 2; run++){
-			for(int p=1; p<20; p++){
-				double par = p-10;
-				if(run == 1) par = par/10.0;
-				
-				if(par == 0) continue;
+		for(int run=0; run <2; run++){
+			for(int p=1; p<10; p++){
+				double par = sign*p;
+				if(run == 1) par = sign*1.0/p;
 				
 				c.setParams(new double[]{par});
 				for(int i=1; i<10; i++){
@@ -172,14 +166,12 @@ public class FrankCopulaTest extends TestCase {
 	
 	public void testInverseH1Function(){
 		double[][][][] vals = readIn("H1inverse");
-		FrankCopula c = new FrankCopula(new double[]{0});
+		Clayton90RotatedCopula c = new Clayton90RotatedCopula(new double[]{sign*2});
 		
-		for(int run=0; run < 2; run++){
-			for(int p=1; p<20; p++){
-				double par = p-10;
-				if(run == 1) par = par/10.0;
-				
-				if(par == 0) continue;
+		for(int run=0; run <2; run++){
+			for(int p=1; p<10; p++){
+				double par = sign*p;
+				if(run == 1) par = sign*1.0/p;
 				
 				c.setParams(new double[]{par});
 				for(int i=1; i<10; i++){
@@ -193,14 +185,12 @@ public class FrankCopulaTest extends TestCase {
 	
 	public void testInverseH2Function(){
 		double[][][][] vals = readIn("H2inverse");
-		FrankCopula c = new FrankCopula(new double[]{0});
+		Clayton90RotatedCopula c = new Clayton90RotatedCopula(new double[]{sign*2});
 		
-		for(int run=0; run < 2; run++){
-			for(int p=1; p<20; p++){
-				double par = p-10;
-				if(run == 1) par = par/10.0;
-				
-				if(par == 0) continue;
+		for(int run=0; run <2; run++){
+			for(int p=1; p<10; p++){
+				double par = sign*p;
+				if(run == 1) par = sign*1.0/p;
 				
 				c.setParams(new double[]{par});
 				for(int i=1; i<10; i++){
@@ -214,18 +204,15 @@ public class FrankCopulaTest extends TestCase {
 	
 	public void testTau(){
 		double[][] vals = readInTau();
-		FrankCopula c = new FrankCopula(new double[]{0});
+		Clayton90RotatedCopula c = new Clayton90RotatedCopula(new double[]{sign*2});
 		
-		for(int run=0; run < 2; run++){
-			for(int p=1; p<20; p++){
-				double par = p-10;
-				if(run == 1) par = par/10.0;
-				
-				if(par == 0) continue;
+		for(int run=0; run <2; run++){
+			for(int p=1; p<10; p++){
+				double par = sign*p;
+				if(run == 1) par = sign*1.0/p;
 				
 				c.setParams(new double[]{par});
-				// can't get more precise, simpson's rule is too weak.
-				assert(Math.abs(c.tau() - vals[run][p]) < 0.01 );
+				assert(Math.abs(c.tau() - vals[run][p]) < 0.00001 );
 			}
 		}
 	}

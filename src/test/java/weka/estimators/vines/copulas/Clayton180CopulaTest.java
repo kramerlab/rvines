@@ -1,14 +1,14 @@
-package org.kramerlab.copulae;
+package weka.estimators.vines.copulas;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 
 import junit.framework.TestCase;
-import weka.estimators.vines.copulas.Clayton270RotatedCopula;
+import weka.estimators.vines.copulas.Clayton180RotatedCopula;
 
-public class Clayton270CopulaTest extends TestCase {
-	private static int sign = -1;
-	private static String add = "270"; 
+public class Clayton180CopulaTest extends TestCase {
+	private static int sign = 1;
+	private static String add = "180"; 
 	
 	public static double[][][][] readIn(String fn){
 		double[][][][] vals = new double[2][10][10][10];
@@ -90,7 +90,7 @@ public class Clayton270CopulaTest extends TestCase {
 	
 	public void testCDF(){
 		double[][][][] vals = readIn("CDF");
-		Clayton270RotatedCopula c = new Clayton270RotatedCopula(new double[]{sign*2});
+		Clayton180RotatedCopula c = new Clayton180RotatedCopula(new double[]{sign*2});
 		
 		
 		for(int run=0; run <2; run++){
@@ -110,7 +110,7 @@ public class Clayton270CopulaTest extends TestCase {
 	
 	public void testDensity(){
 		double[][][][] vals = readIn("PDF");
-		Clayton270RotatedCopula c = new Clayton270RotatedCopula(new double[]{sign*2});
+		Clayton180RotatedCopula c = new Clayton180RotatedCopula(new double[]{sign*2});
 		
 		
 		for(int run=0; run <2; run++){
@@ -130,7 +130,7 @@ public class Clayton270CopulaTest extends TestCase {
 	
 	public void testH1Function(){
 		double[][][][] vals = readIn("H1");
-		Clayton270RotatedCopula c = new Clayton270RotatedCopula(new double[]{sign*2});
+		Clayton180RotatedCopula c = new Clayton180RotatedCopula(new double[]{sign*2});
 		
 		
 		for(int run=0; run <2; run++){
@@ -150,7 +150,7 @@ public class Clayton270CopulaTest extends TestCase {
 	
 	public void testH2Function(){
 		double[][][][] vals = readIn("H2");
-		Clayton270RotatedCopula c = new Clayton270RotatedCopula(new double[]{sign*2});
+		Clayton180RotatedCopula c = new Clayton180RotatedCopula(new double[]{sign*2});
 		
 		
 		for(int run=0; run <2; run++){
@@ -170,7 +170,7 @@ public class Clayton270CopulaTest extends TestCase {
 	
 	public void testInverseH1Function(){
 		double[][][][] vals = readIn("H1inverse");
-		Clayton270RotatedCopula c = new Clayton270RotatedCopula(new double[]{sign*2});
+		Clayton180RotatedCopula c = new Clayton180RotatedCopula(new double[]{sign*2});
 		
 		
 		for(int run=0; run <2; run++){
@@ -190,7 +190,7 @@ public class Clayton270CopulaTest extends TestCase {
 	
 	public void testInverseH2Function(){
 		double[][][][] vals = readIn("H2inverse");
-		Clayton270RotatedCopula c = new Clayton270RotatedCopula(new double[]{sign*2});
+		Clayton180RotatedCopula c = new Clayton180RotatedCopula(new double[]{sign*2});
 		
 		
 		for(int run=0; run <2; run++){
@@ -210,7 +210,7 @@ public class Clayton270CopulaTest extends TestCase {
 	
 	public void testTau(){
 		double[][] vals = readInTau();
-		Clayton270RotatedCopula c = new Clayton270RotatedCopula(new double[]{sign*2});
+		Clayton180RotatedCopula c = new Clayton180RotatedCopula(new double[]{sign*2});
 		
 		
 		for(int run=0; run <2; run++){
