@@ -26,7 +26,7 @@ import weka.estimators.vines.copulas.Copula;
  * @author Christian Lamberty (clamber@students.uni-mainz.de)
  */
 public class RegularVine implements MultivariateEstimator {
-	private boolean[] selected = new boolean[]{false, true, false, false, false, false, false, false, false, false, false, false, false, false};
+	private boolean[] selected = new boolean[]{true, true, true, true, true, true, true, true, true, true, true, true, true, true};
 	private Graph[] rvine;
 	private int[][] m;
 	private Edge[][] edges;

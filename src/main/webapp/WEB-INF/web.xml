@@ -13,7 +13,7 @@
    <!-- servlet definition -->
    <servlet>
       <servlet-name>VineServlet</servlet-name>
-      <servlet-class>org.kramerlab.vines.VineServlet</servlet-class>
+      <servlet-class>weka.estimators.vines.VineServlet</servlet-class>
    </servlet>
 
    <!-- servlet mapping -->
