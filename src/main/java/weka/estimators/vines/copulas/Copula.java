@@ -25,9 +25,16 @@ public interface Copula {
 	/**
 	 * Get the parameter bounds for the copula.
 	 *
-	 * @return	returns the copula parameter bounds as double array.
+	 * @return	returns the copula parameter bounds as double array as [lb, ub].
 	 */
-	public double[] getParBounds();
+	public double[][] getParBounds();
+	
+	/**
+	 * Get the default parameter that is used as MLE start parameter.
+	 *
+	 * @return	returns the default copula parameter.
+	 */
+	public double[] getMLEStart();
 	
 	/**
 	 * The cumulative distribution function for a bivariate Copula.

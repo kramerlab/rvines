@@ -63,7 +63,7 @@ public class TCopulaTest extends TestCase {
 	
 	public void testCDF(){
 		double[][][][] vals = readIn("CDF");
-		TCopula c = new TCopula(new double[]{0, 1});
+		TCopula c = new TCopula();
 		
 		for(int p=1; p<20; p++){
 			for(int v=3; v<=10; v++){
@@ -87,7 +87,7 @@ public class TCopulaTest extends TestCase {
 	
 	public void testDensity(){
 		double[][][][] vals = readIn("PDF");
-		TCopula c = new TCopula(new double[]{0, 1});
+		TCopula c = new TCopula();
 		
 		for(int p=1; p<20; p++){
 			for(int v=3; v<=10; v++){
@@ -106,7 +106,7 @@ public class TCopulaTest extends TestCase {
 	
 	public void testH1Function(){
 		double[][][][] vals = readIn("H1");
-		TCopula c = new TCopula(new double[]{0, 1});
+		TCopula c = new TCopula();
 		
 		for(int p=1; p<20; p++){
 			for(int v=3; v<=10; v++){
@@ -125,7 +125,7 @@ public class TCopulaTest extends TestCase {
 	
 	public void testH2Function(){
 		double[][][][] vals = readIn("H2");
-		TCopula c = new TCopula(new double[]{0, 1});
+		TCopula c = new TCopula();
 		
 		for(int p=1; p<20; p++){
 			for(int v=3; v<=10; v++){
@@ -144,7 +144,7 @@ public class TCopulaTest extends TestCase {
 	
 	public void testInverseH1Function(){
 		double[][][][] vals = readIn("H1inverse");
-		TCopula c = new TCopula(new double[]{0, 1});
+		TCopula c = new TCopula();
 		
 		for(int p=1; p<20; p++){
 			for(int v=3; v<=10; v++){
@@ -163,7 +163,7 @@ public class TCopulaTest extends TestCase {
 	
 	public void testInverseH2Function(){
 		double[][][][] vals = readIn("H2inverse");
-		TCopula c = new TCopula(new double[]{0, 1});
+		TCopula c = new TCopula();
 		
 		for(int p=1; p<20; p++){
 			for(int v=3; v<=10; v++){
@@ -182,7 +182,7 @@ public class TCopulaTest extends TestCase {
 	
 	public void testTau(){
 		double[][] vals = readInTau();
-		TCopula c = new TCopula(new double[]{0, 1});
+		TCopula c = new TCopula();
 		
 		for(int p=1; p<20; p++){
 			for(int v=3; v<=10; v++){

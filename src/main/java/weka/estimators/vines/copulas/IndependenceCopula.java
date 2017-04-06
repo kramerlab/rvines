@@ -9,20 +9,6 @@ package weka.estimators.vines.copulas;
  * @author Christian Lamberty (clamber@students.uni-mainz.de)
  */
 public class IndependenceCopula extends AbstractCopula{
-	
-	/**
-	 * Constructor
-	 * @param params copula parameters as double array.
-	 * 
-	 * Note: The Independence copula does not need any parameters.
-	 */
-	public IndependenceCopula(double[] params) {
-		super(params);
-	}
-	
-	public IndependenceCopula() {
-		super(new double[0]);
-	}
 
 	@Override
 	public double C(double x, double y) {
@@ -62,10 +48,5 @@ public class IndependenceCopula extends AbstractCopula{
 	public double mle(double[] a, double[] b) {
 		// There is no parameter to optimize
 		return 0;
-	}
-	
-	@Override
-	public double[] getParBounds() {
-		return new double[]{};
 	}
 }

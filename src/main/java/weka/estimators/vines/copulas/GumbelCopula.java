@@ -22,6 +22,15 @@ public class GumbelCopula extends AbstractCopula{
 	
 	/**
 	 * Constructor
+	 */
+	public GumbelCopula() {
+		d = 2;
+		lb = new double[]{1+tol};
+		ub = new double[]{20};
+		start = new double[]{2};
+	}
+	
+	/**
 	 * @param params parameter array, should be like:
 	 * <br>
 	 * params = {d}
@@ -29,14 +38,6 @@ public class GumbelCopula extends AbstractCopula{
 	 * for mode 0 and 2 : d : 1 &lt; d &lt; infinity
 	 * for mode 1 and 3 : d : -infinity &lt; d &lt; -1
 	 */
-	public GumbelCopula(double[] params) {
-		super(params);
-		d = params[0];
-		lb = 1+tol;
-		ub = 20;
-		start = 2;
-	}
-	
 	@Override
 	public void setParams(double[] params){
 		super.setParams(params);
@@ -120,10 +121,5 @@ public class GumbelCopula extends AbstractCopula{
 	@Override
 	public String name() {
 		return "Gu";
-	}
-	
-	@Override
-	public double[] getParBounds() {
-		return new double[]{lb, ub};
 	}
 }

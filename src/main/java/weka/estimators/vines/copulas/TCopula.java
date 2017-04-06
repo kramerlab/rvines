@@ -3,7 +3,6 @@ package weka.estimators.vines.copulas;
 import umontreal.ssj.probdist.StudentDist;
 import umontreal.ssj.probdistmulti.BiStudentDist;
 import weka.estimators.vines.Utils;
-import weka.estimators.vines.functions.CopulaMLE;
 
 /**
  * This is the class to represent Student T copula family for RVines.
@@ -27,6 +26,17 @@ public class TCopula extends AbstractCopula{
 	
 	/**
 	 * Constructor
+	 */
+	public TCopula() {
+		p = 0;
+		v = 8;
+		lb = new double[]{-1, 2};
+		ub = new double[]{1, 30};
+		start = new double[]{0, 8};
+	}
+
+	/**
+	 * Constructor
 	 * @param params parameter array, should be like:
 	 * <br>
 	 * params = {p, v}
@@ -34,15 +44,6 @@ public class TCopula extends AbstractCopula{
 	 * p : probability | -1 &lt; p &lt; 1
 	 * v : degree of freedom | natural number > 0
 	 */
-	public TCopula(double[] params) {
-		super(params);
-		p = params[0];
-		v = (int) params[1];
-		lb = -1;
-		ub = 1;
-		start = 0;
-	}
-
 	@Override
 	public void setParams(double[] params){
 		super.setParams(params);
@@ -110,25 +111,6 @@ public class TCopula extends AbstractCopula{
 	}
 	
 	@Override
-	public double mle(double[] a, double[] b){
-		CopulaMLE cmle = new CopulaMLE(this, a, b);
-		double[] initX = new double[]{0, 8};
-		double[][] constr= new double[][]{{lb+tol, 2+tol}, {ub-tol, 30}};
-		// cmle.setDebug(true);
-		
-		try {
-			double[] x = cmle.findArgmin(initX, constr); 
-			 while(x == null){  // 200 iterations are not enough
-			    x = cmle.getVarbValues();  // Try another 200 iterations
-			    x = cmle.findArgmin(x, constr);
-			 }
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return -cmle.getMinFunction();
-	}
-	
-	@Override
 	public double tau() {
 		return 2/Math.PI*Math.asin(p);
 	}
@@ -136,10 +118,5 @@ public class TCopula extends AbstractCopula{
 	@Override
 	public String name() {
 		return "T";
-	}
-	
-	@Override
-	public double[] getParBounds() {
-		return new double[]{lb, ub, 1, 30};
 	}
 }

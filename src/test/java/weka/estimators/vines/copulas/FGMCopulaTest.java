@@ -61,7 +61,7 @@ public class FGMCopulaTest extends TestCase {
 	
 	public void testCDF(){
 		double[][][] vals = readIn("CDF");
-		FGMCopula c = new FGMCopula(new double[]{0});
+		FGMCopula c = new FGMCopula();
 		
 		for(int p=1; p<20; p++){
 			double par = p/10.0-1;
@@ -77,7 +77,7 @@ public class FGMCopulaTest extends TestCase {
 	
 	public void testDensity(){
 		double[][][] vals = readIn("PDF");
-		FGMCopula c = new FGMCopula(new double[]{0});
+		FGMCopula c = new FGMCopula();
 		
 		for(int p=1; p<20; p++){
 			double par = p/10.0-1;
@@ -93,7 +93,7 @@ public class FGMCopulaTest extends TestCase {
 	
 	public void testH1Function(){
 		double[][][] vals = readIn("H1");
-		FGMCopula c = new FGMCopula(new double[]{0});
+		FGMCopula c = new FGMCopula();
 		
 		for(int p=1; p<20; p++){
 			double par = p/10.0-1;
@@ -109,7 +109,7 @@ public class FGMCopulaTest extends TestCase {
 	
 	public void testH2Function(){
 		double[][][] vals = readIn("H2");
-		FGMCopula c = new FGMCopula(new double[]{0});
+		FGMCopula c = new FGMCopula();
 		
 		for(int p=1; p<20; p++){
 			double par = p/10.0-1;
@@ -125,7 +125,7 @@ public class FGMCopulaTest extends TestCase {
 	
 	public void testInverseH1Function(){
 		double[][][] vals = readIn("H1inverse");
-		FGMCopula c = new FGMCopula(new double[]{0});
+		FGMCopula c = new FGMCopula();
 		
 		for(int p=1; p<20; p++){
 			double par = p/10.0-1;
@@ -144,7 +144,7 @@ public class FGMCopulaTest extends TestCase {
 	
 	public void testInverseH2Function(){
 		double[][][] vals = readIn("H2inverse");
-		FGMCopula c = new FGMCopula(new double[]{0});
+		FGMCopula c = new FGMCopula();
 		
 		for(int p=1; p<20; p++){
 		double par = p/10.0-1;
@@ -163,7 +163,7 @@ public class FGMCopulaTest extends TestCase {
 	
 	public void testTau(){
 		double[] vals = readInTau();
-		FGMCopula c = new FGMCopula(new double[]{0});
+		FGMCopula c = new FGMCopula();
 		
 		for(int p=1; p<20; p++){
 			double par = p/10.0-1;

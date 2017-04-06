@@ -1,7 +1,6 @@
 package weka.estimators.vines.copulas;
 
 import weka.estimators.vines.Utils;
-import weka.estimators.vines.functions.CopulaMLE;
 import weka.estimators.vines.functions.debyeSub;
 
 /**
@@ -22,20 +21,21 @@ public class FrankCopula extends AbstractCopula{
 	
 	/**
 	 * Constructor
+	 */
+	public FrankCopula() {
+		d = 0;
+		lb = new double[]{-100};
+		ub = new double[]{100};
+		start = new double[]{0};
+	}
+
+	/**
 	 * @param params parameter array, should be like:
 	 * <br>
 	 * params = {d}
 	 * <br>
 	 * d : dependence | -infinity &lt; d &lt; infinity
 	 */
-	public FrankCopula(double[] params) {
-		super(params);
-		d = params[0];
-		lb = -100;
-		ub = 100;
-		start = 0;
-	}
-
 	@Override
 	public void setParams(double[] params){
 		super.setParams(params);
@@ -129,10 +129,5 @@ public class FrankCopula extends AbstractCopula{
 	@Override
 	public String name() {
 		return "F";
-	}
-
-	@Override
-	public double[] getParBounds() {
-		return new double[]{lb, ub};
 	}
 }

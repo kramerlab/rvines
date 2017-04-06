@@ -13,26 +13,25 @@ import weka.estimators.vines.functions.H2;
  */
 public abstract class AbstractCopula implements Copula{
 	protected double[] params;
-	public final static double tol = Math.pow(10, -6);
-	public final static boolean WEKA_OPTIMIZATION = true;
-	public double lb = -1;
-	public double ub = 1;
-	public double start = 0;
-	
-	/**
-	 * Constructor
-	 * @param params copula parameters as double array.
-	 */
-	public AbstractCopula(double[] params){
-		this.params = params;
-	}
+	public final static double tol = Math.pow(10, -4);
+	public double[] lb = new double[0];
+	public double[] ub = new double[0];
+	public double[] start = new double[0];
 	
 	public void setParams(double[] params) {
 		this.params = params;
 	}
 
+	public double[][] getParBounds() {
+		return new double[][]{lb, ub};
+	}
+	
 	public double[] getParams() {
 		return params;
+	}
+	
+	public double[] getMLEStart() {
+		return start;
 	}
 	
 	public double h1inverse(double x, double y) {
@@ -48,9 +47,8 @@ public abstract class AbstractCopula implements Copula{
 	public double mle(double[] a, double[] b){
 		CopulaMLE cmle = new CopulaMLE(this, a, b);
 		
-		if(WEKA_OPTIMIZATION){
-		double[] initX = new double[]{start};
-		double[][] constr = new double[][]{{lb}, {ub}};
+		double[] initX = getMLEStart();
+		double[][] constr = getParBounds();
 		try {
 			double[] x = cmle.findArgmin(initX, constr); 
 			 while(x == null){  // 200 iterations are not enough
@@ -58,17 +56,11 @@ public abstract class AbstractCopula implements Copula{
 			    x = cmle.findArgmin(x, constr);
 			 }
 		} catch (Exception e) {
+			//System.err.println("Tried to fit "+name());
+			//System.out.println();
+			//System.out.println("With pars : "+constr[0][0]+" "+constr[1][0]+" "+initX[0]);
 			// e.printStackTrace();
 		}
 		return -cmle.getMinFunction();
-		} else{
-		try {
-			setParams(new double[]{cmle.optimize(lb, ub, start)});
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		return Utils.logLikelihood(this, a, b);
-		}
 	}
 }

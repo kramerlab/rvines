@@ -4,9 +4,10 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 
 import junit.framework.TestCase;
-import weka.estimators.vines.copulas.Gumbel180RotatedCopula;
+import weka.estimators.vines.functions.CopulaRotation;
 
 public class Gumbel180CopulaTest extends TestCase {
+	private static CopulaRotation.Mode m = CopulaRotation.Mode.ROT180;
 	private static int sign = 1;
 	private static String add = "180"; 
 	
@@ -90,8 +91,7 @@ public class Gumbel180CopulaTest extends TestCase {
 	
 	public void testCDF(){
 		double[][][][] vals = readIn("CDF");
-		Gumbel180RotatedCopula c = new Gumbel180RotatedCopula(new double[]{sign*2});
-
+		Copula c = new CopulaRotation(new GumbelCopula(), m);
 		
 		for(int run=0; run <2; run++){
 			for(int p=1; p<10; p++){
@@ -110,8 +110,7 @@ public class Gumbel180CopulaTest extends TestCase {
 	
 	public void testDensity(){
 		double[][][][] vals = readIn("PDF");
-		Gumbel180RotatedCopula c = new Gumbel180RotatedCopula(new double[]{sign*2});
-
+		Copula c = new CopulaRotation(new GumbelCopula(), m);
 		
 		for(int run=0; run <2; run++){
 			for(int p=1; p<10; p++){
@@ -130,8 +129,7 @@ public class Gumbel180CopulaTest extends TestCase {
 	
 	public void testH1Function(){
 		double[][][][] vals = readIn("H1");
-		Gumbel180RotatedCopula c = new Gumbel180RotatedCopula(new double[]{sign*2});
-
+		Copula c = new CopulaRotation(new GumbelCopula(), m);
 		
 		for(int run=0; run <2; run++){
 			for(int p=1; p<10; p++){
@@ -150,8 +148,7 @@ public class Gumbel180CopulaTest extends TestCase {
 	
 	public void testH2Function(){
 		double[][][][] vals = readIn("H2");
-		Gumbel180RotatedCopula c = new Gumbel180RotatedCopula(new double[]{sign*2});
-
+		Copula c = new CopulaRotation(new GumbelCopula(), m);
 		
 		for(int run=0; run <2; run++){
 			for(int p=1; p<10; p++){
@@ -170,8 +167,7 @@ public class Gumbel180CopulaTest extends TestCase {
 	
 	public void testInverseH1Function(){
 		double[][][][] vals = readIn("H1inverse");
-		Gumbel180RotatedCopula c = new Gumbel180RotatedCopula(new double[]{sign*2});
-
+		Copula c = new CopulaRotation(new GumbelCopula(), m);
 		
 		for(int run=0; run <2; run++){
 			for(int p=1; p<10; p++){
@@ -190,8 +186,7 @@ public class Gumbel180CopulaTest extends TestCase {
 	
 	public void testInverseH2Function(){
 		double[][][][] vals = readIn("H2inverse");
-		Gumbel180RotatedCopula c = new Gumbel180RotatedCopula(new double[]{sign*2});
-
+		Copula c = new CopulaRotation(new GumbelCopula(), m);
 		
 		for(int run=0; run <2; run++){
 			for(int p=1; p<10; p++){
@@ -210,8 +205,7 @@ public class Gumbel180CopulaTest extends TestCase {
 	
 	public void testTau(){
 		double[][] vals = readInTau();
-		Gumbel180RotatedCopula c = new Gumbel180RotatedCopula(new double[]{sign*2});
-
+		Copula c = new CopulaRotation(new GumbelCopula(), m);
 		
 		for(int run=0; run <2; run++){
 			for(int p=1; p<10; p++){

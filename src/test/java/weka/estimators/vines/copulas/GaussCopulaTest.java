@@ -61,7 +61,7 @@ public class GaussCopulaTest extends TestCase {
 	
 	public void testCDF(){
 		double[][][] vals = readIn("CDF");
-		GaussCopula c = new GaussCopula(new double[]{0});
+		GaussCopula c = new GaussCopula();
 		
 		for(int p=1; p<20; p++){
 			double par = p/10.0-1;
@@ -77,7 +77,7 @@ public class GaussCopulaTest extends TestCase {
 	
 	public void testDensity(){
 		double[][][] vals = readIn("PDF");
-		GaussCopula c = new GaussCopula(new double[]{0});
+		GaussCopula c = new GaussCopula();
 		
 		for(int p=1; p<20; p++){
 			double par = p/10.0-1;
@@ -93,7 +93,7 @@ public class GaussCopulaTest extends TestCase {
 	
 	public void testH1Function(){
 		double[][][] vals = readIn("H1");
-		GaussCopula c = new GaussCopula(new double[]{0});
+		GaussCopula c = new GaussCopula();
 		
 		for(int p=1; p<20; p++){
 			double par = p/10.0-1;
@@ -109,7 +109,7 @@ public class GaussCopulaTest extends TestCase {
 	
 	public void testH2Function(){
 		double[][][] vals = readIn("H2");
-		GaussCopula c = new GaussCopula(new double[]{0});
+		GaussCopula c = new GaussCopula();
 		
 		for(int p=1; p<20; p++){
 			double par = p/10.0-1;
@@ -125,7 +125,7 @@ public class GaussCopulaTest extends TestCase {
 	
 	public void testInverseH1Function(){
 		double[][][] vals = readIn("H1inverse");
-		GaussCopula c = new GaussCopula(new double[]{0});
+		GaussCopula c = new GaussCopula();
 		
 		for(int p=1; p<20; p++){
 			double par = p/10.0-1;
@@ -141,7 +141,7 @@ public class GaussCopulaTest extends TestCase {
 	
 	public void testInverseH2Function(){
 		double[][][] vals = readIn("H2inverse");
-		GaussCopula c = new GaussCopula(new double[]{0});
+		GaussCopula c = new GaussCopula();
 		
 		for(int p=1; p<20; p++){
 		double par = p/10.0-1;
@@ -157,7 +157,7 @@ public class GaussCopulaTest extends TestCase {
 	
 	public void testTau(){
 		double[] vals = readInTau();
-		GaussCopula c = new GaussCopula(new double[]{0});
+		GaussCopula c = new GaussCopula();
 		
 		for(int p=1; p<20; p++){
 			double par = p/10.0-1;

@@ -9,7 +9,7 @@ import weka.estimators.vines.Utils;
  * Bivariate archimedean copulas: an application to two stock market indices.
  * <br>
  * The cumulative distribution function, the density function, the h-function
- * and its inverse werepresented by K. Aas et al. (2009):
+ * and its inverse were presented by K. Aas et al. (2009):
  * Pair-copula constructions of multiple dependence.
  * <br>
  * The rotations are presented by Brechmann, E. C. & Schepsmeier, U. (2013):
@@ -22,6 +22,15 @@ public class ClaytonCopula extends AbstractCopula{
 	
 	/**
 	 * Constructor
+	 */
+	public ClaytonCopula() {
+		d = 2;
+		lb = new double[]{0+tol};
+		ub = new double[]{20};
+		start = new double[]{2};
+	}
+
+	/**
 	 * @param params parameter array, should be like:
 	 * <br>
 	 * params = {d}
@@ -29,14 +38,6 @@ public class ClaytonCopula extends AbstractCopula{
 	 * for mode 0 and 2 : d : 0 &lt; d &lt; infinity
 	 * for mode 1 and 3 : d : -infinity &lt; d &lt; 0
 	 */
-	public ClaytonCopula(double[] params) {
-		super(params);
-		d = params[0];
-		lb = 0+tol;
-		ub = 20;
-		start = 2;
-	}
-
 	@Override
 	public void setParams(double[] params){
 		super.setParams(params);
@@ -96,10 +97,5 @@ public class ClaytonCopula extends AbstractCopula{
 	@Override
 	public String name() {
 		return "C";
-	}
-
-	@Override
-	public double[] getParBounds() {
-		return new double[]{lb, ub};
 	}
 }

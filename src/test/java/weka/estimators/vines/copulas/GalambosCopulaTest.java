@@ -88,7 +88,7 @@ public class GalambosCopulaTest extends TestCase {
 	
 	public void testCDF(){
 		double[][][][] vals = readIn("CDF");
-		GalambosCopula c = new GalambosCopula(new double[]{2});
+		GalambosCopula c = new GalambosCopula();
 		
 		for(int run=0; run <2; run++){
 			for(int p=1; p<10; p++){
@@ -107,7 +107,7 @@ public class GalambosCopulaTest extends TestCase {
 	
 	public void testDensity(){
 		double[][][][] vals = readIn("PDF");
-		GalambosCopula c = new GalambosCopula(new double[]{2});
+		GalambosCopula c = new GalambosCopula();
 		
 		for(int run=0; run <2; run++){
 			for(int p=1; p<10; p++){
@@ -126,7 +126,7 @@ public class GalambosCopulaTest extends TestCase {
 	
 	public void testH1Function(){
 		double[][][][] vals = readIn("H1");
-		GalambosCopula c = new GalambosCopula(new double[]{2});
+		GalambosCopula c = new GalambosCopula();
 		
 		for(int run=0; run <2; run++){
 			for(int p=1; p<10; p++){
@@ -145,7 +145,7 @@ public class GalambosCopulaTest extends TestCase {
 	
 	public void testH2Function(){
 		double[][][][] vals = readIn("H2");
-		GalambosCopula c = new GalambosCopula(new double[]{2});
+		GalambosCopula c = new GalambosCopula();
 		
 		for(int run=0; run <2; run++){
 			for(int p=1; p<10; p++){
@@ -164,7 +164,7 @@ public class GalambosCopulaTest extends TestCase {
 	
 	public void testInverseH1Function(){
 		double[][][][] vals = readIn("H1inverse");
-		GalambosCopula c = new GalambosCopula(new double[]{2});
+		GalambosCopula c = new GalambosCopula();
 		
 		for(int run=0; run <2; run++){
 			for(int p=1; p<10; p++){
@@ -185,7 +185,7 @@ public class GalambosCopulaTest extends TestCase {
 	
 	public void testInverseH2Function(){
 		double[][][][] vals = readIn("H2inverse");
-		GalambosCopula c = new GalambosCopula(new double[]{2});
+		GalambosCopula c = new GalambosCopula();
 		
 		for(int run=0; run <2; run++){
 			for(int p=1; p<10; p++){
@@ -206,7 +206,7 @@ public class GalambosCopulaTest extends TestCase {
 	
 	public void testTau(){
 		double[][] vals = readInTau();
-		GalambosCopula c = new GalambosCopula(new double[]{2});
+		GalambosCopula c = new GalambosCopula();
 		
 		for(int run=0; run <2; run++){
 			for(int p=1; p<10; p++){

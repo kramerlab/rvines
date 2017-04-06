@@ -24,20 +24,21 @@ public class GaussCopula extends AbstractCopula{
 	
 	/**
 	 * Constructor
+	 */
+	public GaussCopula() {
+		p = 0;
+		lb = new double[]{-1+tol};
+		ub = new double[]{1-tol};
+		start = new double[]{0};
+	}
+
+	/**
 	 * @param params parameter array, should be like:
 	 * <br>
 	 * params = {p}
 	 * <br>
 	 * p : probability | -1 &lt; p &lt; 1
 	 */
-	public GaussCopula(double[] params) {
-		super(params);
-		p = params[0];
-		lb = -1+tol;
-		ub = 1-tol;
-		start = 0;
-	}
-
 	@Override
 	public void setParams(double[] params){
 		super.setParams(params);
@@ -111,10 +112,5 @@ public class GaussCopula extends AbstractCopula{
 	
 	public String name() {
 		return "G";
-	}
-	
-	@Override
-	public double[] getParBounds() {
-		return new double[]{lb, ub};
 	}
 }

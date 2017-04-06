@@ -4,9 +4,10 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 
 import junit.framework.TestCase;
-import weka.estimators.vines.copulas.Clayton90RotatedCopula;
+import weka.estimators.vines.functions.CopulaRotation;
 
 public class Clayton90CopulaTest extends TestCase {
+	private static CopulaRotation.Mode m = CopulaRotation.Mode.ROT90;
 	private static int sign = -1;
 	private static String add = "90"; 
 	
@@ -90,7 +91,7 @@ public class Clayton90CopulaTest extends TestCase {
 	
 	public void testCDF(){
 		double[][][][] vals = readIn("CDF");
-		Clayton90RotatedCopula c = new Clayton90RotatedCopula(new double[]{sign*2});
+		Copula c = new CopulaRotation(new ClaytonCopula(), m);
 		
 		for(int run=0; run <2; run++){
 			for(int p=1; p<10; p++){
@@ -109,7 +110,7 @@ public class Clayton90CopulaTest extends TestCase {
 	
 	public void testDensity(){
 		double[][][][] vals = readIn("PDF");
-		Clayton90RotatedCopula c = new Clayton90RotatedCopula(new double[]{sign*2});
+		Copula c = new CopulaRotation(new ClaytonCopula(), m);
 		
 		for(int run=0; run <2; run++){
 			for(int p=1; p<10; p++){
@@ -128,7 +129,7 @@ public class Clayton90CopulaTest extends TestCase {
 	
 	public void testH1Function(){
 		double[][][][] vals = readIn("H1");
-		Clayton90RotatedCopula c = new Clayton90RotatedCopula(new double[]{sign*2});
+		Copula c = new CopulaRotation(new ClaytonCopula(), m);
 		
 		for(int run=0; run <2; run++){
 			for(int p=1; p<10; p++){
@@ -147,7 +148,7 @@ public class Clayton90CopulaTest extends TestCase {
 	
 	public void testH2Function(){
 		double[][][][] vals = readIn("H2");
-		Clayton90RotatedCopula c = new Clayton90RotatedCopula(new double[]{sign*2});
+		Copula c = new CopulaRotation(new ClaytonCopula(), m);
 		
 		for(int run=0; run <2; run++){
 			for(int p=1; p<10; p++){
@@ -166,7 +167,7 @@ public class Clayton90CopulaTest extends TestCase {
 	
 	public void testInverseH1Function(){
 		double[][][][] vals = readIn("H1inverse");
-		Clayton90RotatedCopula c = new Clayton90RotatedCopula(new double[]{sign*2});
+		Copula c = new CopulaRotation(new ClaytonCopula(), m);
 		
 		for(int run=0; run <2; run++){
 			for(int p=1; p<10; p++){
@@ -185,7 +186,7 @@ public class Clayton90CopulaTest extends TestCase {
 	
 	public void testInverseH2Function(){
 		double[][][][] vals = readIn("H2inverse");
-		Clayton90RotatedCopula c = new Clayton90RotatedCopula(new double[]{sign*2});
+		Copula c = new CopulaRotation(new ClaytonCopula(), m);
 		
 		for(int run=0; run <2; run++){
 			for(int p=1; p<10; p++){
@@ -204,7 +205,7 @@ public class Clayton90CopulaTest extends TestCase {
 	
 	public void testTau(){
 		double[][] vals = readInTau();
-		Clayton90RotatedCopula c = new Clayton90RotatedCopula(new double[]{sign*2});
+		Copula c = new CopulaRotation(new ClaytonCopula(), m);
 		
 		for(int run=0; run <2; run++){
 			for(int p=1; p<10; p++){

@@ -19,20 +19,21 @@ public class FGMCopula extends AbstractCopula{
 	
 	/**
 	 * Constructor
+	 */
+	public FGMCopula() {
+		d = 0;
+		lb = new double[]{-1+tol};
+		ub = new double[]{1-tol};
+		start = new double[]{0};
+	}
+
+	/**
 	 * @param params parameter array, should be like:
 	 * <br>
 	 * params = {d}
 	 * <br>
 	 * d : -1 &lt; d &lt; 1
 	 */
-	public FGMCopula(double[] params) {
-		super(params);
-		d = params[0];
-		lb = -1+tol;
-		ub = 1-tol;
-		start = 0;
-	}
-
 	@Override
 	public void setParams(double[] params){
 		super.setParams(params);
@@ -82,8 +83,4 @@ public class FGMCopula extends AbstractCopula{
 		return "FGM";
 	}
 	
-	@Override
-	public double[] getParBounds() {
-		return new double[]{lb, ub};
-	}
 }

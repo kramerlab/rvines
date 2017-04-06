@@ -2,12 +2,15 @@ package weka.estimators.vines;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.TreeSet;
 
 import weka.core.Instances;
+import weka.core.Option;
 import weka.core.converters.ConverterUtils.DataSource;
+import weka.core.OptionHandler;
 import weka.estimators.MultivariateEstimator;
 import weka.estimators.vines.copulas.Copula;
 
@@ -25,18 +28,18 @@ import weka.estimators.vines.copulas.Copula;
  * 
  * @author Christian Lamberty (clamber@students.uni-mainz.de)
  */
-public class RegularVine implements MultivariateEstimator {
+public class RegularVine implements MultivariateEstimator, OptionHandler {
 	private boolean[] selected = new boolean[]{true, true, true, true, true, true, true, true, true, true, true, true, true, true};
 	private Graph[] rvine;
 	private int[][] m;
 	private Edge[][] edges;
 	private double[][] data;
 	private boolean built = false;
-	private boolean timestamps = true;
+	private boolean timestamps = false;
 	
 	public static void main(String[] args){
 		RegularVine rvine = new RegularVine();
-		double[][] data = loadData("src/main/data/daxreturns.arff");
+		double[][] data = loadData("src/main/data/random/random1.arff");
 		if(data == null) return;
 		
 		double[] w = new double[data.length];
@@ -112,11 +115,14 @@ public class RegularVine implements MultivariateEstimator {
 			System.out.println("Tree "+(i+1)+" : ");
 			for(Edge e : rvine[i].getUndirectedEdgeList()){
 				Copula c = e.getCopula();
-				System.out.print(e.getLabel()+" : "+c.name()+"(pars:{");
-				for(int k=0; k<c.getParams().length-1; k++){
-					System.out.print(round(c.getParams()[k])+",");
+				if(c.getParams() != null){
+					System.out.print(e.getLabel()+" : "+c.name()+"(pars:{");
+					for(int k=0; k<c.getParams().length-1; k++){
+						System.out.print(round(c.getParams()[k])+",");
+					}
+					System.out.print(round(c.getParams()[c.getParams().length-1])+"},");
 				}
-				System.out.println(round(c.getParams()[c.getParams().length-1])+"}, tau:"+round(c.tau())+", empTau:"+round(e.getWeight())+")");
+				System.out.println("tau:"+round(c.tau())+", empTau:"+round(e.getWeight())+")");
 			}
 			System.out.println();
 		}
@@ -232,11 +238,14 @@ public class RegularVine implements MultivariateEstimator {
 			for(int j=0;j<edges.length;j++){
 				String out = " - ";
 				if(edges[i][j] != null){
-					double val = round(edges[i][j].getCopula().getParams()[0]);
-					if( (int) val == val){
-						out = Integer.toString( (int) val);
-					}else{
-						out = String.valueOf(val);
+					double[] pars = edges[i][j].getCopula().getParams();
+					if(pars != null){
+						double val = round(pars[0]);
+						if( (int) val == val){
+							out = Integer.toString( (int) val);
+						}else{
+							out = String.valueOf(val);
+						}
 					}
 				}
 				if(j<edges.length-1){
@@ -257,7 +266,7 @@ public class RegularVine implements MultivariateEstimator {
 				String out = " - ";
 				if(edges[i][j] != null){
 					double[] pars = edges[i][j].getCopula().getParams();
-					if(pars.length >= 2){
+					if(pars != null && pars.length >= 2){
 						double val = round(pars[1]);
 						if( (int) val == val){
 							out = Integer.toString( (int) val);
@@ -504,7 +513,6 @@ public class RegularVine implements MultivariateEstimator {
 	 * @param instance the instance.
 	 * @return returns the log-likelihood for the instance.
 	 */
-	@Override
 	public double logDensity(double[] x){
 		if(!built){
 			System.err.println("Use estimate(data, w) first to build the estimator!");
@@ -854,5 +862,23 @@ public class RegularVine implements MultivariateEstimator {
 	
 	private static double round(double val){
 		return Math.round(val*Math.pow(10, 4))/Math.pow(10, 4);
+	}
+
+	@Override
+	public Enumeration<Option> listOptions() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setOptions(String[] options) throws Exception {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public String[] getOptions() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }
