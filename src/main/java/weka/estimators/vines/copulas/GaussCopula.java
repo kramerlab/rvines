@@ -111,6 +111,10 @@ public class GaussCopula extends AbstractCopula{
 	}
 	
 	public String name() {
+		return "Gauss";
+	}
+	
+	public String token() {
 		return "G";
 	}
 }

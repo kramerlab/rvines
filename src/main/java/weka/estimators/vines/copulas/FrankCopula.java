@@ -128,6 +128,11 @@ public class FrankCopula extends AbstractCopula{
 	
 	@Override
 	public String name() {
+		return "Frank";
+	}
+	
+	@Override
+	public String token() {
 		return "F";
 	}
 }

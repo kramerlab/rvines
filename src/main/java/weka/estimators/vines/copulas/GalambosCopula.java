@@ -98,6 +98,11 @@ public class GalambosCopula extends AbstractCopula{
 
 	@Override
 	public String name() {
+		return "Galambos";
+	}
+	
+	@Override
+	public String token() {
 		return "Ga";
 	}
 }

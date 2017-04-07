@@ -80,6 +80,11 @@ public class FGMCopula extends AbstractCopula{
 
 	@Override
 	public String name() {
+		return "Farlie-Gumbel-Morgenstern";
+	}
+	
+	@Override
+	public String token() {
 		return "FGM";
 	}
 	

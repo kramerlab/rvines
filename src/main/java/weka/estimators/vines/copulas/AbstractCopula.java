@@ -12,8 +12,9 @@ import weka.estimators.vines.functions.H2;
  * @author Christian Lamberty (clamber@students.uni-mainz.de)
  */
 public abstract class AbstractCopula implements Copula{
-	protected double[] params;
 	public final static double tol = Math.pow(10, -4);
+	protected boolean rotations = false;
+	protected double[] params;
 	public double[] lb = new double[0];
 	public double[] ub = new double[0];
 	public double[] start = new double[0];
@@ -32,6 +33,10 @@ public abstract class AbstractCopula implements Copula{
 	
 	public double[] getMLEStart() {
 		return start;
+	}
+	
+	public boolean rotations(){
+		return rotations;
 	}
 	
 	public double h1inverse(double x, double y) {

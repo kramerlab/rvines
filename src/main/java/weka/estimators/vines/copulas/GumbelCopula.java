@@ -24,6 +24,7 @@ public class GumbelCopula extends AbstractCopula{
 	 * Constructor
 	 */
 	public GumbelCopula() {
+		rotations = true;
 		d = 2;
 		lb = new double[]{1+tol};
 		ub = new double[]{20};
@@ -120,6 +121,11 @@ public class GumbelCopula extends AbstractCopula{
 	
 	@Override
 	public String name() {
+		return "Gumbel";
+	}
+	
+	@Override
+	public String token() {
 		return "Gu";
 	}
 }

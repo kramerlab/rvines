@@ -89,9 +89,18 @@ public class CopulaRotation extends AbstractCopula{
 	@Override
 	public String name() {
 		String name = c.name();
-		if(m == Mode.ROT90) name = name + "ROT90";
-		if(m == Mode.ROT180) name = name + "ROT180";
-		if(m == Mode.ROT270) name = name + "ROT270";
+		if(m == Mode.ROT90) name = name + " rotated by 90 degree";
+		if(m == Mode.ROT180) name = name + " rotated by 180 degree";
+		if(m == Mode.ROT270) name = name + " rotated by 270 degree";
+		return name;
+	}
+	
+	@Override
+	public String token() {
+		String name = c.token();
+		if(m == Mode.ROT90) name = name + "90";
+		if(m == Mode.ROT180) name = name + "180";
+		if(m == Mode.ROT270) name = name + "270";
 		return name;
 	}
 	

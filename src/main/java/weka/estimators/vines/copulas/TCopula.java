@@ -117,6 +117,11 @@ public class TCopula extends AbstractCopula{
 
 	@Override
 	public String name() {
+		return "Student T";
+	}
+	
+	@Override
+	public String token() {
 		return "T";
 	}
 }

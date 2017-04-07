@@ -24,6 +24,7 @@ public class ClaytonCopula extends AbstractCopula{
 	 * Constructor
 	 */
 	public ClaytonCopula() {
+		rotations = true;
 		d = 2;
 		lb = new double[]{0+tol};
 		ub = new double[]{20};
@@ -96,6 +97,11 @@ public class ClaytonCopula extends AbstractCopula{
 	
 	@Override
 	public String name() {
+		return "Clayton";
+	}
+	
+	@Override
+	public String token() {
 		return "C";
 	}
 }

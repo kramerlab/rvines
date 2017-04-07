@@ -215,7 +215,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler {
 		for(int i=0;i<edges.length;i++){
 			for(int j=0;j<edges.length;j++){
 				String out = " - ";
-				if(edges[i][j] != null) out = edges[i][j].getCopula().name();
+				if(edges[i][j] != null) out = edges[i][j].getCopula().token();
 				
 				if(j<edges.length-1){
 					System.out.print(out+"\t&\t");

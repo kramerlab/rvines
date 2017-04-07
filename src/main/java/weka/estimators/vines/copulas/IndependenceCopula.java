@@ -41,6 +41,11 @@ public class IndependenceCopula extends AbstractCopula{
 
 	@Override
 	public String name() {
+		return "Independence";
+	}
+	
+	@Override
+	public String token() {
 		return "In";
 	}
 
