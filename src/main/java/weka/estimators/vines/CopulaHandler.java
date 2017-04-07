@@ -28,34 +28,26 @@ public class CopulaHandler {
 		}
 	}
 	
-	private static Copula[] copulas(){		
-		Copula[] out = new Copula[14];
+	public Copula[] select(boolean[] c){
+		if(c.length != copulas.length){
+			System.out.println("Selection array needs to fit the copula array size!");
+			return null;
+		}
 		
-		out[0] = new IndependenceCopula();
-		out[1] = new GaussCopula();
-		out[2] = new TCopula();
-		out[3] = new GumbelCopula();
-		out[4] = new CopulaRotation(new GumbelCopula(), CopulaRotation.Mode.ROT90);
-		out[5] = new CopulaRotation(new GumbelCopula(), CopulaRotation.Mode.ROT180);
-		out[6] = new CopulaRotation(new GumbelCopula(), CopulaRotation.Mode.ROT270);
-		out[7] = new ClaytonCopula();
-		out[8] = new CopulaRotation(new ClaytonCopula(), CopulaRotation.Mode.ROT90);
-		out[9] = new CopulaRotation(new ClaytonCopula(), CopulaRotation.Mode.ROT180);
-		out[10] = new CopulaRotation(new ClaytonCopula(), CopulaRotation.Mode.ROT270);
-		out[11] = new FrankCopula();
-		out[12] = new GalambosCopula();
-		out[13] = new FGMCopula();
-		
-		return out;
-	}
-	
-	public static Copula[] select(boolean[] c){
-		Copula[] copulas = copulas();
 		ArrayList<Copula> out = new ArrayList<Copula>();
 		
-		for(int i=0; i<c.length; i++){
+		for(int i=0; i<copulas.length; i++){
 			if(c[i]){
-				out.add(copulas[i]);
+				try{
+					out.add(copulas[i].getClass().newInstance());
+					if(copulas[i].rotations()){
+						out.add(new CopulaRotation(copulas[i].getClass().newInstance(), CopulaRotation.Mode.ROT90));
+						out.add(new CopulaRotation(copulas[i].getClass().newInstance(), CopulaRotation.Mode.ROT180));
+						out.add(new CopulaRotation(copulas[i].getClass().newInstance(), CopulaRotation.Mode.ROT270));
+					}
+				} catch (Exception e){
+					System.out.println("Failed to load "+copulas[i].name());
+				}
 			}
 		}
 		
@@ -65,7 +57,7 @@ public class CopulaHandler {
 	public String[] loadedCopulas(){
 		String[] out = new String[copulas.length];
 		for(int i=0; i<out.length; i++){
-			out[i] = copulas[i].name();
+			out[i] = i+" - "+copulas[i].name();
 		}
 		return out;
 	}

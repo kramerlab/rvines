@@ -29,7 +29,8 @@ import weka.estimators.vines.copulas.Copula;
  * @author Christian Lamberty (clamber@students.uni-mainz.de)
  */
 public class RegularVine implements MultivariateEstimator, OptionHandler {
-	private boolean[] selected = new boolean[]{true, true, true, true, true, true, true, true, true, true, true, true, true, true};
+	private boolean[] selected = new boolean[]{true, true, true, true, true, true, true, true};
+	private CopulaHandler ch = new CopulaHandler();
 	private Graph[] rvine;
 	private int[][] m;
 	private Edge[][] edges;
@@ -669,8 +670,8 @@ public class RegularVine implements MultivariateEstimator, OptionHandler {
 		e.setWeight(Utils.kendallsTau(a, b));
 	}
 	
-	private static void fitCopula(Edge e, boolean[] selected) {
-		Copula[] copSet = CopulaHandler.select(selected);
+	private void fitCopula(Edge e, boolean[] selected) {
+		Copula[] copSet = ch.select(selected);
 		double[] lls = new double[copSet.length];
 		double[] a, b;
 		
