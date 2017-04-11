@@ -11,6 +11,7 @@ import weka.core.Instances;
 import weka.core.Option;
 import weka.core.converters.ConverterUtils.DataSource;
 import weka.core.OptionHandler;
+import weka.core.OptionMetadata;
 import weka.estimators.MultivariateEstimator;
 import weka.estimators.vines.copulas.Copula;
 
@@ -129,7 +130,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler {
 		}
 	}
 	
-	private void printEmpTauMatrix() {
+	public void printEmpTauMatrix() {
 		if(!built){
 			System.err.println("Use estimate(data, w) first to build the estimator!");
 			return;
@@ -157,7 +158,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler {
 		}
 	}
 
-	private void printTauMatrix() {
+	public void printTauMatrix() {
 		if(!built){
 			System.err.println("Use estimate(data, w) first to build the estimator!");
 			return;
@@ -577,15 +578,6 @@ public class RegularVine implements MultivariateEstimator, OptionHandler {
 	}
 	
 	/**
-	 * Get the RVine.
-	 * 
-	 * @return returns the RVine as List of Graphs.
-	 */
-	public Graph[] getRegularVine(){
-		return rvine;
-	}
-	
-	/**
 	 * Creates the RVine-Matrix stored in a global variable m.
 	 * <br>
 	 * See the RVine-Matrix creation algorithm presented
@@ -701,22 +693,6 @@ public class RegularVine implements MultivariateEstimator, OptionHandler {
 		
 		e.setCopula(copSet[out]);
 		e.setLogLik(lls[out]);
-	}
-	
-	/**
-	 * Get the RVine-Matrix.
-	 * @return returns the RVine-Matrix.
-	 */
-	public int[][] getRVineMatrix(){
-		return m;
-	}
-	
-	/**
-	 * Get the Edge-Matrix.
-	 * @return returns the Edge-Matrix.
-	 */
-	public Edge[][] getEdgeMatrix(){
-		return edges;
 	}
 	
 	/**
@@ -865,21 +841,90 @@ public class RegularVine implements MultivariateEstimator, OptionHandler {
 		return Math.round(val*Math.pow(10, 4))/Math.pow(10, 4);
 	}
 
+	/**
+	 * Returns an enumeration describing the available options.
+	 *
+	 * @return an enumeration of all the available options.
+	 */
 	@Override
 	public Enumeration<Option> listOptions() {
-		// TODO Auto-generated method stub
-		return null;
+	 return Option.listOptionsForClass(this.getClass()).elements();
 	}
 
-	@Override
-	public void setOptions(String[] options) throws Exception {
-		// TODO Auto-generated method stub
-		
-	}
-
+	/**
+	 * Gets the current settings of the Classifier.
+	 *
+	 * @return an array of strings suitable for passing to setOptions
+	 */
 	@Override
 	public String[] getOptions() {
-		// TODO Auto-generated method stub
-		return null;
+	 return Option.getOptions(this, this.getClass());
+	}
+
+	/**
+	 * Parses a given list of options.
+	 *
+	 * @param options the list of options as an array of strings
+	 * @exception Exception if an option is not supported
+	 */
+	public void setOptions(String[] options) throws Exception {
+	 Option.setOptions(options, this, this.getClass());
+	}
+	
+	@OptionMetadata(
+		    displayName = "copulaSelection",
+		    description = "Copulas to use for RVine built (default = all).",
+		    commandLineParamName = "copulaSelection", commandLineParamSynopsis = "-copulaSelection <string>",
+		    displayOrder = 1)
+		public String getCopulaSelection() {
+			String out = "";
+			boolean first = true;
+			for(int i=0; i<selected.length; i++){
+				if(selected[i])
+					if(first) out += i;
+					else out += ","+i;
+			}
+		 	return out;
+		}
+		public void setCopulaSelection(String sel) {
+			String[] sels = sel.split(",");
+			int[] cop = new int[sels.length];
+			for(int i=0; i<sels.length; i++){
+				cop[i] = Integer.parseInt(sels[i].trim());
+				if(cop[i] < 0 || cop[i] >= selected.length){
+					System.err.println("Failed to pass on options!");
+				}
+			}
+			
+			// pass on options if everything is correct
+			for(int i=0; i<selected.length; i++) selected[i] = false;
+			for(int i=0; i<cop.length; i++){
+				selected[cop[i]] = true;
+			}
+		}
+	
+	/**
+	 * Get the RVine-Matrix.
+	 * @return returns the RVine-Matrix.
+	 */
+	public int[][] getRVineMatrix(){
+		return m;
+	}
+	
+	/**
+	 * Get the Edge-Matrix.
+	 * @return returns the Edge-Matrix.
+	 */
+	public Edge[][] getEdgeMatrix(){
+		return edges;
+	}
+	
+	/**
+	 * Get the RVine.
+	 * 
+	 * @return returns the RVine as List of Graphs.
+	 */
+	public Graph[] getRegularVine(){
+		return rvine;
 	}
 }
