@@ -88,9 +88,8 @@ public class GaussCopula extends AbstractCopula{
 	
 	/**
 	 * H function for Gauss Copula.
-	 * Since Gauss Copula is symmetric, we don't need
-	 * separate h functions.
-	 * @param x, y input parameters.
+	 * @param x input parameter, 0 &lt; x &lt; 1.
+	 * @param y input parameter, 0 &lt; y &lt; 1.
 	 * @return returns the conditioned value x|y.
 	 */
 	public double hFunction(double x, double y) {

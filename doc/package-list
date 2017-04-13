@@ -1,1 +1,3 @@
-org.kramerlab.vines
+weka.estimators.vines
+weka.estimators.vines.copulas
+weka.estimators.vines.functions

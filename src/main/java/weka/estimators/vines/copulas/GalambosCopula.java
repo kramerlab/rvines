@@ -17,7 +17,6 @@ public class GalambosCopula extends AbstractCopula{
 	
 	/**
 	 * Constructor
-	 * @param params copula parameters as double array.
 	 */
 	public GalambosCopula() {
 		d = 2;
@@ -76,6 +75,12 @@ public class GalambosCopula extends AbstractCopula{
 		return hFunction(x, y);
 	}
 	
+	/**
+	 * H function for Galambos Copula.
+	 * @param x input parameter, 0 &lt; x &lt; 1.
+	 * @param y input parameter, 0 &lt; y &lt; 1.
+	 * @return returns the conditioned value x|y.
+	 */
 	public double hFunction(double x, double y) {
 		x = Utils.laplaceCorrection(x);
 		y = Utils.laplaceCorrection(y);

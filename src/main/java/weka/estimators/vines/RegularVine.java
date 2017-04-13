@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.TreeSet;
 
+import weka.core.CommandlineRunnable;
 import weka.core.Instances;
 import weka.core.Option;
 import weka.core.converters.ConverterUtils.DataSource;
@@ -29,7 +30,7 @@ import weka.estimators.vines.copulas.Copula;
  * 
  * @author Christian Lamberty (clamber@students.uni-mainz.de)
  */
-public class RegularVine implements MultivariateEstimator, OptionHandler {
+public class RegularVine implements MultivariateEstimator, OptionHandler, CommandlineRunnable {
 	private boolean[] selected = new boolean[]{true, true, true, true, true, true, true, true};
 	private CopulaHandler ch = new CopulaHandler();
 	private Graph[] rvine;
@@ -106,6 +107,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler {
 				}
 			}
 		}
+		System.out.println();
 		System.out.println("Used Copulas : ");
 		for(String cop : stats.keySet())
 			System.out.println(cop+" : "+stats.get(cop));
@@ -346,6 +348,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler {
 			return data;
 		} catch (Exception e) {
 			System.err.println("Unable to load data!");
+			System.err.println("Tried to load from "+path);
 			e.printStackTrace();
 		}
 		return null;
@@ -512,7 +515,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler {
 	 * <br>
 	 * The method is based on an
 	 * algorithm presented in J.F. Di&szlig;mann's diploma thesis.
-	 * @param instance the instance.
+	 * @param x observation array.
 	 * @return returns the log-likelihood for the instance.
 	 */
 	public double logDensity(double[] x){
@@ -558,7 +561,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler {
 	 * <br>
 	 * It calculates the sum of log-likelihoods of every instance using
 	 * the log-likelihood function for single instances.
-	 * @param instances the instances.
+	 * @param data matrix of observations.
 	 * @return returns the log-likelihood for the instances.
 	 */
 	public double logDensity(double[][] data){
@@ -880,9 +883,15 @@ public class RegularVine implements MultivariateEstimator, OptionHandler {
 			String out = "";
 			boolean first = true;
 			for(int i=0; i<selected.length; i++){
-				if(selected[i])
-					if(first) out += i;
-					else out += ","+i;
+				if(selected[i]){
+					if(first){
+						out += i;
+						first = false;
+					}
+					else{
+						out += ","+i;
+					}
+				}
 			}
 		 	return out;
 		}
@@ -926,5 +935,64 @@ public class RegularVine implements MultivariateEstimator, OptionHandler {
 	 */
 	public Graph[] getRegularVine(){
 		return rvine;
+	}
+
+	@Override
+	public void postExecution() throws Exception {
+	}
+
+	@Override
+	public void preExecution() throws Exception {
+	}
+
+	@Override
+	public void run(Object toRun, String[] options) throws Exception {
+		if (!(toRun instanceof RegularVine)) {
+		      throw new IllegalArgumentException("Object to run is not a RVine!");
+		    }
+		RegularVine rvine = (RegularVine) toRun;
+		rvine.setOptions(options);
+		
+		double[][] data = loadData("/Users/clamber/wekafiles/packages/vines/src/main/data/random/random1.arff");
+		if(data == null) return;
+		
+		double[] w = new double[data.length];
+		for(int i=0; i<w.length; i++){
+			w[i] = 1;
+		}
+		
+		rvine.estimate(data, w);
+
+		rvine.printSummary();
+		
+		System.out.println();
+		System.out.println();
+		
+		rvine.printRVineMatrix();
+		
+		System.out.println();
+		System.out.println();
+		
+		rvine.printFamilyMatrix();
+		
+		System.out.println();
+		System.out.println();
+		
+		rvine.printParameterMatrices();
+		
+		System.out.println();
+		System.out.println();
+		
+		rvine.printLogliksMatrix();
+		
+		System.out.println();
+		System.out.println();
+		
+		rvine.printTauMatrix();
+		
+		System.out.println();
+		System.out.println();
+		
+		rvine.printEmpTauMatrix();
 	}
 }

@@ -42,7 +42,7 @@ public class TCopula extends AbstractCopula{
 	 * params = {p, v}
 	 * <br>
 	 * p : probability | -1 &lt; p &lt; 1
-	 * v : degree of freedom | natural number > 0
+	 * v : degree of freedom | natural number &gt; 0
 	 */
 	@Override
 	public void setParams(double[] params){
@@ -94,9 +94,8 @@ public class TCopula extends AbstractCopula{
 	
 	/**
 	 * H function for T Copula.
-	 * Since T Copula is symmetric, we don't need
-	 * separate h functions.
-	 * @param x, y input parameters.
+	 * @param x input parameter, 0 &lt; x &lt; 1.
+	 * @param y input parameter, 0 &lt; y &lt; 1.
 	 * @return returns the conditioned value x|y.
 	 */
 	public double hFunction(double x, double y) {

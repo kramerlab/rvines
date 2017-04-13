@@ -11,8 +11,18 @@ import java.util.TreeSet;
  * In the Node class, we store the labeling of the Nodes and
  * the (pseudo) observations.
  * <br>
+ * If the Node was merged by two nodes x,z|... and y,z|...
+ * the node is labeled x,y|z,... and stores the pseudo observations for
+ * f(x|y,z,...) and f(y|x,z,...).
+ * Both are accessed using getData(x) or getData(y).
+ * <br>
  * We also store the Nodes, where this Node is merged from, which enables
  * to check the proximity condition.
+ * <br>
+ * For further information on labeling and calculation of
+ * pseudo observations using the h-function
+ * see J.F. Di&szlig;mann's diploma thesis (2010):
+ * Statistical inference for regular vines and application.
  * 
  * @author Christian Lamberty (clamber@students.uni-mainz.de)
  */
@@ -120,6 +130,7 @@ public class Node implements Comparable<Node>{
 
 	/**
 	 * Get the data with a key.
+	 * @param key the leading variable as key.
 	 * @return The key corresponding double array.
 	 */
 	public double[] getData(int key){
@@ -128,6 +139,7 @@ public class Node implements Comparable<Node>{
 	
 	/**
 	 * Get the rank normalized data with a key.
+	 * @param key the leading variable as key.
 	 * @return The key corresponding double array.
 	 */
 	public double[] getRankNormData(int key){

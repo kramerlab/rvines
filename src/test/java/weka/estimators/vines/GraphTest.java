@@ -81,8 +81,8 @@ public class GraphTest extends TestCase {
     	Node a = new Node(1);
     	
     	nodes.add(a);
-    	
-    	g.addNode(0);
+    	Node n = new Node(0);
+    	g.addNode(n);
     	
     	assertNotSame(nodes, g.getNodeList());
     	assertEquals("[0]", g.getNodeList().get(0).getName());

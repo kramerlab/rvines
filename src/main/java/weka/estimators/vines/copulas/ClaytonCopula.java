@@ -12,7 +12,7 @@ import weka.estimators.vines.Utils;
  * and its inverse were presented by K. Aas et al. (2009):
  * Pair-copula constructions of multiple dependence.
  * <br>
- * The rotations are presented by Brechmann, E. C. & Schepsmeier, U. (2013):
+ * The rotations are presented by Brechmann, E. C. &amp; Schepsmeier, U. (2013):
  * Modeling dependence with C-and D-vine copulas: The R-package CDVine.
  * 
  * @author Christian Lamberty (clamber@students.uni-mainz.de)
@@ -32,12 +32,13 @@ public class ClaytonCopula extends AbstractCopula{
 	}
 
 	/**
+	 * Parameter setter
 	 * @param params parameter array, should be like:
 	 * <br>
 	 * params = {d}
 	 * <br>
-	 * for mode 0 and 2 : d : 0 &lt; d &lt; infinity
-	 * for mode 1 and 3 : d : -infinity &lt; d &lt; 0
+	 * for normal and 180 deg rotated : d : 0 &lt; d &lt; infinity
+	 * for 90 and 270 deg rotated : d : -infinity &lt; d &lt; 0
 	 */
 	@Override
 	public void setParams(double[] params){
@@ -75,7 +76,8 @@ public class ClaytonCopula extends AbstractCopula{
 	
 	/**
 	 * H function for Clayton Copula.
-	 * @param x, y input parameters.
+	 * @param x input parameter, 0 &lt; x &lt; 1.
+	 * @param y input parameter, 0 &lt; y &lt; 1.
 	 * @return returns the conditioned value x|y.
 	 */
 	public double hFunction(double x, double y) {

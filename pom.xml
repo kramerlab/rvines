@@ -4,8 +4,8 @@
 
   <groupId>org.kramerlab</groupId>
   <artifactId>vines</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
-  <packaging>war</packaging>
+  <version>1.0.0</version>
+  <packaging>jar</packaging>
 
   <name>vines</name>
   <url>http://maven.apache.org</url>
@@ -23,30 +23,8 @@
     </dependency>
     <dependency>
 	  <groupId>nz.ac.waikato.cms.weka</groupId>
-	  <artifactId>weka-dev</artifactId>
-	  <version>3.9.1</version>
-	</dependency>
-	<dependency>
-	  <groupId>javax.servlet</groupId>
-	  <artifactId>servlet-api</artifactId>
-	  <version>2.4</version>
-	  <scope>provided</scope>
-	</dependency>
-	<dependency>
-	  <groupId>javax.servlet.jsp</groupId>
-	  <artifactId>jsp-api</artifactId>
-	  <version>2.1</version>
-	  <scope>provided</scope>
-	</dependency>
-	<dependency>
-	    <groupId>javax.json</groupId>
-	    <artifactId>javax.json-api</artifactId>
-	    <version>1.0</version>
-	</dependency>
-	<dependency>
-	    <groupId>org.glassfish</groupId>
-	    <artifactId>javax.json</artifactId>
-	    <version>1.0.4</version>
+	  <artifactId>weka-stable</artifactId>
+	  <version>3.8.1</version>
 	</dependency>
 	<dependency>
 		<groupId>org.apache.commons</groupId>

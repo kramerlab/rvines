@@ -40,21 +40,6 @@ public class Graph {
 	}
 	
 	/**
-	 * Adds a Node to the Node list by its integer representation.
-	 * <br>
-	 * Only works for Nodes in dimension 1 to simplify the addition.
-	 * <br>
-	 * Initializes a row in the adjacency list for the added Node.
-	 * @param name The integer label to be added as Node.
-	 * @return returns the constructed Node with the given name. 
-	 */
-	public Node addNode(int name){
-		Node n = new Node(name);
-		addNode(n);
-		return n;
-	}
-	
-	/**
 	 * Adds an Edge to the Graph.
 	 * <br>
 	 * The Edge needs to be initialized with a from-Node and a to-Node.
@@ -86,22 +71,6 @@ public class Graph {
 	 */
 	public void addEdge(Node from, Node to, double weight){
 		Edge e = new Edge(from, to, weight);
-		addEdge(e);
-	}
-	
-	/**
-	 * Adds an Edge to the Graph by a from Node, a to Node and an Edge weight.
-	 * <br>
-	 * A mirrored Edge will be added automatically
-	 * to create an undirected Edge.
-	 * <br>
-	 * Only works for Nodes in dimension 1 to simplify the Edge addition.
-	 * @param from an integer label for a Node where the Edge comes from.
-	 * @param to an integer label for a Node where the Edge goes to.
-	 * @param weight the Kendall't tau value as weight.
-	 */
-	public void addEdge(int from, int to, double weight){
-		Edge e = new Edge(nodeList.get(from), nodeList.get(to), weight);
 		addEdge(e);
 	}
 	

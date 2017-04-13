@@ -5,7 +5,7 @@ import weka.estimators.vines.copulas.Copula;
 /**
  * This is the Edge class to for the RVine.
  * <br>
- * For every Edge we assume two nodes that are connected with the Edge,
+ * For every Edge we assert two nodes that are connected with the Edge,
  * a Kendall's tau value as weight and a copula function.
  * 
  * @author Christian Lamberty (clamber@students.uni-mainz.de)
@@ -86,18 +86,36 @@ public class Edge {
 		this.copula = copula;
 	}
 
+	/**
+	 * Get the edge label.
+	 * @return edge label as string.
+	 */
 	public String getLabel() {
 		return label;
 	}
 
+	/**
+	 * Set the edge label.
+	 * @param label the edge label.
+	 */
 	public void setLabel(String label) {
 		this.label = label;
 	}
 
+	/**
+	 * Get the log-likelihood which
+	 * was produces during construction.
+	 * @return log-likelihood.
+	 */
 	public double getLogLik() {
 		return logLik;
 	}
 
+	/**
+	 * Set the log-likelihood which
+	 * was produces during construction.
+	 * @param logLik log-likelihood.
+	 */
 	public void setLogLik(double logLik) {
 		this.logLik = logLik;
 	}

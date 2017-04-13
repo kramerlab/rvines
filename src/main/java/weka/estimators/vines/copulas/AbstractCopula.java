@@ -61,9 +61,6 @@ public abstract class AbstractCopula implements Copula{
 			    x = cmle.findArgmin(x, constr);
 			 }
 		} catch (Exception e) {
-			//System.err.println("Tried to fit "+name());
-			//System.out.println();
-			//System.out.println("With pars : "+constr[0][0]+" "+constr[1][0]+" "+initX[0]);
 			// e.printStackTrace();
 		}
 		return -cmle.getMinFunction();

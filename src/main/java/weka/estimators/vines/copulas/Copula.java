@@ -102,7 +102,8 @@ public interface Copula {
 	
 	/**
 	 * MLE to estimate the copula parameters.
-	 * 
+	 * @param	a	data of variable.
+	 * @param	b	data of another variable.
 	 * @return returns the maximum likelihood.
 	 */
 	public double mle(double[] a, double[] b);
@@ -118,30 +119,23 @@ public interface Copula {
 	public double tau();
 	
 	/**
+	 * Information if copula can be rotated.
+	 * @return boolean if copula can be rotated.
 	 */
 	public boolean rotations();
 	
 	/**
 	 * Get the copula name.
-	 * It is used to differentiate the copulae for visualization.
 	 *
-	 * @return	returns the copula name(In short).
-	 * G = Gauss,
-	 * T = StudentT,
-	 * C[/90/180/270] = Clayton (and rotations),
-	 * Gu[/90/180/270] = Gumbel (and rotations),
-	 * F = Frank,
-	 * FGM = Farlie-Gumbel-Morgenstern,
-	 * Ga = Galambos,
-	 * In = Independent.
+	 * @return	The copula name.
 	 */
 	public String name();
 	
 	/**
-	 * Get the copula name.
+	 * Get the copula token.
 	 * It is used to differentiate the copulae for visualization.
 	 *
-	 * @return	returns the copula name(In short).
+	 * @return	The copula name(In short).
 	 * G = Gauss,
 	 * T = StudentT,
 	 * C[/90/180/270] = Clayton (and rotations),

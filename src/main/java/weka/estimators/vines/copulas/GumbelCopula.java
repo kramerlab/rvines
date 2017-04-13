@@ -12,7 +12,7 @@ import weka.estimators.vines.Utils;
  * and its inverse were presented by K. Aas et al. (2009):
  * Pair-copula constructions of multiple dependence.
  * <br>
- * The rotations are presented by Brechmann, E. C. & Schepsmeier, U. (2013):
+ * The rotations are presented by Brechmann, E. C. &amp; Schepsmeier, U. (2013):
  * Modeling dependence with C-and D-vine copulas: The R-package CDVine.
  * 
  * @author Christian Lamberty (clamber@students.uni-mainz.de)
@@ -36,8 +36,8 @@ public class GumbelCopula extends AbstractCopula{
 	 * <br>
 	 * params = {d}
 	 * <br>
-	 * for mode 0 and 2 : d : 1 &lt; d &lt; infinity
-	 * for mode 1 and 3 : d : -infinity &lt; d &lt; -1
+	 * for normal and 180 deg rotated : d : 1 &lt; d &lt; infinity
+	 * for 90 and 270 deg rotated : d : -infinity &lt; d &lt; -1
 	 */
 	@Override
 	public void setParams(double[] params){
@@ -56,11 +56,7 @@ public class GumbelCopula extends AbstractCopula{
 		return Math.exp(-Math.pow(xt+yt, 1/d));
 	}
 	
-	/**
-	 * Density function for non-rotated Gumbel Copula.
-	 * @param x, y input parameters.
-	 * @return returns the Copula PDF value on point x, y. 
-	 */
+	@Override
 	public double density(double x, double y) {
 		x = Utils.laplaceCorrection(x);
 		y = Utils.laplaceCorrection(y);
@@ -92,8 +88,9 @@ public class GumbelCopula extends AbstractCopula{
 	}
 	
 	/**
-	 * H function for non-rotated Gumbel Copula.
-	 * @param x, y input parameters.
+	 * H function for Gumbel Copula.
+	 * @param x input parameter, 0 &lt; x &lt; 1.
+	 * @param y input parameter, 0 &lt; y &lt; 1.
 	 * @return returns the conditioned value x|y.
 	 */
 	public double hFunction(double x, double y) {

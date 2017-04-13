@@ -154,19 +154,16 @@ public class Utils{
 	}
 
 	/**
-	 * This is a placeholder for a goodness of fit test.
+	 * This is a goodness of fit test for copulas.
 	 * <br>
-	 * It test the copulae for fitting between a and b.
+	 * It tests the copulae for fitting between a and b.
 	 * The best copula will be returned with its parameters.
-	 * <br>
-	 * Because the RVine is currently using only Gauss copulae,
-	 * this method returns the MLE on the Gauss copula function.
 	 * 
-	 * @param copulae an array of copula families,
-	 * that shall participate on the GOF-Test.
-	 * @param a an observation array.
-	 * @param b another observation array.
-	 * @return returns the copula with its parameters that fits best.
+	 * @param copulae An array of copula families
+	 * that participate on the GOF-Test.
+	 * @param a An observation array.
+	 * @param b Another observation array.
+	 * @return The copula with its parameters that fits best.
 	 */
 	public static Copula goodnessOfFit(Copula[] copulae,
 			double[] a, double[] b){
@@ -186,7 +183,14 @@ public class Utils{
 		return copulae[out];
 	}
 	
-	//Bootstrap method for p-value computation
+	/**
+	 * Bootstrap method that is used for the GOF-Test
+	 * 
+	 * @param c A copula to compute the p value on.
+	 * @param a An observation array.
+	 * @param b Another observation array.
+	 * @return The statistical p value for c.
+	 */
 	private static double pValue(Copula c, double[] a, double[] b){
 		int N = 100;
 		int n = a.length;
@@ -227,6 +231,15 @@ public class Utils{
 		return hitCount/((double) N);
 	}
 	
+	/**
+	 * Method to simulate an empirical copula.
+	 * 
+	 * @param a An observation array.
+	 * @param b Another observation array.
+	 * @param x X value of request point.
+	 * @param y Y value of request point.
+	 * @return The cdf of the empirical copula for a and b evaluated at x, y.
+	 */
 	private static double empCop(double[] a, double[] b, double x, double y){
 		int N = a.length;
 		int obs = 0;
@@ -339,6 +352,15 @@ public class Utils{
 		return x;
 	}
 	
+	/**
+	 * Numerical integration function based on Simpson's rule.
+	 * 
+	 * @param f The function to be integrated.
+	 * @param N The number of sub-intervals.
+	 * @param lb The lower bound of the integration.
+	 * @param ub The upper bound of the integration.
+	 * @return An approximation to the integration of f between lb and ub.
+	 */
 	public static double simpsonIntegrate(UnivariateFunction f, int N, double lb, double ub){
 	      double h = (ub - lb) / N;     // step size
 	      
@@ -358,6 +380,23 @@ public class Utils{
 	      return sum * h / 6.0;
 	}
 	
+	/**
+	 * Numerical inversion based on Bisection method.
+	 * <br>
+	 * We assert a function f with a value at a certain point x, 
+	 * such that f(x) = z and x is inside the [lb, ub] interval.
+	 * <br>
+	 * For the given values f, z, lb and ub it will return an
+	 * approximation to x.
+	 * <br>
+	 * Note that lb and ub need to be finite!
+	 * 
+	 * @param f The function to be inverted.
+	 * @param z The functional value f(x) = z.
+	 * @param lb The lower bound of the inversion.
+	 * @param ub The upper bound of the inversion.
+	 * @return An approximation to the inversion of f between lb and ub.
+	 */
 	public static double bisectionInvert(UnivariateFunction f, double z, double lb, double ub){
 		boolean br = false;
 	    double ans = 0.0, tol = 0, x0 = lb, x1 = ub, it=0, fl, fh, val;

@@ -3,11 +3,22 @@ package weka.estimators.vines.functions;
 import weka.estimators.vines.copulas.AbstractCopula;
 import weka.estimators.vines.copulas.Copula;
 
+/**
+ * This is a rotation wrapper for any rotate-able copula.
+ * 
+ * @author Christian Lamberty (clamber@students.uni-mainz.de)
+ */
 public class CopulaRotation extends AbstractCopula{
 	public enum Mode {ROT90, ROT180, ROT270}
 	private Copula c;
 	private Mode m;
 	
+	/**
+	 * Constructor
+	 * 
+	 * @param c Copula to be rotated.
+	 * @param m Mode enum indicating the rotation type.
+	 */
 	public CopulaRotation(Copula c, Mode m){
 		if(c == null || m == null){
 			System.err.println("Rotation Error, got any null value!");
@@ -104,6 +115,15 @@ public class CopulaRotation extends AbstractCopula{
 		return name;
 	}
 	
+	/**
+	 * Negation function.
+	 * <br>
+	 * Every entry of the input a
+	 * will be negated and returned as array.
+	 * 
+	 * @param a Array to be negated.
+	 * @return negated a.
+	 */
 	private double[] negate(double[] a){
 		double[] neg = new double[a.length];
 		for(int i=0; i<a.length; i++) neg[i] = - a[i];
