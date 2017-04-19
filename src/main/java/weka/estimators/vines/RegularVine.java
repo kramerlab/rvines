@@ -38,7 +38,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 	private Edge[][] edges;
 	private double[][] data;
 	private boolean built = false;
-	private boolean timestamps = false;
+	private boolean timestamps = true;
 	
 	public static void main(String[] args){
 		RegularVine rvine = new RegularVine();
@@ -85,6 +85,9 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		rvine.printEmpTauMatrix();
 	}
 	
+	/**
+	 * Prints the RVine summary.
+	 */
 	public void printSummary(){
 		if(!built){
 			System.err.println("Use estimate(data, w) first to build the estimator!");
@@ -132,6 +135,9 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		}
 	}
 	
+	/**
+	 * Prints the pairwise empirical Kendall's tau matrix concerned to the RVine matrix.
+	 */
 	public void printEmpTauMatrix() {
 		if(!built){
 			System.err.println("Use estimate(data, w) first to build the estimator!");
@@ -160,6 +166,9 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		}
 	}
 
+	/**
+	 * Prints the pairwise Kendall's tau matrix concerned to the RVine matrix.
+	 */
 	public void printTauMatrix() {
 		if(!built){
 			System.err.println("Use estimate(data, w) first to build the estimator!");
@@ -188,6 +197,9 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		}
 	}
 	
+	/**
+	 * Prints the RVine matrix.
+	 */
 	public void printRVineMatrix(){
 		if(!built){
 			System.err.println("Use estimate(data, w) first to build the estimator!");
@@ -209,6 +221,9 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		}
 	}
 	
+	/**
+	 * Prints the pairwise copula family matrix concerned to the RVine matrix.
+	 */
 	public void printFamilyMatrix(){
 		if(!built){
 			System.err.println("Use estimate(data, w) first to build the estimator!");
@@ -231,6 +246,9 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		}
 	}
 	
+	/**
+	 * Prints the pairwise copula parameter matrix concerned to the RVine matrix.
+	 */
 	public void printParameterMatrices(){
 		if(!built){
 			System.err.println("Use estimate(data, w) first to build the estimator!");
@@ -289,6 +307,9 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		}
 	}
 	
+	/**
+	 * Prints the pairwise log-likelihood matrix concerned to the RVine matrix.
+	 */
 	public void printLogliksMatrix(){
 		if(!built){
 			System.err.println("Use estimate(data, w) first to build the estimator!");
@@ -317,6 +338,12 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		}
 	}
 	
+	/**
+	 * Tests if the data input is correct for RVine usage.
+	 * 
+	 * @param data Data as double matrix.
+	 * @return Boolean if data is correct.
+	 */
 	private static boolean testData(double[][] data){
 		for(int i=0; i<data.length; i++){
 			for(int j=0; j<data[i].length; j++){
@@ -326,6 +353,12 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		return true;
 	}
 	
+	/**
+	 * Loads data as double matrix from a given path to arff-file.
+	 * 
+	 * @param path Path to the arff-file.
+	 * @return Data as dobule matrix.
+	 */
 	public static double[][] loadData(String path){
 		double[][] data;
 		try{
@@ -511,6 +544,86 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 	}
 
 	/**
+	 * Creates a sample instance.
+	 * <br>
+	 * It can be used either for random sampling or for sampling specific
+	 * entries only.
+	 * <br>
+	 * x shall be a complete instance, where we can flag in the given array
+	 * if we use the value of x for the new instance or
+	 * if we re-sample the x value.
+	 * <br>
+	 * Only the flagged as given values from x will affect the sampling.
+	 * The other values will be overwritten with sampled values.
+	 * <br>
+	 * The main part of the sampling approach is based on the sampling
+	 * algorithm presented in J.F. Di&szlig;mann's diploma thesis.
+	 * @param x an instance
+	 * @param given a boolean flag for each value of
+	 * x if it shall be used as given value.
+	 * @return returns the sampled instance.
+	 */
+	public double[] createSample(double[] x, boolean[] given){
+		//TODO Check if it is h1 inverse or h2 inverse to use.
+		
+		if(!built){
+			System.err.println("Use estimate(data, w) first to build the estimator!");
+			return null;
+		}
+		int n = m.length;
+		double[] u = new double[n];
+		double[][] v = new double[n][n];
+		Copula c;
+		
+		//random observations of uniform(0,1) distribution
+		for(int i=0;i<n;i++){
+			u[i] = Math.random();
+		}
+		
+		if(!given[m[n-1][n-1]-1]){
+			x[m[n-1][n-1]-1] = u[m[n-1][n-1]-1];
+		}
+		
+		for(int k=n-2;k>=0;k--){
+			if(!given[m[k][k]-1]){
+				for(int i=k+1;i<n-1;i++){
+					//run path down to get x_i with inverse h-function
+					c = edges[n-1][k].getCopula();
+					u[m[k][k]-1] = c.h2inverse(u[m[k][k]-1], v[m[i][k]-1][m[i+1][k]-1]);
+				}
+				//level 0, get x value from h-inverse of adjacent x-value (last entry in current column)
+				c = edges[n-1][k].getCopula();
+				x[m[k][k]-1] = c.h2inverse(u[m[k][k]-1], x[m[n-1][k]-1]);
+			}
+			//one dimensional transformed values
+			c = edges[n-1][k].getCopula();
+			v[m[k][k]-1][m[n-1][k]-1] = c.h2Function(x[m[k][k]-1], x[m[n-1][k]-1]);
+			v[m[n-1][k]-1][m[k][k]-1] = c.h1Function(x[m[k][k]-1], x[m[n-1][k]-1]);
+			
+			for(int i=n-2;i>k;i--){
+				//run path up to generate transformed values
+				c = edges[i][k].getCopula();
+				v[m[k][k]-1][m[i][k]-1] = c.h2Function(v[m[k][k]-1][m[i+1][k]-1], v[m[i][k]-1][m[i+1][k]-1]);
+				v[m[i][k]-1][m[k][k]-1] = c.h1Function(v[m[k][k]-1][m[i+1][k]-1], v[m[i][k]-1][m[i+1][k]-1]);
+			}
+		}
+		
+		return x;
+	}
+	
+	/**
+	 * Creates a completely random sampled instance.
+	 * <br>
+	 * It used the createSample-function with a default x-array,
+	 * which are all flagged as not given.
+	 * @return returns a random sampled instance.
+	 */
+	public double[] createRandomSample(){
+		int n = rvine.length+1;
+		return createSample(new double[n], new boolean[n]);
+	}
+	
+	/**
 	 * The log-likelihood for a given instance.
 	 * <br>
 	 * The method is based on an
@@ -531,23 +644,28 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		for(int k=n-2;k>=0;k--){
 			//one dimensional transformed values
 			c = edges[n-1][k].getCopula();
-			v[m[k][k]-1][m[n-1][k]-1] = c.h2Function(x[m[k][k]-1], x[m[n-1][k]-1]);
-			v[m[n-1][k]-1][m[k][k]-1] = c.h1Function(x[m[k][k]-1], x[m[n-1][k]-1]);
+			
 			if(m[k][k] > m[n-1][k]){
+				v[m[k][k]-1][m[n-1][k]-1] = c.h1Function(x[m[n-1][k]-1], x[m[k][k]-1]);
+				v[m[n-1][k]-1][m[k][k]-1] = c.h2Function(x[m[n-1][k]-1], x[m[k][k]-1]);
 				loglik += Math.log(c.density(x[m[n-1][k]-1], x[m[k][k]-1]));
 			}else{
+				v[m[k][k]-1][m[n-1][k]-1] = c.h2Function(x[m[k][k]-1], x[m[n-1][k]-1]);
+				v[m[n-1][k]-1][m[k][k]-1] = c.h1Function(x[m[k][k]-1], x[m[n-1][k]-1]);
 				loglik += Math.log(c.density(x[m[k][k]-1], x[m[n-1][k]-1]));
 			}
 			
 			for(int i=n-2;i>k;i--){
 				//run path up to generate transformed values
 				c = edges[i][k].getCopula();
-				v[m[k][k]-1][m[i][k]-1] = c.h2Function(v[m[k][k]-1][m[i+1][k]-1], v[m[i][k]-1][m[i+1][k]-1]);
-				v[m[i][k]-1][m[k][k]-1] = c.h1Function(v[m[k][k]-1][m[i+1][k]-1], v[m[i][k]-1][m[i+1][k]-1]);
 				
 				if(m[k][k] > m[i][k]){
+					v[m[k][k]-1][m[i][k]-1] = c.h1Function(v[m[i][k]-1][m[i+1][k]-1], v[m[k][k]-1][m[i+1][k]-1]);
+					v[m[i][k]-1][m[k][k]-1] = c.h2Function(v[m[i][k]-1][m[i+1][k]-1], v[m[k][k]-1][m[i+1][k]-1]);
 					loglik += Math.log(c.density(v[m[i][k]-1][m[i+1][k]-1], v[m[k][k]-1][m[i+1][k]-1]));
 				}else{
+					v[m[k][k]-1][m[i][k]-1] = c.h2Function(v[m[k][k]-1][m[i+1][k]-1], v[m[i][k]-1][m[i+1][k]-1]);
+					v[m[i][k]-1][m[k][k]-1] = c.h1Function(v[m[k][k]-1][m[i+1][k]-1], v[m[i][k]-1][m[i+1][k]-1]);
 					loglik += Math.log(c.density(v[m[k][k]-1][m[i+1][k]-1], v[m[i][k]-1][m[i+1][k]-1]));
 				}
 			}
@@ -595,7 +713,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		TreeSet<Integer> items = new TreeSet<Integer>();
 		
 		//create an all items set
-		for(int i=0;i<n;i++){
+		for(int i=1;i<=n;i++){
 			items.add(i);
 		}
 		
@@ -641,9 +759,14 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		}
 		items.removeAll(B);
 		int x = items.first();
+		System.out.println("X - "+x);
 		m[n-1][n-1] = x;
 	}
 	
+	/**
+	 * Weights the edge by Kendall's tau.
+	 * @param e Edge to be weighted.
+	 */
 	private void kendallWeight(Edge e) {
 		double[] a, b;
 		
@@ -665,6 +788,11 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		e.setWeight(Utils.kendallsTau(a, b));
 	}
 	
+	/**
+	 * Fits Copula to the Edge e, actually using MLE method.
+	 * @param e Edge to be fitted to.
+	 * @param selected Copula selection array.
+	 */
 	private void fitCopula(Edge e, boolean[] selected) {
 		Copula[] copSet = ch.select(selected);
 		double[] lls = new double[copSet.length];
@@ -840,6 +968,10 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		return Ca;
 	}
 	
+	/**
+	 * Rounding function for better readability to the output.
+	 * @param val Value to be rounded.
+	 */
 	private static double round(double val){
 		return Math.round(val*Math.pow(10, 4))/Math.pow(10, 4);
 	}
@@ -918,6 +1050,14 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 	 */
 	public int[][] getRVineMatrix(){
 		return m;
+	}
+	
+	/**
+	 * Get the loaded copulas.
+	 * @return returns the loaded copulas as String array.
+	 */
+	public String[] getLoadedCopulas(){
+		return ch.loadedCopulas();
 	}
 	
 	/**
