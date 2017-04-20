@@ -564,8 +564,6 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 	 * @return returns the sampled instance.
 	 */
 	public double[] createSample(double[] x, boolean[] given){
-		//TODO Check if it is h1 inverse or h2 inverse to use.
-		
 		if(!built){
 			System.err.println("Use estimate(data, w) first to build the estimator!");
 			return null;
@@ -589,22 +587,40 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 				for(int i=k+1;i<n-1;i++){
 					//run path down to get x_i with inverse h-function
 					c = edges[n-1][k].getCopula();
-					u[m[k][k]-1] = c.h2inverse(u[m[k][k]-1], v[m[i][k]-1][m[i+1][k]-1]);
+					if(m[k][k] > m[i][k]){
+						u[m[k][k]-1] = c.h1inverse(v[m[i][k]-1][m[i+1][k]-1], u[m[k][k]-1]);
+					}else{
+						u[m[k][k]-1] = c.h2inverse(u[m[k][k]-1], v[m[i][k]-1][m[i+1][k]-1]);
+					}
 				}
 				//level 0, get x value from h-inverse of adjacent x-value (last entry in current column)
 				c = edges[n-1][k].getCopula();
-				x[m[k][k]-1] = c.h2inverse(u[m[k][k]-1], x[m[n-1][k]-1]);
+				if(m[k][k] > m[n-1][k]){
+					x[m[k][k]-1] = c.h1inverse(x[m[n-1][k]-1], u[m[k][k]-1]);
+				}else{
+					x[m[k][k]-1] = c.h2inverse(u[m[k][k]-1], x[m[n-1][k]-1]);
+				}
 			}
 			//one dimensional transformed values
 			c = edges[n-1][k].getCopula();
-			v[m[k][k]-1][m[n-1][k]-1] = c.h2Function(x[m[k][k]-1], x[m[n-1][k]-1]);
-			v[m[n-1][k]-1][m[k][k]-1] = c.h1Function(x[m[k][k]-1], x[m[n-1][k]-1]);
+			if(m[k][k] > m[n-1][k]){
+				v[m[k][k]-1][m[n-1][k]-1] = c.h1Function(x[m[n-1][k]-1], x[m[k][k]-1]);
+				v[m[n-1][k]-1][m[k][k]-1] = c.h2Function(x[m[n-1][k]-1], x[m[k][k]-1]);
+			}else{
+				v[m[k][k]-1][m[n-1][k]-1] = c.h2Function(x[m[k][k]-1], x[m[n-1][k]-1]);
+				v[m[n-1][k]-1][m[k][k]-1] = c.h1Function(x[m[k][k]-1], x[m[n-1][k]-1]);
+			}
 			
 			for(int i=n-2;i>k;i--){
 				//run path up to generate transformed values
 				c = edges[i][k].getCopula();
-				v[m[k][k]-1][m[i][k]-1] = c.h2Function(v[m[k][k]-1][m[i+1][k]-1], v[m[i][k]-1][m[i+1][k]-1]);
-				v[m[i][k]-1][m[k][k]-1] = c.h1Function(v[m[k][k]-1][m[i+1][k]-1], v[m[i][k]-1][m[i+1][k]-1]);
+				if(m[k][k] > m[i][k]){
+					v[m[k][k]-1][m[i][k]-1] = c.h1Function(v[m[i][k]-1][m[i+1][k]-1], v[m[k][k]-1][m[i+1][k]-1]);
+					v[m[i][k]-1][m[k][k]-1] = c.h2Function(v[m[i][k]-1][m[i+1][k]-1], v[m[k][k]-1][m[i+1][k]-1]);
+				}else{
+					v[m[k][k]-1][m[i][k]-1] = c.h2Function(v[m[k][k]-1][m[i+1][k]-1], v[m[i][k]-1][m[i+1][k]-1]);
+					v[m[i][k]-1][m[k][k]-1] = c.h1Function(v[m[k][k]-1][m[i+1][k]-1], v[m[i][k]-1][m[i+1][k]-1]);
+				}
 			}
 		}
 		
