@@ -81,11 +81,7 @@ public class CopulaHandler {
 	 * @return An array containing the indices and
 	 * 			names of the loaded copula classes.
 	 */
-	public String[] loadedCopulas(){
-		String[] out = new String[copulas.length];
-		for(int i=0; i<out.length; i++){
-			out[i] = i+" - "+copulas[i].name();
-		}
-		return out;
+	public Copula[] loadedCopulas(){
+		return copulas;
 	}
 }

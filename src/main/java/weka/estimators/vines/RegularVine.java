@@ -31,14 +31,14 @@ import weka.estimators.vines.copulas.Copula;
  * @author Christian Lamberty (clamber@students.uni-mainz.de)
  */
 public class RegularVine implements MultivariateEstimator, OptionHandler, CommandlineRunnable {
-	private boolean[] selected = new boolean[]{true, true, true, true, true, true, true, true};
+	private boolean built, timestamps, help, loaded, rvm, fam, parm, pllm, taum, etaum, sum;
+	private String filepath;
 	private CopulaHandler ch = new CopulaHandler();
+	private boolean[] selected;
 	private Graph[] rvine;
 	private int[][] m;
 	private Edge[][] edges;
 	private double[][] data;
-	private boolean built = false;
-	private boolean timestamps = true;
 	
 	public static void main(String[] args){
 		RegularVine rvine = new RegularVine();
@@ -86,256 +86,24 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 	}
 	
 	/**
-	 * Prints the RVine summary.
+	 * Constructor
 	 */
-	public void printSummary(){
-		if(!built){
-			System.err.println("Use estimate(data, w) first to build the estimator!");
-			return;
-		}
-		System.out.println("Regular Vine Summary :");
-		System.out.println("Log-Likelihood : "+logDensity(data));
-		// prepare statistics
-		HashMap<String, Integer> stats = new HashMap<String, Integer>();
+	public RegularVine(){
+		selected = new boolean[ch.loadedCopulas().length];
+		for(int i=0; i<selected.length; i++) selected[i] = true;
 		
-		for(int i=0;i<edges.length;i++){
-			for(int j=0;j<edges.length;j++){
-				if(edges[i][j] != null){
-					String cop = edges[i][j].getCopula().name();
-					if(!stats.containsKey(cop)){
-						stats.put(cop, 1);
-					}else{
-						stats.put(cop, stats.get(cop)+1);
-					}
-				}
-			}
-		}
-		System.out.println();
-		System.out.println("Used Copulas : ");
-		for(String cop : stats.keySet())
-			System.out.println(cop+" : "+stats.get(cop));
-		
-		System.out.println();
-		// print trees
-		System.out.println("RVine Trees : ");
-		for(int i=0; i<rvine.length; i++){
-			System.out.println("Tree "+(i+1)+" : ");
-			for(Edge e : rvine[i].getUndirectedEdgeList()){
-				Copula c = e.getCopula();
-				if(c.getParams() != null){
-					System.out.print(e.getLabel()+" : "+c.name()+"(pars:{");
-					for(int k=0; k<c.getParams().length-1; k++){
-						System.out.print(round(c.getParams()[k])+",");
-					}
-					System.out.print(round(c.getParams()[c.getParams().length-1])+"},");
-				}
-				System.out.println("tau:"+round(c.tau())+", empTau:"+round(e.getWeight())+")");
-			}
-			System.out.println();
-		}
-	}
-	
-	/**
-	 * Prints the pairwise empirical Kendall's tau matrix concerned to the RVine matrix.
-	 */
-	public void printEmpTauMatrix() {
-		if(!built){
-			System.err.println("Use estimate(data, w) first to build the estimator!");
-			return;
-		}
-		
-		System.out.println("Empirical Tau - Matrix");
-		for(int i=0;i<edges.length;i++){
-			for(int j=0;j<edges.length;j++){
-				String out = " - ";
-				if(edges[i][j] != null){
-					double val = round(edges[i][j].getWeight());
-					if( (int) val == val){
-						out = Integer.toString( (int) val);
-					}else{
-						out = String.valueOf(val);
-					}
-				}
-				if(j<edges.length-1){
-					System.out.print(out+"\t&\t");
-				}else{
-					System.out.print(out+"\\\\");
-				}
-			}
-			System.out.println();
-		}
-	}
-
-	/**
-	 * Prints the pairwise Kendall's tau matrix concerned to the RVine matrix.
-	 */
-	public void printTauMatrix() {
-		if(!built){
-			System.err.println("Use estimate(data, w) first to build the estimator!");
-			return;
-		}
-		
-		System.out.println("Tau - Matrix");
-		for(int i=0;i<edges.length;i++){
-			for(int j=0;j<edges.length;j++){
-				String out = " - ";
-				if(edges[i][j] != null){
-					double val = round(edges[i][j].getCopula().tau());
-					if( (int) val == val){
-						out = Integer.toString( (int) val);
-					}else{
-						out = String.valueOf(val);
-					}
-				}
-				if(j<edges.length-1){
-					System.out.print(out+"\t&\t");
-				}else{
-					System.out.print(out+"\\\\");
-				}
-			}
-			System.out.println();
-		}
-	}
-	
-	/**
-	 * Prints the RVine matrix.
-	 */
-	public void printRVineMatrix(){
-		if(!built){
-			System.err.println("Use estimate(data, w) first to build the estimator!");
-			return;
-		}
-		
-		int[][] m = getRVineMatrix();
-		
-		System.out.println("RVine - Matrix");
-		for(int i=0;i<m.length;i++){
-			for(int j=0;j<m.length;j++){
-				if(j < m.length-1){
-					System.out.print(m[i][j]+"\t&\t");
-				}else{
-					System.out.print(m[i][j]+"\\\\");
-				}
-			}
-			System.out.println();
-		}
-	}
-	
-	/**
-	 * Prints the pairwise copula family matrix concerned to the RVine matrix.
-	 */
-	public void printFamilyMatrix(){
-		if(!built){
-			System.err.println("Use estimate(data, w) first to build the estimator!");
-			return;
-		}
-		
-		System.out.println("Family - Matrix");
-		for(int i=0;i<edges.length;i++){
-			for(int j=0;j<edges.length;j++){
-				String out = " - ";
-				if(edges[i][j] != null) out = edges[i][j].getCopula().token();
-				
-				if(j<edges.length-1){
-					System.out.print(out+"\t&\t");
-				}else{
-					System.out.print(out+"\\\\");
-				}
-			}
-			System.out.println();
-		}
-	}
-	
-	/**
-	 * Prints the pairwise copula parameter matrix concerned to the RVine matrix.
-	 */
-	public void printParameterMatrices(){
-		if(!built){
-			System.err.println("Use estimate(data, w) first to build the estimator!");
-			return;
-		}
-		
-		System.out.println("Parameter 1 - Matrix");
-		for(int i=0;i<edges.length;i++){
-			for(int j=0;j<edges.length;j++){
-				String out = " - ";
-				if(edges[i][j] != null){
-					double[] pars = edges[i][j].getCopula().getParams();
-					if(pars != null){
-						double val = round(pars[0]);
-						if( (int) val == val){
-							out = Integer.toString( (int) val);
-						}else{
-							out = String.valueOf(val);
-						}
-					}
-				}
-				if(j<edges.length-1){
-					System.out.print(out+"\t\t\t&\t");
-				}else{
-					System.out.print(out+"\\\\");
-				}
-			}
-			System.out.println();
-		}
-		
-		System.out.println();
-		System.out.println();
-		
-		System.out.println("Parameter 2 - Matrix");
-		for(int i=0;i<edges.length;i++){
-			for(int j=0;j<edges.length;j++){
-				String out = " - ";
-				if(edges[i][j] != null){
-					double[] pars = edges[i][j].getCopula().getParams();
-					if(pars != null && pars.length >= 2){
-						double val = round(pars[1]);
-						if( (int) val == val){
-							out = Integer.toString( (int) val);
-						}else{
-							out = String.valueOf(val);
-						}
-					}
-				}
-				if(j<edges.length-1){
-					System.out.print(out+"\t\t\t&\t");
-				}else{
-					System.out.print(out+"\\\\");
-				}
-			}
-			System.out.println();
-		}
-	}
-	
-	/**
-	 * Prints the pairwise log-likelihood matrix concerned to the RVine matrix.
-	 */
-	public void printLogliksMatrix(){
-		if(!built){
-			System.err.println("Use estimate(data, w) first to build the estimator!");
-			return;
-		}
-		
-		System.out.println("Pairwise - LogLiks - Matrix");
-		for(int i=0;i<edges.length;i++){
-			for(int j=0;j<edges.length;j++){
-				String out = " - ";
-				if(edges[i][j] != null){
-					double val = round(edges[i][j].getLogLik());
-					if( (int) val == val){
-						out = Integer.toString( (int) val);
-					}else{
-						out = String.valueOf(val);
-					}
-				}
-				if(j<edges.length-1){
-					System.out.print(out+"\t&\t");
-				}else{
-					System.out.print(out+"\\\\");
-				}
-			}
-			System.out.println();
-		}
+		built = false;
+		timestamps = false;
+		help = false;
+		loaded = false;
+		rvm = false;
+		fam = false;
+		parm = false;
+		pllm = false;
+		taum = false;
+		etaum = false;
+		sum = false;
+		filepath = null;
 	}
 	
 	/**
@@ -984,6 +752,261 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		return Ca;
 	}
 	
+	// Printing methods
+	
+	/**
+	 * Prints the RVine summary.
+	 */
+	public void printSummary(){
+		if(!built){
+			System.err.println("Use estimate(data, w) first to build the estimator!");
+			return;
+		}
+		System.out.println("Regular Vine Summary :");
+		System.out.println("Log-Likelihood : "+logDensity(data));
+		// prepare statistics
+		HashMap<String, Integer> stats = new HashMap<String, Integer>();
+		
+		for(int i=0;i<edges.length;i++){
+			for(int j=0;j<edges.length;j++){
+				if(edges[i][j] != null){
+					String cop = edges[i][j].getCopula().name();
+					if(!stats.containsKey(cop)){
+						stats.put(cop, 1);
+					}else{
+						stats.put(cop, stats.get(cop)+1);
+					}
+				}
+			}
+		}
+		System.out.println();
+		System.out.println("Used Copulas : ");
+		for(String cop : stats.keySet())
+			System.out.println(cop+" : "+stats.get(cop));
+		
+		System.out.println();
+		// print trees
+		System.out.println("RVine Trees : ");
+		for(int i=0; i<rvine.length; i++){
+			System.out.println("Tree "+(i+1)+" : ");
+			for(Edge e : rvine[i].getUndirectedEdgeList()){
+				Copula c = e.getCopula();
+				if(c.getParams() != null){
+					System.out.print(e.getLabel()+" : "+c.name()+"(pars:{");
+					for(int k=0; k<c.getParams().length-1; k++){
+						System.out.print(round(c.getParams()[k])+",");
+					}
+					System.out.print(round(c.getParams()[c.getParams().length-1])+"},");
+				}
+				System.out.println("tau:"+round(c.tau())+", empTau:"+round(e.getWeight())+")");
+			}
+			System.out.println();
+		}
+	}
+	
+	/**
+	 * Prints the pairwise empirical Kendall's tau matrix concerned to the RVine matrix.
+	 */
+	public void printEmpTauMatrix() {
+		if(!built){
+			System.err.println("Use estimate(data, w) first to build the estimator!");
+			return;
+		}
+		
+		System.out.println("Empirical Tau - Matrix");
+		for(int i=0;i<edges.length;i++){
+			for(int j=0;j<edges.length;j++){
+				String out = " - ";
+				if(edges[i][j] != null){
+					double val = round(edges[i][j].getWeight());
+					if( (int) val == val){
+						out = Integer.toString( (int) val);
+					}else{
+						out = String.valueOf(val);
+					}
+				}
+				if(j<edges.length-1){
+					System.out.print(out+"\t&\t");
+				}else{
+					System.out.print(out+"\\\\");
+				}
+			}
+			System.out.println();
+		}
+	}
+
+	/**
+	 * Prints the pairwise Kendall's tau matrix concerned to the RVine matrix.
+	 */
+	public void printTauMatrix() {
+		if(!built){
+			System.err.println("Use estimate(data, w) first to build the estimator!");
+			return;
+		}
+		
+		System.out.println("Tau - Matrix");
+		for(int i=0;i<edges.length;i++){
+			for(int j=0;j<edges.length;j++){
+				String out = " - ";
+				if(edges[i][j] != null){
+					double val = round(edges[i][j].getCopula().tau());
+					if( (int) val == val){
+						out = Integer.toString( (int) val);
+					}else{
+						out = String.valueOf(val);
+					}
+				}
+				if(j<edges.length-1){
+					System.out.print(out+"\t&\t");
+				}else{
+					System.out.print(out+"\\\\");
+				}
+			}
+			System.out.println();
+		}
+	}
+	
+	/**
+	 * Prints the RVine matrix.
+	 */
+	public void printRVineMatrix(){
+		if(!built){
+			System.err.println("Use estimate(data, w) first to build the estimator!");
+			return;
+		}
+		
+		int[][] m = getRVineMatrix();
+		
+		System.out.println("RVine - Matrix");
+		for(int i=0;i<m.length;i++){
+			for(int j=0;j<m.length;j++){
+				if(j < m.length-1){
+					System.out.print(m[i][j]+"\t&\t");
+				}else{
+					System.out.print(m[i][j]+"\\\\");
+				}
+			}
+			System.out.println();
+		}
+	}
+	
+	/**
+	 * Prints the pairwise copula family matrix concerned to the RVine matrix.
+	 */
+	public void printFamilyMatrix(){
+		if(!built){
+			System.err.println("Use estimate(data, w) first to build the estimator!");
+			return;
+		}
+		
+		System.out.println("Family - Matrix");
+		for(int i=0;i<edges.length;i++){
+			for(int j=0;j<edges.length;j++){
+				String out = " - ";
+				if(edges[i][j] != null) out = edges[i][j].getCopula().token();
+				
+				if(j<edges.length-1){
+					System.out.print(out+"\t&\t");
+				}else{
+					System.out.print(out+"\\\\");
+				}
+			}
+			System.out.println();
+		}
+	}
+	
+	/**
+	 * Prints the pairwise copula parameter matrix concerned to the RVine matrix.
+	 */
+	public void printParameterMatrices(){
+		if(!built){
+			System.err.println("Use estimate(data, w) first to build the estimator!");
+			return;
+		}
+		
+		System.out.println("Parameter 1 - Matrix");
+		for(int i=0;i<edges.length;i++){
+			for(int j=0;j<edges.length;j++){
+				String out = " - ";
+				if(edges[i][j] != null){
+					double[] pars = edges[i][j].getCopula().getParams();
+					if(pars != null){
+						double val = round(pars[0]);
+						if( (int) val == val){
+							out = Integer.toString( (int) val);
+						}else{
+							out = String.valueOf(val);
+						}
+					}
+				}
+				if(j<edges.length-1){
+					System.out.print(out+"\t\t\t&\t");
+				}else{
+					System.out.print(out+"\\\\");
+				}
+			}
+			System.out.println();
+		}
+		
+		System.out.println();
+		System.out.println();
+		
+		System.out.println("Parameter 2 - Matrix");
+		for(int i=0;i<edges.length;i++){
+			for(int j=0;j<edges.length;j++){
+				String out = " - ";
+				if(edges[i][j] != null){
+					double[] pars = edges[i][j].getCopula().getParams();
+					if(pars != null && pars.length >= 2){
+						double val = round(pars[1]);
+						if( (int) val == val){
+							out = Integer.toString( (int) val);
+						}else{
+							out = String.valueOf(val);
+						}
+					}
+				}
+				if(j<edges.length-1){
+					System.out.print(out+"\t\t\t&\t");
+				}else{
+					System.out.print(out+"\\\\");
+				}
+			}
+			System.out.println();
+		}
+	}
+	
+	/**
+	 * Prints the pairwise log-likelihood matrix concerned to the RVine matrix.
+	 */
+	public void printLogliksMatrix(){
+		if(!built){
+			System.err.println("Use estimate(data, w) first to build the estimator!");
+			return;
+		}
+		
+		System.out.println("Pairwise - LogLiks - Matrix");
+		for(int i=0;i<edges.length;i++){
+			for(int j=0;j<edges.length;j++){
+				String out = " - ";
+				if(edges[i][j] != null){
+					double val = round(edges[i][j].getLogLik());
+					if( (int) val == val){
+						out = Integer.toString( (int) val);
+					}else{
+						out = String.valueOf(val);
+					}
+				}
+				if(j<edges.length-1){
+					System.out.print(out+"\t&\t");
+				}else{
+					System.out.print(out+"\\\\");
+				}
+			}
+			System.out.println();
+		}
+	}
+	
 	/**
 	 * Rounding function for better readability to the output.
 	 * @param val Value to be rounded.
@@ -991,74 +1014,8 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 	private static double round(double val){
 		return Math.round(val*Math.pow(10, 4))/Math.pow(10, 4);
 	}
-
-	/**
-	 * Returns an enumeration describing the available options.
-	 *
-	 * @return an enumeration of all the available options.
-	 */
-	@Override
-	public Enumeration<Option> listOptions() {
-	 return Option.listOptionsForClass(this.getClass()).elements();
-	}
-
-	/**
-	 * Gets the current settings of the Classifier.
-	 *
-	 * @return an array of strings suitable for passing to setOptions
-	 */
-	@Override
-	public String[] getOptions() {
-	 return Option.getOptions(this, this.getClass());
-	}
-
-	/**
-	 * Parses a given list of options.
-	 *
-	 * @param options the list of options as an array of strings
-	 * @exception Exception if an option is not supported
-	 */
-	public void setOptions(String[] options) throws Exception {
-	 Option.setOptions(options, this, this.getClass());
-	}
 	
-	@OptionMetadata(
-		    displayName = "copulaSelection",
-		    description = "Copulas to use for RVine built (default = all).",
-		    commandLineParamName = "copulaSelection", commandLineParamSynopsis = "-copulaSelection <string>",
-		    displayOrder = 1)
-		public String getCopulaSelection() {
-			String out = "";
-			boolean first = true;
-			for(int i=0; i<selected.length; i++){
-				if(selected[i]){
-					if(first){
-						out += i;
-						first = false;
-					}
-					else{
-						out += ","+i;
-					}
-				}
-			}
-		 	return out;
-		}
-		public void setCopulaSelection(String sel) {
-			String[] sels = sel.split(",");
-			int[] cop = new int[sels.length];
-			for(int i=0; i<sels.length; i++){
-				cop[i] = Integer.parseInt(sels[i].trim());
-				if(cop[i] < 0 || cop[i] >= selected.length){
-					System.err.println("Failed to pass on options!");
-				}
-			}
-			
-			// pass on options if everything is correct
-			for(int i=0; i<selected.length; i++) selected[i] = false;
-			for(int i=0; i<cop.length; i++){
-				selected[cop[i]] = true;
-			}
-		}
+	// Getter and Setter
 	
 	/**
 	 * Get the RVine-Matrix.
@@ -1072,7 +1029,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 	 * Get the loaded copulas.
 	 * @return returns the loaded copulas as String array.
 	 */
-	public String[] getLoadedCopulas(){
+	public Copula[] getLoadedCopulas(){
 		return ch.loadedCopulas();
 	}
 	
@@ -1092,7 +1049,239 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 	public Graph[] getRegularVine(){
 		return rvine;
 	}
+	
+	// Options
+	
+	@OptionMetadata(displayName="Help me! :( ",
+            description="Prints all the options",
+            commandLineParamName="help",
+            commandLineParamSynopsis="-help",
+            commandLineParamIsFlag=true,
+            displayOrder=1
+    )
+	public void setHelp(boolean help) {
+		this.help = help;
+	}
+	public boolean getHelp() {
+		return help;
+	}
+	
+	@OptionMetadata(displayName="Loaded Copulas",
+            description="Prints all loaded and ready-to-use copulas",
+            commandLineParamName="copulas",
+            commandLineParamSynopsis="-copulas",
+            commandLineParamIsFlag=true,
+            displayOrder=2
+    )
+	public void setLoaded(boolean loaded) {
+		this.loaded = loaded;
+	}
+	public boolean getLoaded() {
+		return loaded;
+	}
+	
+	@OptionMetadata(
+		    displayName = "Filepath",
+		    description = "Set the path to arff file (required).",
+		    commandLineParamName = "arff",
+		    commandLineParamSynopsis = "-arff <filepath>",
+    		commandLineParamIsFlag = false,
+		    displayOrder = 3
+	)
+	public String getFilepath() {
+		return filepath;
+	}
+	public void setFilepath(String filepath) {
+		this.filepath = filepath;
+	}
+	
+	@OptionMetadata(
+		    displayName = "Copula Selection",
+		    description = "Pass copulas to use for RVine construction by comma-separated indices (default = all).",
+		    commandLineParamName = "copulaSelection",
+		    commandLineParamSynopsis = "-copulaSelection <comma-separated indices>",
+		    commandLineParamIsFlag = false,
+		    displayOrder = 4
+	)
+	public void setCopulaSelection(String sel) {
+		String[] sels = sel.split(",");
+		int[] cop = new int[sels.length];
+		for(int i=0; i<sels.length; i++){
+			cop[i] = Integer.parseInt(sels[i].trim());
+			if(cop[i] < 0 || cop[i] >= selected.length){
+				System.err.println("Failed to pass on options!");
+			}
+		}
+		
+		// pass on options if everything is correct
+		for(int i=0; i<selected.length; i++) selected[i] = false;
+		for(int i=0; i<cop.length; i++){
+			selected[cop[i]] = true;
+		}
+	}
+	public String getCopulaSelection() {
+		String out = "";
+		boolean first = true;
+		for(int i=0; i<selected.length; i++){
+			if(selected[i]){
+				if(first){
+					out += i;
+					first = false;
+				}
+				else{
+					out += ","+i;
+				}
+			}
+		}
+	 	return out;
+	}
+	
+	@OptionMetadata(displayName="Summary",
+            description="Prints the RVine summary summary.",
+            commandLineParamName="sum",
+            commandLineParamSynopsis="-sum",
+            commandLineParamIsFlag=true,
+            displayOrder=5
+    )
+	public void setSum(boolean sum) {
+		this.sum = sum;
+	}
+	public boolean getSum() {
+		return sum;
+	}
+	
+	@OptionMetadata(displayName="RVine matrix",
+            description="Print the RVine matrix.",
+            commandLineParamName="rvm",
+            commandLineParamSynopsis="-rvm",
+            commandLineParamIsFlag=true,
+            displayOrder=6
+    )
+	public void setRVM(boolean rvm) {
+		this.rvm = rvm;
+	}
+	public boolean getRVM() {
+		return rvm;
+	}
+	
+	@OptionMetadata(displayName="Families matrix",
+            description="Print the RVine families matrix.",
+            commandLineParamName="fam",
+            commandLineParamSynopsis="-fam",
+            commandLineParamIsFlag=true,
+            displayOrder=7
+    )
+	public void setFAM(boolean fam) {
+		this.fam = fam;
+	}
+	public boolean getFAM() {
+		return fam;
+	}
+	
+	@OptionMetadata(displayName="Parameters matrices",
+            description="Print the RVine parameter matrices.",
+            commandLineParamName="parm",
+            commandLineParamSynopsis="-parm",
+            commandLineParamIsFlag=true,
+            displayOrder=8
+    )
+	public void setPARM(boolean parm) {
+		this.parm = parm;
+	}
+	public boolean getPARM() {
+		return parm;
+	}
+	
+	@OptionMetadata(displayName="Pair-LogLiks matrix",
+            description="Print the RVine Pair-Log-Likelihoods matrix.",
+            commandLineParamName="pllm",
+            commandLineParamSynopsis="-pllm",
+            commandLineParamIsFlag=true,
+            displayOrder=9
+    )
+	public void setPLLM(boolean pllm) {
+		this.pllm = pllm;
+	}
+	public boolean getPLLM() {
+		return pllm;
+	}
+	
+	@OptionMetadata(displayName="Kendall's tau matrix",
+            description="Print the RVine Kendall's tau matrix.",
+            commandLineParamName="taum",
+            commandLineParamSynopsis="-taum",
+            commandLineParamIsFlag=true,
+            displayOrder=10
+    )
+	public void setTAUM(boolean taum) {
+		this.taum = taum;
+	}
+	public boolean getTAUM() {
+		return taum;
+	}
+	
+	@OptionMetadata(displayName="Empirical Kendall's tau matrix",
+            description="Print the RVine empirical Kendall's tau matrix.",
+            commandLineParamName="etaum",
+            commandLineParamSynopsis="-etaum",
+            commandLineParamIsFlag=true,
+            displayOrder=11
+    )
+	public void setETAUM(boolean etaum) {
+		this.etaum = etaum;
+	}
+	public boolean getETAUM() {
+		return etaum;
+	}
+	
+	@OptionMetadata(displayName="Use timestamps",
+            description="Print timestamps during RVine construction.",
+            commandLineParamName="times",
+            commandLineParamSynopsis="-times",
+            commandLineParamIsFlag=true,
+            displayOrder=12
+    )
+	public void setTimestamps(boolean timestamps) {
+		this.timestamps = timestamps;
+	}
+	public boolean getTimestamps() {
+		return timestamps;
+	}
+	
+	// OptionHandler
+	
+	/**
+	 * Returns an enumeration describing the available options.
+	 *
+	 * @return an enumeration of all the available options.
+	 */
+	@Override
+	public Enumeration<Option> listOptions() {
+		return Option.listOptionsForClass(this.getClass()).elements();
+	}
 
+	/**
+	 * Gets the current settings of the Classifier.
+	 *
+	 * @return an array of strings suitable for passing to setOptions
+	 */
+	@Override
+	public String[] getOptions() {
+		return Option.getOptions(this, this.getClass());
+	}
+
+	/**
+	 * Parses a given list of options.
+	 *
+	 * @param options the list of options as an array of strings
+	 * @exception Exception if an option is not supported
+	 */
+	public void setOptions(String[] options) throws Exception {
+		Option.setOptions(options, this, this.getClass());
+	}
+	
+	// CommandLineRunnable
+	
 	@Override
 	public void postExecution() throws Exception {
 	}
@@ -1104,12 +1293,34 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 	@Override
 	public void run(Object toRun, String[] options) throws Exception {
 		if (!(toRun instanceof RegularVine)) {
-		      throw new IllegalArgumentException("Object to run is not a RVine!");
-		    }
+			throw new IllegalArgumentException("Object to run is not a RVine!");
+		}
 		RegularVine rvine = (RegularVine) toRun;
-		rvine.setOptions(options);
+		setOptions(options);
 		
-		double[][] data = loadData("/Users/clamber/wekafiles/packages/vines/src/main/data/random/random1.arff");
+		if(help || options.length == 0){
+			for (Enumeration<Option> e = rvine.listOptions(); e.hasMoreElements();){
+				Option o = e.nextElement();
+				System.out.println(o.synopsis()+" "+o.description());
+			}
+			return;
+		}
+		
+		if(loaded){
+			Copula[] copulas = getLoadedCopulas();
+			for(int i=0; i<copulas.length; i++){
+				System.out.println(i+" - "+copulas[i].name());
+			}
+			return;
+		}
+		
+		if(filepath == null){
+			System.err.println("No source file specified! Use the fp command to pass a filepath.");
+			System.err.println("Performing on \"./src/main/data/daxreturns.arff\" (default file).");
+			filepath = "./src/main/data/daxreturns.arff";
+		}
+		
+		double[][] data = loadData(filepath);
 		if(data == null) return;
 		
 		double[] w = new double[data.length];
@@ -1119,36 +1330,44 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		
 		rvine.estimate(data, w);
 
-		rvine.printSummary();
+		if(sum){
+			rvine.printSummary();
+			System.out.println();
+			System.out.println();
+		}
 		
-		System.out.println();
-		System.out.println();
+		if(rvm){
+			rvine.printRVineMatrix();
+			System.out.println();
+			System.out.println();
+		}
 		
-		rvine.printRVineMatrix();
+		if(fam){
+			rvine.printFamilyMatrix();
+			System.out.println();
+			System.out.println();
+		}
 		
-		System.out.println();
-		System.out.println();
+		if(parm){
+			rvine.printParameterMatrices();
+			System.out.println();
+			System.out.println();
+		}
 		
-		rvine.printFamilyMatrix();
+		if(pllm){
+			rvine.printLogliksMatrix();
+			System.out.println();
+			System.out.println();
+		}
 		
-		System.out.println();
-		System.out.println();
+		if(taum){
+			rvine.printTauMatrix();
+			System.out.println();
+			System.out.println();
+		}
 		
-		rvine.printParameterMatrices();
-		
-		System.out.println();
-		System.out.println();
-		
-		rvine.printLogliksMatrix();
-		
-		System.out.println();
-		System.out.println();
-		
-		rvine.printTauMatrix();
-		
-		System.out.println();
-		System.out.println();
-		
-		rvine.printEmpTauMatrix();
+		if(etaum){
+			rvine.printEmpTauMatrix();
+		}
 	}
 }
