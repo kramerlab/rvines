@@ -23,7 +23,7 @@ import weka.estimators.vines.copulas.Copula;
  * <br>
  * It uses the Graph class to store the Graphs for its dimensions.
  * <br>
- * It can be used to perform sampling (simulation) and log-density (pseudo) computation.
+ * It can be used to perform sampling (or simulation) and (pseudo) log-density computation.
  * <br>
  * The implementation is based on J.F. Di&szlig;mann's diploma thesis (2010):
  * Statistical inference for regular vines and application.
@@ -31,14 +31,14 @@ import weka.estimators.vines.copulas.Copula;
  * @author Christian Lamberty (clamber@students.uni-mainz.de)
  */
 public class RegularVine implements MultivariateEstimator, OptionHandler, CommandlineRunnable {
-	private boolean built, timestamps, help, loaded, rvm, fam, parm, pllm, taum, etaum, sum;
-	private String filepath;
-	private CopulaHandler ch = new CopulaHandler();
-	private boolean[] selected;
-	private Graph[] rvine;
-	private int[][] m;
-	private Edge[][] edges;
-	private double[][] data;
+	protected boolean built, timestamps, help, loaded, rvm, fam, parm, pllm, taum, etaum, sum;
+	protected String filepath;
+	protected CopulaHandler ch = new CopulaHandler();
+	protected boolean[] selected;
+	protected Graph[] rvine;
+	protected int[][] m;
+	protected Edge[][] edges;
+	protected double[][] data;
 	
 	public static void main(String[] args){
 		RegularVine rvine = new RegularVine();
@@ -103,7 +103,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		taum = false;
 		etaum = false;
 		sum = false;
-		filepath = null;
+		filepath = "";
 	}
 	
 	/**
@@ -543,7 +543,6 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		}
 		items.removeAll(B);
 		int x = items.first();
-		System.out.println("X - "+x);
 		m[n-1][n-1] = x;
 	}
 	
@@ -794,9 +793,9 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 				if(c.getParams() != null){
 					System.out.print(e.getLabel()+" : "+c.name()+"(pars:{");
 					for(int k=0; k<c.getParams().length-1; k++){
-						System.out.print(round(c.getParams()[k])+",");
+						System.out.print(round(c.getParams()[k])+", ");
 					}
-					System.out.print(round(c.getParams()[c.getParams().length-1])+"},");
+					System.out.print(round(c.getParams()[c.getParams().length-1])+"}, ");
 				}
 				System.out.println("tau:"+round(c.tau())+", empTau:"+round(e.getWeight())+")");
 			}
@@ -1052,13 +1051,12 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 	
 	// Options
 	
-	@OptionMetadata(displayName="Help me! :( ",
-            description="Prints all the options",
-            commandLineParamName="help",
-            commandLineParamSynopsis="-help",
-            commandLineParamIsFlag=true,
-            displayOrder=1
-    )
+	@OptionMetadata(displayName = "Help me! :( ",
+            description = "Prints all the options",
+            commandLineParamName = "help",
+            commandLineParamSynopsis = "-help",
+            commandLineParamIsFlag = true,
+            displayOrder = 1)
 	public void setHelp(boolean help) {
 		this.help = help;
 	}
@@ -1066,13 +1064,12 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		return help;
 	}
 	
-	@OptionMetadata(displayName="Loaded Copulas",
-            description="Prints all loaded and ready-to-use copulas",
-            commandLineParamName="copulas",
-            commandLineParamSynopsis="-copulas",
-            commandLineParamIsFlag=true,
-            displayOrder=2
-    )
+	@OptionMetadata(displayName = "Loaded Copulas",
+            description = "Prints all loaded and ready-to-use copulas",
+            commandLineParamName = "copulas",
+            commandLineParamSynopsis = "-copulas",
+            commandLineParamIsFlag = true,
+            displayOrder = 2)
 	public void setLoaded(boolean loaded) {
 		this.loaded = loaded;
 	}
@@ -1083,26 +1080,24 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 	@OptionMetadata(
 		    displayName = "Filepath",
 		    description = "Set the path to arff file (required).",
-		    commandLineParamName = "arff",
-		    commandLineParamSynopsis = "-arff <filepath>",
+		    commandLineParamName = "fp",
+		    commandLineParamSynopsis = "-fp <string>",
     		commandLineParamIsFlag = false,
-		    displayOrder = 3
-	)
-	public String getFilepath() {
-		return filepath;
-	}
+		    displayOrder = 3)
 	public void setFilepath(String filepath) {
 		this.filepath = filepath;
+	}
+	public String getFilepath() {
+		return filepath;
 	}
 	
 	@OptionMetadata(
 		    displayName = "Copula Selection",
 		    description = "Pass copulas to use for RVine construction by comma-separated indices (default = all).",
 		    commandLineParamName = "copulaSelection",
-		    commandLineParamSynopsis = "-copulaSelection <comma-separated indices>",
+		    commandLineParamSynopsis = "-copulaSelection <string>",
 		    commandLineParamIsFlag = false,
-		    displayOrder = 4
-	)
+		    displayOrder = 4)
 	public void setCopulaSelection(String sel) {
 		String[] sels = sel.split(",");
 		int[] cop = new int[sels.length];
@@ -1136,13 +1131,12 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 	 	return out;
 	}
 	
-	@OptionMetadata(displayName="Summary",
-            description="Prints the RVine summary summary.",
-            commandLineParamName="sum",
-            commandLineParamSynopsis="-sum",
-            commandLineParamIsFlag=true,
-            displayOrder=5
-    )
+	@OptionMetadata(displayName = "Summary",
+            description = "Print the RVine summary.",
+            commandLineParamName = "sum",
+            commandLineParamSynopsis = "-sum",
+            commandLineParamIsFlag = true,
+            displayOrder = 5)
 	public void setSum(boolean sum) {
 		this.sum = sum;
 	}
@@ -1150,13 +1144,12 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		return sum;
 	}
 	
-	@OptionMetadata(displayName="RVine matrix",
-            description="Print the RVine matrix.",
-            commandLineParamName="rvm",
-            commandLineParamSynopsis="-rvm",
-            commandLineParamIsFlag=true,
-            displayOrder=6
-    )
+	@OptionMetadata(displayName = "RVine matrix",
+            description = "Print the RVine matrix.",
+            commandLineParamName = "rvm",
+            commandLineParamSynopsis = "-rvm",
+            commandLineParamIsFlag = true,
+            displayOrder = 6)
 	public void setRVM(boolean rvm) {
 		this.rvm = rvm;
 	}
@@ -1164,13 +1157,12 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		return rvm;
 	}
 	
-	@OptionMetadata(displayName="Families matrix",
-            description="Print the RVine families matrix.",
-            commandLineParamName="fam",
-            commandLineParamSynopsis="-fam",
-            commandLineParamIsFlag=true,
-            displayOrder=7
-    )
+	@OptionMetadata(displayName = "Families matrix",
+            description = "Print the RVine families matrix.",
+            commandLineParamName = "fam",
+            commandLineParamSynopsis = "-fam",
+            commandLineParamIsFlag = true,
+            displayOrder = 7)
 	public void setFAM(boolean fam) {
 		this.fam = fam;
 	}
@@ -1178,13 +1170,12 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		return fam;
 	}
 	
-	@OptionMetadata(displayName="Parameters matrices",
-            description="Print the RVine parameter matrices.",
-            commandLineParamName="parm",
-            commandLineParamSynopsis="-parm",
-            commandLineParamIsFlag=true,
-            displayOrder=8
-    )
+	@OptionMetadata(displayName = "Parameters matrices",
+            description = "Print the RVine parameter matrices.",
+            commandLineParamName = "parm",
+            commandLineParamSynopsis = "-parm",
+            commandLineParamIsFlag = true,
+            displayOrder = 8)
 	public void setPARM(boolean parm) {
 		this.parm = parm;
 	}
@@ -1192,13 +1183,12 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		return parm;
 	}
 	
-	@OptionMetadata(displayName="Pair-LogLiks matrix",
-            description="Print the RVine Pair-Log-Likelihoods matrix.",
-            commandLineParamName="pllm",
-            commandLineParamSynopsis="-pllm",
-            commandLineParamIsFlag=true,
-            displayOrder=9
-    )
+	@OptionMetadata(displayName = "Pair-LogLiks matrix",
+            description = "Print the RVine Pair-Log-Likelihoods matrix.",
+            commandLineParamName = "pllm",
+            commandLineParamSynopsis = "-pllm",
+            commandLineParamIsFlag = true,
+            displayOrder = 9)
 	public void setPLLM(boolean pllm) {
 		this.pllm = pllm;
 	}
@@ -1206,13 +1196,12 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		return pllm;
 	}
 	
-	@OptionMetadata(displayName="Kendall's tau matrix",
-            description="Print the RVine Kendall's tau matrix.",
-            commandLineParamName="taum",
-            commandLineParamSynopsis="-taum",
-            commandLineParamIsFlag=true,
-            displayOrder=10
-    )
+	@OptionMetadata(displayName = "Kendall's tau matrix",
+            description = "Print the RVine Kendall's tau matrix.",
+            commandLineParamName = "taum",
+            commandLineParamSynopsis = "-taum",
+            commandLineParamIsFlag = true,
+            displayOrder = 10)
 	public void setTAUM(boolean taum) {
 		this.taum = taum;
 	}
@@ -1220,13 +1209,12 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		return taum;
 	}
 	
-	@OptionMetadata(displayName="Empirical Kendall's tau matrix",
-            description="Print the RVine empirical Kendall's tau matrix.",
-            commandLineParamName="etaum",
-            commandLineParamSynopsis="-etaum",
-            commandLineParamIsFlag=true,
-            displayOrder=11
-    )
+	@OptionMetadata(displayName = "Empirical Kendall's tau matrix",
+            description = "Print the RVine empirical Kendall's tau matrix.",
+            commandLineParamName = "etaum",
+            commandLineParamSynopsis = "-etaum",
+            commandLineParamIsFlag = true,
+            displayOrder = 11)
 	public void setETAUM(boolean etaum) {
 		this.etaum = etaum;
 	}
@@ -1234,13 +1222,12 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		return etaum;
 	}
 	
-	@OptionMetadata(displayName="Use timestamps",
-            description="Print timestamps during RVine construction.",
-            commandLineParamName="times",
-            commandLineParamSynopsis="-times",
-            commandLineParamIsFlag=true,
-            displayOrder=12
-    )
+	@OptionMetadata(displayName = "Use timestamps",
+            description = "Print timestamps during RVine construction.",
+            commandLineParamName = "times",
+            commandLineParamSynopsis = "-times",
+            commandLineParamIsFlag = true,
+            displayOrder = 12)
 	public void setTimestamps(boolean timestamps) {
 		this.timestamps = timestamps;
 	}
@@ -1296,7 +1283,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 			throw new IllegalArgumentException("Object to run is not a RVine!");
 		}
 		RegularVine rvine = (RegularVine) toRun;
-		setOptions(options);
+		rvine.setOptions(options);
 		
 		if(help || options.length == 0){
 			for (Enumeration<Option> e = rvine.listOptions(); e.hasMoreElements();){
@@ -1314,7 +1301,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 			return;
 		}
 		
-		if(filepath == null){
+		if(filepath.equals("")){
 			System.err.println("No source file specified! Use the fp command to pass a filepath.");
 			System.err.println("Performing on \"./src/main/data/daxreturns.arff\" (default file).");
 			filepath = "./src/main/data/daxreturns.arff";
