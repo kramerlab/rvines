@@ -1,0 +1,4 @@
+# Explorer.props file. Adds a Panel to the Tabs key.
+
+Tabs=weka.estimators.vines.gui.explorer.RVinesPanel
+TabsPolicy=append

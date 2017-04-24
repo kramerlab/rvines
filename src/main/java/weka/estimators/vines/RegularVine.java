@@ -112,7 +112,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 	 * @param data Data as double matrix.
 	 * @return Boolean if data is correct.
 	 */
-	private static boolean testData(double[][] data){
+	public static boolean testData(double[][] data){
 		for(int i=0; i<data.length; i++){
 			for(int j=0; j<data[i].length; j++){
 				if(data[i][j] < 0 || data[i][j] > 1) return false; 
@@ -153,6 +153,25 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 			e.printStackTrace();
 		}
 		return null;
+	}
+	
+	/**
+	 * Transforms Instances to double array data.
+	 * 
+	 * @param in Data as Instances.
+	 * @return Data as double matrix.
+	 */
+	public static double[][] transform(Instances in){
+		double[][] data;			
+		int k = in.numAttributes();
+		
+		data = new double[k][];
+		
+		for(int i=0; i<k; i++){
+			data[i] = in.attributeToDoubleArray(i);
+		}
+		
+		return data;
 	}
 	
 	/**
