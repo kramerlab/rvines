@@ -18,6 +18,7 @@ import weka.estimators.vines.Utils;
  * @author Christian Lamberty (clamber@students.uni-mainz.de)
  */
 public class ClaytonCopula extends AbstractCopula{
+	private static final long serialVersionUID = -365618187939149392L;
 	protected double d;
 	
 	/**

@@ -1,5 +1,6 @@
 package weka.estimators.vines;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Vector;
 
@@ -17,7 +18,8 @@ import weka.estimators.vines.functions.CopulaRotation;
  * 
  * @author Christian Lamberty (clamber@students.uni-mainz.de)
  */
-public class CopulaHandler {
+public class CopulaHandler implements Serializable{
+	private static final long serialVersionUID = 7964742147646150808L;
 	Copula[] copulas;
 	
 	/**

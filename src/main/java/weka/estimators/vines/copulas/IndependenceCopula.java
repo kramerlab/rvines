@@ -9,6 +9,7 @@ package weka.estimators.vines.copulas;
  * @author Christian Lamberty (clamber@students.uni-mainz.de)
  */
 public class IndependenceCopula extends AbstractCopula{
+	private static final long serialVersionUID = -4231585703348535818L;
 
 	@Override
 	public double C(double x, double y) {

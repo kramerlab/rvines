@@ -9,6 +9,8 @@ import weka.estimators.vines.copulas.Copula;
  * @author Christian Lamberty (clamber@students.uni-mainz.de)
  */
 public class CopulaRotation extends AbstractCopula{
+	private static final long serialVersionUID = 2123496129754950803L;
+
 	public enum Mode {ROT90, ROT180, ROT270}
 	private Copula c;
 	private Mode m;

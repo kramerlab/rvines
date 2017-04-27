@@ -1,12 +1,14 @@
 package weka.estimators.vines.copulas;
 
+import java.io.Serializable;
+
 /**
  * This is an interface for bivariate copula families.
  * The bivariate copulae are used to model the edges of the RVine.
  * 
  * @author Christian Lamberty (clamber@students.uni-mainz.de)
  */
-public interface Copula {
+public interface Copula extends Serializable{
 	
 	/**
 	 * Set the parameters for the copula.

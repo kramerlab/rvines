@@ -21,6 +21,7 @@ import weka.estimators.vines.Utils;
  * @author Christian Lamberty (clamber@students.uni-mainz.de)
  */
 public class TCopula extends AbstractCopula{
+	private static final long serialVersionUID = 2868000059648884715L;
 	private double p;
 	private int v;
 	

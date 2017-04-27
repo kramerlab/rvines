@@ -15,6 +15,7 @@ import weka.estimators.vines.Utils;
  * @author Christian Lamberty (clamber@students.uni-mainz.de)
  */
 public class FGMCopula extends AbstractCopula{
+	private static final long serialVersionUID = -4023999984385944320L;
 	double d;
 	
 	/**

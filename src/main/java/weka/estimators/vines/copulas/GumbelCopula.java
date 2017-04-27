@@ -18,6 +18,7 @@ import weka.estimators.vines.Utils;
  * @author Christian Lamberty (clamber@students.uni-mainz.de)
  */
 public class GumbelCopula extends AbstractCopula{
+	private static final long serialVersionUID = 7409582996477732641L;
 	protected double d;
 	
 	/**

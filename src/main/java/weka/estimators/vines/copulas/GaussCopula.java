@@ -20,6 +20,7 @@ import weka.estimators.vines.Utils;
  * @author Christian Lamberty (clamber@students.uni-mainz.de)
  */
 public class GaussCopula extends AbstractCopula{
+	private static final long serialVersionUID = 7450364339088849215L;
 	private double p;
 	
 	/**

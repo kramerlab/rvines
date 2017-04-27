@@ -1,5 +1,6 @@
 package weka.estimators.vines;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -30,7 +31,8 @@ import weka.estimators.vines.copulas.Copula;
  * 
  * @author Christian Lamberty (clamber@students.uni-mainz.de)
  */
-public class RegularVine implements MultivariateEstimator, OptionHandler, CommandlineRunnable {
+public class RegularVine implements MultivariateEstimator, OptionHandler, CommandlineRunnable, Serializable {
+	private static final long serialVersionUID = -5876664157542627697L;
 	protected boolean built, timestamps, help, loaded, rvm, fam, parm, pllm, taum, etaum, sum;
 	protected String filepath;
 	protected CopulaHandler ch = new CopulaHandler();
@@ -1070,7 +1072,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 	
 	// Options
 	
-	@OptionMetadata(displayName = "Help me! :( ",
+	@OptionMetadata(displayName = "Print Help ",
             description = "Prints all the options",
             commandLineParamName = "help",
             commandLineParamSynopsis = "-help",
@@ -1083,7 +1085,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		return help;
 	}
 	
-	@OptionMetadata(displayName = "Loaded Copulas",
+	@OptionMetadata(displayName = "Print Loaded Copulas",
             description = "Prints all loaded and ready-to-use copulas",
             commandLineParamName = "copulas",
             commandLineParamSynopsis = "-copulas",
@@ -1097,7 +1099,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 	}
 	
 	@OptionMetadata(
-		    displayName = "Filepath",
+		    displayName = "Use Filepath",
 		    description = "Set the path to arff file (required).",
 		    commandLineParamName = "fp",
 		    commandLineParamSynopsis = "-fp <string>",
@@ -1150,7 +1152,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 	 	return out;
 	}
 	
-	@OptionMetadata(displayName = "Summary",
+	@OptionMetadata(displayName = "Print Summary",
             description = "Print the RVine summary.",
             commandLineParamName = "sum",
             commandLineParamSynopsis = "-sum",
@@ -1163,7 +1165,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		return sum;
 	}
 	
-	@OptionMetadata(displayName = "RVine matrix",
+	@OptionMetadata(displayName = "Print RVine matrix",
             description = "Print the RVine matrix.",
             commandLineParamName = "rvm",
             commandLineParamSynopsis = "-rvm",
@@ -1176,7 +1178,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		return rvm;
 	}
 	
-	@OptionMetadata(displayName = "Families matrix",
+	@OptionMetadata(displayName = "Print Families matrix",
             description = "Print the RVine families matrix.",
             commandLineParamName = "fam",
             commandLineParamSynopsis = "-fam",
@@ -1189,7 +1191,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		return fam;
 	}
 	
-	@OptionMetadata(displayName = "Parameters matrices",
+	@OptionMetadata(displayName = "Print Parameters matrices",
             description = "Print the RVine parameter matrices.",
             commandLineParamName = "parm",
             commandLineParamSynopsis = "-parm",
@@ -1202,7 +1204,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		return parm;
 	}
 	
-	@OptionMetadata(displayName = "Pair-LogLiks matrix",
+	@OptionMetadata(displayName = "Print Pair-LogLiks matrix",
             description = "Print the RVine Pair-Log-Likelihoods matrix.",
             commandLineParamName = "pllm",
             commandLineParamSynopsis = "-pllm",
@@ -1215,7 +1217,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		return pllm;
 	}
 	
-	@OptionMetadata(displayName = "Kendall's tau matrix",
+	@OptionMetadata(displayName = "Print Kendall's tau matrix",
             description = "Print the RVine Kendall's tau matrix.",
             commandLineParamName = "taum",
             commandLineParamSynopsis = "-taum",
@@ -1228,7 +1230,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		return taum;
 	}
 	
-	@OptionMetadata(displayName = "Empirical Kendall's tau matrix",
+	@OptionMetadata(displayName = "Print Empirical Kendall's tau matrix",
             description = "Print the RVine empirical Kendall's tau matrix.",
             commandLineParamName = "etaum",
             commandLineParamSynopsis = "-etaum",
@@ -1241,7 +1243,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		return etaum;
 	}
 	
-	@OptionMetadata(displayName = "Use timestamps",
+	@OptionMetadata(displayName = "Print timestamps",
             description = "Print timestamps during RVine construction.",
             commandLineParamName = "times",
             commandLineParamSynopsis = "-times",

@@ -13,6 +13,7 @@ import weka.estimators.vines.functions.GalambosTauf;
  * @author Christian Lamberty (clamber@students.uni-mainz.de)
  */
 public class GalambosCopula extends AbstractCopula{
+	private static final long serialVersionUID = 4031531650868974810L;
 	double d;
 	
 	/**

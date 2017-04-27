@@ -12,6 +12,7 @@ import weka.estimators.vines.functions.H2;
  * @author Christian Lamberty (clamber@students.uni-mainz.de)
  */
 public abstract class AbstractCopula implements Copula{
+	private static final long serialVersionUID = -8767088913269377895L;
 	public final static double tol = Math.pow(10, -4);
 	protected boolean rotations = false;
 	protected double[] params;
