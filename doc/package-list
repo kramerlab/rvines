@@ -1,4 +1,4 @@
 weka.estimators.vines
 weka.estimators.vines.copulas
 weka.estimators.vines.functions
-weka.estimators.vines.gui.explorer
+weka.gui.explorer

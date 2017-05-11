@@ -8,13 +8,32 @@ import java.awt.Insets;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -23,8 +42,12 @@ import javax.swing.JViewport;
 import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.filechooser.FileFilter;
 
 import weka.core.Instances;
+import weka.core.OptionHandler;
+import weka.core.SerializationHelper;
+import weka.core.Utils;
 import weka.core.converters.Loader;
 import weka.estimators.MultivariateEstimator;
 import weka.estimators.vines.RegularVine;
@@ -32,9 +55,12 @@ import weka.gui.GenericObjectEditor;
 import weka.gui.Logger;
 import weka.gui.PropertyPanel;
 import weka.gui.ResultHistoryPanel;
+import weka.gui.SaveBuffer;
+import weka.gui.TaskLogger;
 import weka.gui.explorer.Explorer;
 import weka.gui.explorer.Explorer.ExplorerPanel;
 import weka.gui.explorer.Explorer.LogHandler;
+import weka.gui.ExtensionFileFilter;
 
 /**
  * GUI class for regular vines.
@@ -59,11 +85,11 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 	/** The loader used to load the user-supplied test set (if any). */
 	protected Loader m_TestLoader;
 
-	/** Lets the user configure the estimator. */
-	protected GenericObjectEditor m_EstimatorEditor = new GenericObjectEditor();
+	/** Lets the user configure the rvine. */
+	protected GenericObjectEditor m_RVineEditor = new GenericObjectEditor();
 
-	/** The panel showing the current estimator selection. */
-	protected PropertyPanel m_CEPanel = new PropertyPanel(m_EstimatorEditor);
+	/** The panel showing the current rvine selection. */
+	protected PropertyPanel m_CEPanel = new PropertyPanel(m_RVineEditor);
 
 	/** Click to set test mode to cross-validation. */
 	protected JRadioButton m_CVBut = new JRadioButton("Cross-validation");
@@ -75,7 +101,8 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 	protected JRadioButton m_TrainBut = new JRadioButton("Use training set");
 
 	/** Click to set test mode to a user-specified test set. */
-	protected JRadioButton m_TestSplitBut = new JRadioButton("Supplied test set");
+	protected JRadioButton m_TestSplitBut = new JRadioButton(
+			"Supplied test set");
 
 	/** The button used to open a separate test dataset. */
 	protected JButton m_SetTestBut = new JButton("Set...");
@@ -103,9 +130,34 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 
 	/** A panel controlling results viewing. */
 	protected ResultHistoryPanel m_History = new ResultHistoryPanel(m_OutText);
-	
+
 	/** Button for further output/visualize options. */
 	protected JButton m_CopulaOptions = new JButton("Select copulas...");
+
+	/** The buffer saving object for saving output. */
+	SaveBuffer m_SaveOut = new SaveBuffer(m_Log, this);
+
+	/** The filename extension that should be used for model files. */
+	public static String MODEL_FILE_EXTENSION = ".model";
+
+	/** The file chooser for selecting model files. */
+	protected JFileChooser m_FileChooser = new JFileChooser(new File(
+			System.getProperty("user.dir")));
+
+	/** Filter to ensure only model files are selected. */
+	protected FileFilter m_ModelFilter = new ExtensionFileFilter(
+			MODEL_FILE_EXTENSION, "Model object files");
+
+	/**
+	 * Alters the enabled/disabled status of elements associated with each radio
+	 * button.
+	 */
+	ActionListener m_RadioListener = new ActionListener() {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			updateRadioLinks();
+		}
+	};
 
 	/**
 	 * Constructor
@@ -113,7 +165,8 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 	public RVinesPanel() {
 		// GUI Structure
 		JPanel p1 = new JPanel();
-		p1.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Estimator"),
+		p1.setBorder(BorderFactory.createCompoundBorder(
+				BorderFactory.createTitledBorder("Estimator"),
 				BorderFactory.createEmptyBorder(0, 5, 5, 5)));
 		p1.setLayout(new BorderLayout());
 		p1.add(m_CEPanel, BorderLayout.NORTH);
@@ -121,7 +174,8 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 		JPanel p2 = new JPanel();
 		GridBagLayout gbL = new GridBagLayout();
 		p2.setLayout(gbL);
-		p2.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Test options"),
+		p2.setBorder(BorderFactory.createCompoundBorder(
+				BorderFactory.createTitledBorder("Test options"),
 				BorderFactory.createEmptyBorder(0, 5, 5, 5)));
 		GridBagConstraints gbC = new GridBagConstraints();
 		gbC.anchor = GridBagConstraints.WEST;
@@ -200,15 +254,15 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 		p2.add(m_PercentText);
 
 		gbC = new GridBagConstraints();
-	    gbC.anchor = GridBagConstraints.WEST;
-	    gbC.fill = GridBagConstraints.HORIZONTAL;
-	    gbC.gridy = 4;
-	    gbC.gridx = 0;
-	    gbC.weightx = 100;
-	    gbC.gridwidth = 3;
-	    gbC.insets = new Insets(3, 0, 1, 0);
-	    gbL.setConstraints(m_CopulaOptions, gbC);
-	    p2.add(m_CopulaOptions);
+		gbC.anchor = GridBagConstraints.WEST;
+		gbC.fill = GridBagConstraints.HORIZONTAL;
+		gbC.gridy = 4;
+		gbC.gridx = 0;
+		gbC.weightx = 100;
+		gbC.gridwidth = 3;
+		gbC.insets = new Insets(3, 0, 1, 0);
+		gbL.setConstraints(m_CopulaOptions, gbC);
+		p2.add(m_CopulaOptions);
 
 		JPanel buttons = new JPanel();
 		buttons.setLayout(new GridLayout(1, 2));
@@ -219,12 +273,13 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 		ssButs.add(m_StopBut);
 
 		buttons.add(ssButs);
-		
+
 		JPanel historyHolder = new JPanel(new BorderLayout());
-		historyHolder.setBorder(BorderFactory.createTitledBorder("Result list (right-click for options)"));
+		historyHolder.setBorder(BorderFactory
+				.createTitledBorder("Result list (right-click for options)"));
 		historyHolder.add(m_History, BorderLayout.CENTER);
-		m_EstimatorEditor.setClassType(MultivariateEstimator.class);
-		m_EstimatorEditor.setValue(new RegularVine());
+		m_RVineEditor.setClassType(MultivariateEstimator.class);
+		m_RVineEditor.setValue(new RegularVine());
 
 		JPanel p3 = new JPanel();
 		p3.setBorder(BorderFactory.createTitledBorder("Estimator output"));
@@ -285,9 +340,9 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 		setLayout(new BorderLayout());
 		add(p1, BorderLayout.NORTH);
 		add(mondo, BorderLayout.CENTER);
-		
+
 		// Availabilities
-		
+
 		/*
 		 * Training set selection not enabled since there is no method for
 		 * Multivariate Density Estimation yet.
@@ -296,13 +351,29 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 		m_SetTestBut.setEnabled(false);
 		m_CVBut.setEnabled(false);
 		m_CVText.setEnabled(false);
-		
+
+		m_CVBut.setSelected(false);
+		m_PercentBut.setSelected(false);
+		m_TrainBut.setSelected(true);
+		m_TestSplitBut.setSelected(false);
+		updateRadioLinks();
+		ButtonGroup bg = new ButtonGroup();
+		bg.add(m_TrainBut);
+		bg.add(m_CVBut);
+		bg.add(m_PercentBut);
+		bg.add(m_TestSplitBut);
+
+		m_TrainBut.addActionListener(m_RadioListener);
+		m_CVBut.addActionListener(m_RadioListener);
+		m_PercentBut.addActionListener(m_RadioListener);
+		m_TestSplitBut.addActionListener(m_RadioListener);
+
 		/*
 		 * Selection not enabled since there is no suitable Interface for
 		 * Multivariate Density Estimation yet.
 		 */
 		m_CEPanel.setEnabled(false);
-		
+
 		m_OutText.setEditable(false);
 
 		// Action Listeners
@@ -323,6 +394,27 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				stop();
+			}
+		});
+
+		m_History.setHandleRightClicks(false);
+		// see if we can popup a menu for the selected result
+		m_History.getList().addMouseListener(new MouseAdapter() {
+			@SuppressWarnings("unchecked")
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (((e.getModifiers() & InputEvent.BUTTON1_MASK) != InputEvent.BUTTON1_MASK)
+						|| e.isAltDown()) {
+					int index = m_History.getList().locationToIndex(
+							e.getPoint());
+					if (index != -1) {
+						List<String> selectedEls = (List<String>) m_History
+								.getList().getSelectedValuesList();
+						visualize(selectedEls, e.getX(), e.getY());
+					} else {
+						visualize(null, e.getX(), e.getY());
+					}
+				}
 			}
 		});
 	}
@@ -354,39 +446,193 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 					int testMode = 0;
 					int numFolds = 10;
 					double percent = 66;
-					MultivariateEstimator estimator = (MultivariateEstimator) m_EstimatorEditor.getValue();
-					MultivariateEstimator template = null;
+					RegularVine estimator = (RegularVine) m_RVineEditor
+							.getValue();
 
 					StringBuffer outBuff = new StringBuffer();
-					String name = (new SimpleDateFormat("HH:mm:ss - ")).format(new Date());
+					String name = (new SimpleDateFormat("HH:mm:ss - "))
+							.format(new Date());
 					String cname = "";
 					String cmd = "";
-					
+
+					// for timing
+					long trainTimeStart = 0, trainTimeElapsed = 0;
+					long testTimeStart = 0, testTimeElapsed = 0;
+
 					try {
-			            if (m_CVBut.isSelected()) {
-			              testMode = 1;
-			              numFolds = Integer.parseInt(m_CVText.getText());
-			              if (numFolds <= 1) {
-			                throw new Exception("Number of folds must be greater than 1");
-			              }
-			            } else if (m_PercentBut.isSelected()) {
-			              testMode = 2;
-			              percent = Double.parseDouble(m_PercentText.getText());
-			              if ((percent <= 0) || (percent >= 100)) {
-			                throw new Exception("Percentage must be between 0 and 100");
-			              }
-			            } else if (m_TrainBut.isSelected()) {
-			              testMode = 3;
-			            } else if (m_TestSplitBut.isSelected()) {
-			              testMode = 4;
-			              throw new Exception("Test mode actually not implemented.");
-			            } else {
-			              throw new Exception("Unknown test mode");
-			            }
-			            
-			            
-					}catch(Exception e){
-						
+						double[][] train = RegularVine.transform(inst);
+						double[][] test = train;
+
+						if (m_CVBut.isSelected()) {
+							testMode = 1;
+							numFolds = Integer.parseInt(m_CVText.getText());
+							if (numFolds <= 1) {
+								throw new Exception(
+										"Number of folds must be greater than 1");
+							}
+							throw new Exception(
+									"Test mode actually not implemented.");
+						} else if (m_PercentBut.isSelected()) {
+							testMode = 2;
+							percent = Double.parseDouble(m_PercentText
+									.getText());
+							if ((percent <= 0) || (percent >= 100)) {
+								throw new Exception(
+										"Percentage must be between 0 and 100");
+							}
+
+							Instances inst2 = new Instances(inst,
+									(int) (inst.size() * percent / 100));
+							test = RegularVine.transform(inst2);
+
+						} else if (m_TrainBut.isSelected()) {
+							testMode = 3;
+						} else if (m_TestSplitBut.isSelected()) {
+							testMode = 4;
+							throw new Exception(
+									"Test mode actually not implemented.");
+						} else {
+							throw new Exception("Unknown test mode");
+						}
+
+						cname = estimator.getClass().getName();
+						if (cname.startsWith("weka.estimators.")) {
+							name += cname
+									.substring("weka.estimators.".length());
+						} else {
+							name += cname;
+						}
+						cmd = estimator.getClass().getName();
+						if (estimator instanceof OptionHandler) {
+							cmd += " "
+									+ Utils.joinOptions(((OptionHandler) estimator)
+											.getOptions());
+						}
+
+						m_Log.logMessage("Started " + cname);
+						m_Log.logMessage("Command: " + cmd);
+						if (m_Log instanceof TaskLogger) {
+							((TaskLogger) m_Log).taskStarted();
+						}
+
+						outBuff.append("=== Run information ===\n\n");
+						outBuff.append("Scheme:       " + cname);
+						if (estimator instanceof OptionHandler) {
+							String[] o = ((OptionHandler) estimator)
+									.getOptions();
+							outBuff.append(" " + Utils.joinOptions(o));
+						}
+						outBuff.append("\n");
+						outBuff.append("Relation:     " + inst.relationName()
+								+ '\n');
+						outBuff.append("Instances:    " + inst.numInstances()
+								+ '\n');
+						outBuff.append("Attributes:   " + inst.numAttributes()
+								+ '\n');
+						if (inst.numAttributes() < 100) {
+							for (int i = 0; i < inst.numAttributes(); i++) {
+								outBuff.append("              "
+										+ inst.attribute(i).name() + '\n');
+							}
+						} else {
+							outBuff.append("              [list of attributes omitted]\n");
+						}
+
+						outBuff.append("Test mode:    ");
+						switch (testMode) {
+						case 3: // Test on training
+							outBuff.append("evaluate on training data\n");
+							break;
+						case 1: // CV mode
+							outBuff.append("" + numFolds
+									+ "-fold cross-validation\n");
+							break;
+						case 2: // Percent split
+							outBuff.append("split " + percent
+									+ "% train, remainder test\n");
+							break;
+						case 4: // Test on user split
+							// not implemented
+							break;
+						}
+
+						m_History.addResult(name, outBuff);
+						m_History.setSingle(name);
+
+						switch (testMode) {
+						case 3: // Test on training
+							trainTimeStart = System.currentTimeMillis();
+							estimator.estimate(train, new double[train.length]);
+							trainTimeElapsed = System.currentTimeMillis()
+									- trainTimeStart;
+
+							outBuff.append("=== Estimator model (full training set) ===\n\n");
+							outBuff.append(estimator.toString() + "\n");
+							outBuff.append("\nTime taken to build model: "
+									+ Utils.doubleToString(
+											trainTimeElapsed / 1000.0, 2)
+									+ " seconds\n\n");
+							m_History.updateResult(name);
+
+							m_Log.statusMessage("Evaluating on training data...");
+							testTimeStart = System.currentTimeMillis();
+
+							testTimeElapsed = System.currentTimeMillis()
+									- testTimeStart;
+							outBuff.append("=== Evaluation on training set ===\n");
+							break;
+
+						case 2: // Percent split
+							int trainSize = (int) Math.round(inst
+									.numInstances() * percent / 100);
+							int testSize = inst.numInstances() - trainSize;
+							train = RegularVine.transform(new Instances(inst,
+									0, trainSize));
+							test = RegularVine.transform(new Instances(inst,
+									trainSize, testSize));
+							m_Log.statusMessage("Building model on training split ("
+									+ trainSize + " instances)...");
+
+							trainTimeStart = System.currentTimeMillis();
+							estimator.estimate(train, new double[train.length]);
+							trainTimeElapsed = System.currentTimeMillis()
+									- trainTimeStart;
+
+							outBuff.append("=== Estimator model (percent training set) ===\n\n");
+							outBuff.append(estimator.toString() + "\n");
+							outBuff.append("\nTime taken to build model: "
+									+ Utils.doubleToString(
+											trainTimeElapsed / 1000.0, 2)
+									+ " seconds\n\n");
+							m_History.updateResult(name);
+
+							testTimeStart = System.currentTimeMillis();
+
+							testTimeElapsed = System.currentTimeMillis()
+									- testTimeStart;
+
+							outBuff.append("=== Evaluation on test split ===\n");
+							break;
+
+						default:
+							throw new Exception("Test mode not implemented");
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+
+					if (isInterrupted()) {
+						m_Log.logMessage("Interrupted " + cname);
+						m_Log.statusMessage("Interrupted");
+					}
+
+					synchronized (this) {
+						m_StartBut.setEnabled(true);
+						m_StopBut.setEnabled(false);
+						m_RunThread = null;
+					}
+					if (m_Log instanceof TaskLogger) {
+						((TaskLogger) m_Log).taskFinished();
 					}
 				}
 			};
@@ -395,7 +641,18 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 		}
 	}
 
-	private void stop() {
+	/**
+	 * Stops the currently running classifier (if any).
+	 */
+	@SuppressWarnings("deprecation")
+	protected void stop() {
+
+		if (m_RunThread != null) {
+			m_RunThread.interrupt();
+
+			// This is deprecated (and theoretically the interrupt should do).
+			m_RunThread.stop();
+		}
 	}
 
 	/**
@@ -439,6 +696,20 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 	}
 
 	/**
+	 * Updates the enabled status of the input fields and labels.
+	 */
+	protected void updateRadioLinks() {
+		m_SetTestBut.setEnabled(m_TestSplitBut.isSelected());
+		// if ((m_SetTestFrame != null) && (!m_TestSplitBut.isSelected())) {
+		// m_SetTestFrame.setVisible(false);
+		// }
+		m_CVText.setEnabled(m_CVBut.isSelected());
+		m_CVLab.setEnabled(m_CVBut.isSelected());
+		m_PercentText.setEnabled(m_PercentBut.isSelected());
+		m_PercentLab.setEnabled(m_PercentBut.isSelected());
+	}
+
+	/**
 	 * Get the title for this tab
 	 * 
 	 * @return the title for this tab
@@ -470,6 +741,357 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 	}
 
 	/**
+	 * Handles constructing a popup menu with visualization options.
+	 * 
+	 * @param names
+	 *            the name of the result history list entry clicked on by the
+	 *            user
+	 * @param x
+	 *            the x coordinate for popping up the menu
+	 * @param y
+	 *            the y coordinate for popping up the menu
+	 */
+	@SuppressWarnings("unchecked")
+	protected void visualize(List<String> names, int x, int y) {
+		final List<String> selectedNames = names;
+		JPopupMenu resultListMenu = new JPopupMenu();
+
+		JMenuItem visMainBuffer = new JMenuItem("View in main window");
+		if (selectedNames != null && selectedNames.size() == 1) {
+			visMainBuffer.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					m_History.setSingle(selectedNames.get(0));
+				}
+			});
+		} else {
+			visMainBuffer.setEnabled(false);
+		}
+		resultListMenu.add(visMainBuffer);
+
+		JMenuItem visSepBuffer = new JMenuItem("View in separate window");
+		if (selectedNames != null && selectedNames.size() == 1) {
+			visSepBuffer.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					m_History.openFrame(selectedNames.get(0));
+				}
+			});
+		} else {
+			visSepBuffer.setEnabled(false);
+		}
+		resultListMenu.add(visSepBuffer);
+
+		JMenuItem saveOutput = new JMenuItem("Save result buffer");
+		if (selectedNames != null && selectedNames.size() == 1) {
+			saveOutput.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					saveBuffer(selectedNames.get(0));
+				}
+			});
+		} else {
+			saveOutput.setEnabled(false);
+		}
+		resultListMenu.add(saveOutput);
+
+		JMenuItem deleteOutput = new JMenuItem("Delete result buffer(s)");
+		if (selectedNames != null) {
+			deleteOutput.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					m_History.removeResults(selectedNames);
+				}
+			});
+		} else {
+			deleteOutput.setEnabled(false);
+		}
+		resultListMenu.add(deleteOutput);
+
+		resultListMenu.addSeparator();
+
+		JMenuItem loadModel = new JMenuItem("Load model");
+		loadModel.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				loadModel();
+			}
+		});
+		resultListMenu.add(loadModel);
+
+		ArrayList<Object> o = null;
+		if (selectedNames != null && selectedNames.size() == 1) {
+			o = (ArrayList<Object>) m_History.getNamedObject(selectedNames
+					.get(0));
+		}
+
+		String temp_grph = null;
+		RegularVine temp_classifier = null;
+		Instances temp_trainHeader = null;
+
+		if (o != null) {
+			for (int i = 0; i < o.size(); i++) {
+				Object temp = o.get(i);
+				if (temp instanceof RegularVine) {
+					temp_classifier = (RegularVine) temp;
+				} else if (temp instanceof Instances) { // training header
+					temp_trainHeader = (Instances) temp;
+				} else if (temp instanceof String) { // graphable output
+					temp_grph = (String) temp;
+				}
+			}
+		}
+
+		final String grph = temp_grph;
+		final RegularVine estimator = temp_classifier;
+		final Instances trainHeader = temp_trainHeader;
+
+		JMenuItem saveModel = new JMenuItem("Save model");
+		if (estimator != null && selectedNames != null
+				&& selectedNames.size() == 1) {
+			saveModel.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					saveClassifier(selectedNames.get(0), estimator, trainHeader);
+				}
+			});
+		} else {
+			saveModel.setEnabled(false);
+		}
+		resultListMenu.add(saveModel);
+
+		JMenuItem reEvaluate = new JMenuItem(
+				"Re-evaluate model on current test set");
+		if (estimator != null && m_TestLoader != null && selectedNames != null
+				&& selectedNames.size() == 1) {
+			reEvaluate.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					reevaluateModel(selectedNames.get(0), estimator,
+							trainHeader);
+				}
+			});
+		} else {
+			reEvaluate.setEnabled(false);
+		}
+		resultListMenu.add(reEvaluate);
+
+		JMenuItem reApplyConfig = new JMenuItem(
+				"Re-apply this model's configuration");
+		if (estimator != null && selectedNames != null
+				&& selectedNames.size() == 1) {
+			reApplyConfig.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					m_RVineEditor.setValue(estimator);
+				}
+			});
+		} else {
+			reApplyConfig.setEnabled(false);
+		}
+		resultListMenu.add(reApplyConfig);
+		resultListMenu.addSeparator();
+
+		JMenuItem visGrph = new JMenuItem("Visualize tree");
+		visGrph.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// TODO VISUALIZE
+			}
+		});
+		resultListMenu.add(visGrph);
+
+		resultListMenu.show(m_History.getList(), x, y);
+	}
+
+	/**
+	 * Save the currently selected classifier output to a file.
+	 * 
+	 * @param name
+	 *            the name of the buffer to save
+	 */
+	protected void saveBuffer(String name) {
+		StringBuffer sb = m_History.getNamedBuffer(name);
+		if (sb != null) {
+			if (m_SaveOut.save(sb)) {
+				m_Log.logMessage("Save successful.");
+			}
+		}
+	}
+
+	/**
+	 * Loads a model.
+	 */
+	protected void loadModel() {
+
+		m_FileChooser.setFileFilter(m_ModelFilter);
+		int returnVal = m_FileChooser.showOpenDialog(this);
+		if (returnVal == JFileChooser.APPROVE_OPTION) {
+			File selected = m_FileChooser.getSelectedFile();
+			RegularVine estimator = null;
+			Instances trainHeader = null;
+
+			m_Log.statusMessage("Loading model from file...");
+			try {
+				InputStream is = new FileInputStream(selected);
+
+				if (selected.getName().endsWith(".gz")) {
+					is = new GZIPInputStream(is);
+				}
+				// ObjectInputStream objectInputStream = new
+				// ObjectInputStream(is);
+				ObjectInputStream objectInputStream = SerializationHelper
+						.getObjectInputStream(is);
+				estimator = (RegularVine) objectInputStream.readObject();
+				try { // see if we can load the header
+					trainHeader = (Instances) objectInputStream.readObject();
+				} catch (Exception e) {
+				} // don't fuss if we can't
+				objectInputStream.close();
+			} catch (Exception e) {
+				JOptionPane.showMessageDialog(null, e, "Load Failed",
+						JOptionPane.ERROR_MESSAGE);
+			}
+
+			m_Log.statusMessage("OK");
+
+			if (estimator != null) {
+				m_Log.logMessage("Loaded model from file '"
+						+ selected.getName() + "'");
+				String name = (new SimpleDateFormat("HH:mm:ss - "))
+						.format(new Date());
+				String cname = estimator.getClass().getName();
+				if (cname.startsWith("weka.classifiers.")) {
+					cname = cname.substring("weka.classifiers.".length());
+				}
+				name += cname + " from file '" + selected.getName() + "'";
+				StringBuffer outBuff = new StringBuffer();
+
+				outBuff.append("=== Model information ===\n\n");
+				outBuff.append("Filename:     " + selected.getName() + "\n");
+				outBuff.append("Scheme:       "
+						+ estimator.getClass().getName());
+				if (estimator instanceof OptionHandler) {
+					String[] o = ((OptionHandler) estimator).getOptions();
+					outBuff.append(" " + Utils.joinOptions(o));
+				}
+				outBuff.append("\n");
+				if (trainHeader != null) {
+					outBuff.append("Relation:     "
+							+ trainHeader.relationName() + '\n');
+					outBuff.append("Attributes:   "
+							+ trainHeader.numAttributes() + '\n');
+					if (trainHeader.numAttributes() < 100) {
+						for (int i = 0; i < trainHeader.numAttributes(); i++) {
+							outBuff.append("              "
+									+ trainHeader.attribute(i).name() + '\n');
+						}
+					} else {
+						outBuff.append("              [list of attributes omitted]\n");
+					}
+				} else {
+					outBuff.append("\nTraining data unknown\n");
+				}
+
+				outBuff.append("\n=== Classifier model ===\n\n");
+				outBuff.append(estimator.toString() + "\n");
+
+				m_History.addResult(name, outBuff);
+				m_History.setSingle(name);
+				ArrayList<Object> vv = new ArrayList<Object>();
+				vv.add(estimator);
+				if (trainHeader != null) {
+					vv.add(trainHeader);
+				}
+
+				m_History.addObject(name, vv);
+			}
+		}
+	}
+
+	/**
+	 * Saves the currently selected vine.
+	 * 
+	 * @param name
+	 *            the name of the run
+	 * @param classifier
+	 *            the classifier to save
+	 * @param trainHeader
+	 *            the header of the training instances
+	 */
+	protected void saveClassifier(String name, RegularVine estimator,
+			Instances trainHeader) {
+
+		File sFile = null;
+		boolean saveOK = true;
+
+		m_FileChooser.setFileFilter(m_ModelFilter);
+		int returnVal = m_FileChooser.showSaveDialog(this);
+		if (returnVal == JFileChooser.APPROVE_OPTION) {
+			sFile = m_FileChooser.getSelectedFile();
+			if (!sFile.getName().toLowerCase().endsWith(MODEL_FILE_EXTENSION)) {
+				sFile = new File(sFile.getParent(), sFile.getName()
+						+ MODEL_FILE_EXTENSION);
+			}
+			m_Log.statusMessage("Saving model to file...");
+
+			try {
+				OutputStream os = new FileOutputStream(sFile);
+				if (sFile.getName().endsWith(".gz")) {
+					os = new GZIPOutputStream(os);
+				}
+				ObjectOutputStream objectOutputStream = new ObjectOutputStream(
+						os);
+				objectOutputStream.writeObject(estimator);
+				trainHeader = trainHeader.stringFreeStructure();
+				if (trainHeader != null) {
+					objectOutputStream.writeObject(trainHeader);
+				}
+				objectOutputStream.flush();
+				objectOutputStream.close();
+			} catch (Exception e) {
+
+				JOptionPane.showMessageDialog(null, e, "Save Failed",
+						JOptionPane.ERROR_MESSAGE);
+				saveOK = false;
+			}
+			if (saveOK) {
+				m_Log.logMessage("Saved model (" + name + ") to file '"
+						+ sFile.getName() + "'");
+			}
+			m_Log.statusMessage("OK");
+		}
+	}
+
+	/**
+	 * Re-evaluates the named classifier with the current test set.
+	 * Unpredictable things will happen if the data set is not compatible with
+	 * the classifier.
+	 * 
+	 * @param name
+	 *            the name of the classifier entry
+	 * @param classifier
+	 *            the classifier to evaluate
+	 * @param trainHeader
+	 *            the header of the training set
+	 */
+	protected void reevaluateModel(final String name,
+			final RegularVine estimator, final Instances trainHeader) {
+
+		if (m_RunThread == null) {
+			synchronized (this) {
+				m_StartBut.setEnabled(false);
+				m_StopBut.setEnabled(true);
+			}
+			m_RunThread = new Thread() {
+				// TODO re-evaluate RUN
+			};
+
+			m_RunThread.setPriority(Thread.MIN_PRIORITY);
+			m_RunThread.start();
+		}
+	}
+
+	/**
 	 * Tests out the RVines panel from the command line.
 	 * 
 	 * @param args
@@ -477,7 +1099,8 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 	 */
 	public static void main(String[] args) {
 		try {
-			final javax.swing.JFrame jf = new javax.swing.JFrame("Weka Explorer: Estimators");
+			final javax.swing.JFrame jf = new javax.swing.JFrame(
+					"Weka Explorer: Estimators");
 			jf.getContentPane().setLayout(new BorderLayout());
 			final RVinesPanel sp = new RVinesPanel();
 			jf.getContentPane().add(sp, BorderLayout.CENTER);
@@ -496,14 +1119,16 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 			jf.setVisible(true);
 			if (args.length == 1) {
 				System.err.println("Loading instances from " + args[0]);
-				java.io.Reader r = new java.io.BufferedReader(new java.io.FileReader(args[0]));
+				java.io.Reader r = new java.io.BufferedReader(
+						new java.io.FileReader(args[0]));
 				Instances i = new Instances(r);
 				sp.setInstances(i);
 			}
 			if (args.length == 0) {
 				args = new String[] { "./src/main/data/daxreturns.arff" };
 				System.err.println("Loading instances from " + args[0]);
-				java.io.Reader r = new java.io.BufferedReader(new java.io.FileReader(args[0]));
+				java.io.Reader r = new java.io.BufferedReader(
+						new java.io.FileReader(args[0]));
 				Instances i = new Instances(r);
 				sp.setInstances(i);
 			}
