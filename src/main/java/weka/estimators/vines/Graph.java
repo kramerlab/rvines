@@ -1,5 +1,6 @@
 package weka.estimators.vines;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -14,7 +15,8 @@ import java.util.HashMap;
  * 
  * @author Christian Lamberty (clamber@students.uni-mainz.de)
  */
-public class Graph {
+public class Graph implements Serializable{
+	private static final long serialVersionUID = 715115521149996147L;
 	private ArrayList<Node> nodeList;
 	private HashMap<Node, ArrayList<Edge>> adjacencyList;
 	

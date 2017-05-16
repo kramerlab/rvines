@@ -775,15 +775,17 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 	// Printing methods
 	
 	/**
-	 * Prints the RVine summary.
+	 * Returns the RVine summary as String.
+	 * @return RVine summary as String
 	 */
-	public void printSummary(){
+	public String summary(){
 		if(!built){
 			System.err.println("Use estimate(data, w) first to build the estimator!");
-			return;
+			return null;
 		}
-		System.out.println("Regular Vine Summary :");
-		System.out.println("Log-Likelihood : "+logDensity(data));
+		String out = "";
+		out += "Regular Vine Summary :\n";
+		out += "Log-Likelihood : "+logDensity(data)+"\n";
 		// prepare statistics
 		HashMap<String, Integer> stats = new HashMap<String, Integer>();
 		
@@ -799,29 +801,65 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 				}
 			}
 		}
-		System.out.println();
-		System.out.println("Used Copulas : ");
+		out += "\n";
+		out += "Used Copulas : "+"\n";
 		for(String cop : stats.keySet())
-			System.out.println(cop+" : "+stats.get(cop));
+			out += cop+" : "+stats.get(cop)+"\n";
 		
-		System.out.println();
+		out += "\n";
 		// print trees
-		System.out.println("RVine Trees : ");
+		out += "RVine Trees : \n";
 		for(int i=0; i<rvine.length; i++){
-			System.out.println("Tree "+(i+1)+" : ");
+			out += "Tree "+(i+1)+" : \n";
 			for(Edge e : rvine[i].getUndirectedEdgeList()){
 				Copula c = e.getCopula();
 				if(c.getParams() != null){
-					System.out.print(e.getLabel()+" : "+c.name()+"(pars:{");
+					out += e.getLabel()+" : "+c.name()+"(pars:{";
 					for(int k=0; k<c.getParams().length-1; k++){
-						System.out.print(round(c.getParams()[k])+", ");
+						out += round(c.getParams()[k])+", ";
 					}
-					System.out.print(round(c.getParams()[c.getParams().length-1])+"}, ");
+					out += round(c.getParams()[c.getParams().length-1])+"}, ";
 				}
-				System.out.println("tau:"+round(c.tau())+", empTau:"+round(e.getWeight())+")");
+				out += "tau:"+round(c.tau())+", empTau:"+round(e.getWeight())+")\n";
 			}
-			System.out.println();
+			out += "\n";
 		}
+		
+		return out;
+	}
+	
+	/**
+	 * Prints the RVine summary.
+	 */
+	public void printSummary(){
+		if(!built){
+			System.err.println("Use estimate(data, w) first to build the estimator!");
+			return;
+		}
+		System.out.println(summary());
+	}
+	
+	public String[][] getEmpTauMatrix() {
+		if(!built){
+			System.err.println("Use estimate(data, w) first to build the estimator!");
+			return null;
+		}
+		
+		String[][] out = new String[edges.length][edges.length];
+		for(int i=0;i<edges.length;i++){
+			for(int j=0;j<edges.length;j++){
+				out[i][j] = " - ";
+				if(edges[i][j] != null){
+					double val = round(edges[i][j].getWeight());
+					if( (int) val == val){
+						out[i][j] = Integer.toString( (int) val);
+					}else{
+						out[i][j] = String.valueOf(val);
+					}
+				}
+			}
+		}
+		return out;
 	}
 	
 	/**
@@ -855,6 +893,29 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		}
 	}
 
+	public String[][] getTauMatrix() {
+		if(!built){
+			System.err.println("Use estimate(data, w) first to build the estimator!");
+			return null;
+		}
+		
+		String[][] out = new String[edges.length][edges.length];
+		for(int i=0;i<edges.length;i++){
+			for(int j=0;j<edges.length;j++){
+				out[i][j] = " - ";
+				if(edges[i][j] != null){
+					double val = round(edges[i][j].getCopula().tau());
+					if( (int) val == val){
+						out[i][j] = Integer.toString( (int) val);
+					}else{
+						out[i][j] = String.valueOf(val);
+					}
+				}
+			}
+		}
+		return out;
+	}
+	
 	/**
 	 * Prints the pairwise Kendall's tau matrix concerned to the RVine matrix.
 	 */
@@ -886,6 +947,24 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		}
 	}
 	
+	public String[][] getRVineMatrix2() {
+		if(!built){
+			System.err.println("Use estimate(data, w) first to build the estimator!");
+			return null;
+		}
+		
+		String[][] out = new String[edges.length][edges.length];
+		for(int i=0;i<edges.length;i++){
+			for(int j=0;j<edges.length;j++){
+				out[i][j] = " - ";
+				if(edges[i][j] != null){
+					out[i][j] = Integer.toString(m[i][j]);
+				}
+			}
+		}
+		return out;
+	}
+	
 	/**
 	 * Prints the RVine matrix.
 	 */
@@ -908,6 +987,24 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 			}
 			System.out.println();
 		}
+	}
+	
+	public String[][] getFamilyMatrix() {
+		if(!built){
+			System.err.println("Use estimate(data, w) first to build the estimator!");
+			return null;
+		}
+		
+		String[][] out = new String[edges.length][edges.length];
+		for(int i=0;i<edges.length;i++){
+			for(int j=0;j<edges.length;j++){
+				out[i][j] = " - ";
+				if(edges[i][j] != null){
+					out[i][j] = edges[i][j].getCopula().token();
+				}
+			}
+		}
+		return out;
 	}
 	
 	/**
@@ -933,6 +1030,44 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 			}
 			System.out.println();
 		}
+	}
+	
+	public String[][][] getParMatrices() {
+		if(!built){
+			System.err.println("Use estimate(data, w) first to build the estimator!");
+			return null;
+		}
+		
+		String[][][] out = new String[2][edges.length][edges.length];
+		for(int i=0;i<edges.length;i++){
+			for(int j=0;j<edges.length;j++){
+				if(edges[i][j] != null){
+					out[0][i][j] = " - ";
+					out[1][i][j] = " - ";
+					
+					if(edges[i][j] != null){
+						double[] pars = edges[i][j].getCopula().getParams();
+						if(pars != null){
+							double val = round(pars[0]);
+							if( (int) val == val){
+								out[0][i][j] = Integer.toString( (int) val);
+							}else{
+								out[0][i][j] = String.valueOf(val);
+							}
+						}
+						if(pars.length == 2){
+							double val = round(pars[1]);
+							if( (int) val == val){
+								out[1][i][j] = Integer.toString( (int) val);
+							}else{
+								out[1][i][j] = String.valueOf(val);
+							}
+						}
+					}
+				}
+			}
+		}
+		return out;
 	}
 	
 	/**
@@ -994,6 +1129,29 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 			}
 			System.out.println();
 		}
+	}
+	
+	public String[][] getLogliksMatrix() {
+		if(!built){
+			System.err.println("Use estimate(data, w) first to build the estimator!");
+			return null;
+		}
+		
+		String[][] out = new String[edges.length][edges.length];
+		for(int i=0;i<edges.length;i++){
+			for(int j=0;j<edges.length;j++){
+				out[i][j] = " - ";
+				if(edges[i][j] != null){
+					double val = round(edges[i][j].getLogLik());
+					if( (int) val == val){
+						out[i][j] = Integer.toString( (int) val);
+					}else{
+						out[i][j] = String.valueOf(val);
+					}
+				}
+			}
+		}
+		return out;
 	}
 	
 	/**

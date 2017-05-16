@@ -1,5 +1,6 @@
 package weka.estimators.vines;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -26,7 +27,8 @@ import java.util.TreeSet;
  * 
  * @author Christian Lamberty (clamber@students.uni-mainz.de)
  */
-public class Node implements Comparable<Node>{
+public class Node implements Comparable<Node>, Serializable{
+	private static final long serialVersionUID = 3205727921197562904L;
 	private String name;
 	private ArrayList<Integer> condSet;
 	private ArrayList<Integer> constrSet;

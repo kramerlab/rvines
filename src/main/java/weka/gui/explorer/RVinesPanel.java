@@ -1,6 +1,7 @@
 package weka.gui.explorer;
 
 import java.awt.BorderLayout;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
@@ -11,6 +12,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -29,6 +32,7 @@ import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -47,6 +51,7 @@ import javax.swing.filechooser.FileFilter;
 import weka.core.Instances;
 import weka.core.OptionHandler;
 import weka.core.SerializationHelper;
+import weka.core.SerializedObject;
 import weka.core.Utils;
 import weka.core.converters.Loader;
 import weka.estimators.MultivariateEstimator;
@@ -441,8 +446,6 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 					m_Log.statusMessage("Setting up...");
 					Instances inst = new Instances(m_Instances);
 
-					boolean outputSummary = true;
-
 					int testMode = 0;
 					int numFolds = 10;
 					double percent = 66;
@@ -454,6 +457,7 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 							.format(new Date());
 					String cname = "";
 					String cmd = "";
+					double dens = 0;
 
 					// for timing
 					long trainTimeStart = 0, trainTimeElapsed = 0;
@@ -567,7 +571,7 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 									- trainTimeStart;
 
 							outBuff.append("=== Estimator model (full training set) ===\n\n");
-							outBuff.append(estimator.toString() + "\n");
+							outBuff.append(estimator.summary() + "\n");
 							outBuff.append("\nTime taken to build model: "
 									+ Utils.doubleToString(
 											trainTimeElapsed / 1000.0, 2)
@@ -576,10 +580,16 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 
 							m_Log.statusMessage("Evaluating on training data...");
 							testTimeStart = System.currentTimeMillis();
-
+							dens = estimator.logDensity(test);
 							testTimeElapsed = System.currentTimeMillis()
 									- testTimeStart;
 							outBuff.append("=== Evaluation on training set ===\n");
+							outBuff.append("Log-Density : " + dens + "\n");
+							outBuff.append("\nTime taken to evaluate model: "
+									+ Utils.doubleToString(
+											testTimeElapsed / 1000.0, 2)
+									+ " seconds\n\n");
+							m_History.updateResult(name);
 							break;
 
 						case 2: // Percent split
@@ -599,24 +609,43 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 									- trainTimeStart;
 
 							outBuff.append("=== Estimator model (percent training set) ===\n\n");
-							outBuff.append(estimator.toString() + "\n");
+							outBuff.append(estimator.summary() + "\n");
 							outBuff.append("\nTime taken to build model: "
 									+ Utils.doubleToString(
 											trainTimeElapsed / 1000.0, 2)
 									+ " seconds\n\n");
 							m_History.updateResult(name);
 
+							m_Log.statusMessage("Evaluating on training data...");
 							testTimeStart = System.currentTimeMillis();
-
+							dens = estimator.logDensity(test);
 							testTimeElapsed = System.currentTimeMillis()
 									- testTimeStart;
 
 							outBuff.append("=== Evaluation on test split ===\n");
+							outBuff.append("Log-Density : " + dens + "\n");
+							outBuff.append("\nTime taken to evaluate model: "
+									+ Utils.doubleToString(
+											testTimeElapsed / 1000.0, 2)
+									+ " seconds\n\n");
+							m_History.updateResult(name);
 							break;
-
 						default:
 							throw new Exception("Test mode not implemented");
 						}
+
+						// copy full model for output
+						SerializedObject so = new SerializedObject(estimator);
+						RegularVine fullEstimator = (RegularVine) so
+								.getObject();
+
+						ArrayList<Object> vv = new ArrayList<Object>();
+
+						vv.add(fullEstimator);
+						Instances trainHeader = new Instances(m_Instances, 0);
+						vv.add(trainHeader);
+						m_History.addObject(name, vv);
+
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -624,6 +653,8 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 					if (isInterrupted()) {
 						m_Log.logMessage("Interrupted " + cname);
 						m_Log.statusMessage("Interrupted");
+					} else {
+						m_Log.statusMessage("OK");
 					}
 
 					synchronized (this) {
@@ -767,7 +798,6 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 		} else {
 			visMainBuffer.setEnabled(false);
 		}
-		resultListMenu.add(visMainBuffer);
 
 		JMenuItem visSepBuffer = new JMenuItem("View in separate window");
 		if (selectedNames != null && selectedNames.size() == 1) {
@@ -779,7 +809,6 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 		} else {
 			visSepBuffer.setEnabled(false);
 		}
-		resultListMenu.add(visSepBuffer);
 
 		JMenuItem saveOutput = new JMenuItem("Save result buffer");
 		if (selectedNames != null && selectedNames.size() == 1) {
@@ -792,7 +821,6 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 		} else {
 			saveOutput.setEnabled(false);
 		}
-		resultListMenu.add(saveOutput);
 
 		JMenuItem deleteOutput = new JMenuItem("Delete result buffer(s)");
 		if (selectedNames != null) {
@@ -805,9 +833,6 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 		} else {
 			deleteOutput.setEnabled(false);
 		}
-		resultListMenu.add(deleteOutput);
-
-		resultListMenu.addSeparator();
 
 		JMenuItem loadModel = new JMenuItem("Load model");
 		loadModel.addActionListener(new ActionListener() {
@@ -816,7 +841,6 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 				loadModel();
 			}
 		});
-		resultListMenu.add(loadModel);
 
 		ArrayList<Object> o = null;
 		if (selectedNames != null && selectedNames.size() == 1) {
@@ -824,7 +848,6 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 					.get(0));
 		}
 
-		String temp_grph = null;
 		RegularVine temp_classifier = null;
 		Instances temp_trainHeader = null;
 
@@ -835,13 +858,10 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 					temp_classifier = (RegularVine) temp;
 				} else if (temp instanceof Instances) { // training header
 					temp_trainHeader = (Instances) temp;
-				} else if (temp instanceof String) { // graphable output
-					temp_grph = (String) temp;
 				}
 			}
 		}
 
-		final String grph = temp_grph;
 		final RegularVine estimator = temp_classifier;
 		final Instances trainHeader = temp_trainHeader;
 
@@ -857,7 +877,6 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 		} else {
 			saveModel.setEnabled(false);
 		}
-		resultListMenu.add(saveModel);
 
 		JMenuItem reEvaluate = new JMenuItem(
 				"Re-evaluate model on current test set");
@@ -873,7 +892,6 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 		} else {
 			reEvaluate.setEnabled(false);
 		}
-		resultListMenu.add(reEvaluate);
 
 		JMenuItem reApplyConfig = new JMenuItem(
 				"Re-apply this model's configuration");
@@ -888,18 +906,129 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 		} else {
 			reApplyConfig.setEnabled(false);
 		}
-		resultListMenu.add(reApplyConfig);
-		resultListMenu.addSeparator();
 
 		JMenuItem visGrph = new JMenuItem("Visualize tree");
-		visGrph.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				// TODO VISUALIZE
-			}
-		});
-		resultListMenu.add(visGrph);
+		if (estimator != null && selectedNames != null
+				&& selectedNames.size() == 1) {
+			visGrph.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					// TODO VISUALIZE
+				}
+			});
+		} else {
+			visGrph.setEnabled(false);
+		}
 
+		JMenuItem visMat = new JMenuItem("RVine Matrix");
+		if (estimator != null && selectedNames != null
+				&& selectedNames.size() == 1) {
+			visMat.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					String name = selectedNames.get(0);
+					openFrame(matrixToString(estimator.getRVineMatrix2()), name
+							+ " :: RVine Matrix");
+				}
+			});
+		} else {
+			visMat.setEnabled(false);
+		}
+
+		JMenuItem visFam = new JMenuItem("Family Matrix");
+		if (estimator != null && selectedNames != null
+				&& selectedNames.size() == 1) {
+			visFam.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					String name = selectedNames.get(0);
+					openFrame(matrixToString(estimator.getFamilyMatrix()), name
+							+ " :: Family Matrix");
+				}
+			});
+		} else {
+			visFam.setEnabled(false);
+		}
+
+		JMenuItem visPar = new JMenuItem("Parameter Matrices");
+		if (estimator != null && selectedNames != null
+				&& selectedNames.size() == 1) {
+			visPar.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					String name = selectedNames.get(0);
+					openFrame(matrixToString(estimator.getParMatrices()[0]), name
+							+ " :: Par1 Matrix");
+					openFrame(matrixToString(estimator.getParMatrices()[1]), name
+							+ " :: Par2 Matrix");
+				}
+			});
+		} else {
+			visPar.setEnabled(false);
+		}
+
+		JMenuItem visLogs = new JMenuItem("Log-Liks Matrix");
+		if (estimator != null && selectedNames != null
+				&& selectedNames.size() == 1) {
+			visLogs.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					String name = selectedNames.get(0);
+					openFrame(matrixToString(estimator.getLogliksMatrix()), name
+							+ " :: Log-Liks Matrix");
+				}
+			});
+		} else {
+			visLogs.setEnabled(false);
+		}
+
+		JMenuItem visTau = new JMenuItem("Tau Matrix");
+		if (estimator != null && selectedNames != null
+				&& selectedNames.size() == 1) {
+			visTau.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					String name = selectedNames.get(0);
+					openFrame(matrixToString(estimator.getTauMatrix()), name
+							+ " :: Tau Matrix");
+				}
+			});
+		} else {
+			visTau.setEnabled(false);
+		}
+
+		JMenuItem visEmpTau = new JMenuItem("Empirical Tau Matrix");
+		if (estimator != null && selectedNames != null
+				&& selectedNames.size() == 1) {
+			visEmpTau.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					String name = selectedNames.get(0);
+					openFrame(matrixToString(estimator.getEmpTauMatrix()), name
+							+ " :: Emp Tau Matrix");
+				}
+			});
+		} else {
+			visEmpTau.setEnabled(false);
+		}
+
+		resultListMenu.add(visMainBuffer);
+		resultListMenu.add(visSepBuffer);
+		resultListMenu.add(saveOutput);
+		resultListMenu.add(deleteOutput);
+		resultListMenu.addSeparator();
+		resultListMenu.add(loadModel);
+		resultListMenu.add(saveModel);
+		resultListMenu.add(reEvaluate);
+		resultListMenu.add(reApplyConfig);
+		resultListMenu.addSeparator();
+		resultListMenu.add(visGrph);
+		resultListMenu.add(visMat);
+		resultListMenu.add(visFam);
+		resultListMenu.add(visPar);
+		resultListMenu.add(visLogs);
+		resultListMenu.add(visTau);
+		resultListMenu.add(visEmpTau);
 		resultListMenu.show(m_History.getList(), x, y);
 	}
 
@@ -1075,7 +1204,7 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 	 *            the header of the training set
 	 */
 	protected void reevaluateModel(final String name,
-			final RegularVine estimator, final Instances trainHeader) {
+			final RegularVine estimator, final Instances trainHeader) { 
 
 		if (m_RunThread == null) {
 			synchronized (this) {
@@ -1088,6 +1217,55 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 
 			m_RunThread.setPriority(Thread.MIN_PRIORITY);
 			m_RunThread.start();
+		}
+	}
+
+	public String matrixToString(String[][] matrix) {
+		String out = "";
+
+		for (int i = 0; i < matrix.length; i++) {
+			for (int j = 0; j < matrix.length; j++) {
+				out += matrix[i][j];
+
+				if (j < matrix.length - 1) {
+					out += "\t&\t";
+				} else {
+					out += "\\\\";
+				}
+			}
+			out += "\n";
+		}
+		return out;
+	}
+
+	/**
+	 * Opens the named matrix in a separate frame.
+	 * 
+	 * @param matrix
+	 *            the matrix.
+	 * @param name
+	 *            the name of the matrix to open.
+	 */
+	public void openFrame(String matrix, String name) {
+		if (matrix != null) {
+			// Open the frame.
+			JTextArea ta = new JTextArea();
+			ta.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+			ta.setFont(new Font("Monospaced", Font.PLAIN, 12));
+			ta.setEditable(false);
+			ta.setText(matrix);
+			final JFrame jf = new JFrame(name);
+			jf.addWindowListener(new WindowAdapter() {
+				@Override
+				public void windowClosing(WindowEvent e) {
+					jf.dispose();
+				}
+			});
+			jf.getContentPane().setLayout(new BorderLayout());
+			jf.getContentPane().add(new JScrollPane(ta), BorderLayout.CENTER);
+			jf.pack();
+			jf.setSize(450, 350);
+			jf.setVisible(true);
 		}
 	}
 

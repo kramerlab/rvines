@@ -1,5 +1,7 @@
 package weka.estimators.vines;
 
+import java.io.Serializable;
+
 import weka.estimators.vines.copulas.Copula;
 
 /**
@@ -10,7 +12,8 @@ import weka.estimators.vines.copulas.Copula;
  * 
  * @author Christian Lamberty (clamber@students.uni-mainz.de)
  */
-public class Edge {
+public class Edge implements Serializable{
+	private static final long serialVersionUID = -2199722053484457966L;
 	private Node from;
 	private Node to;
 	private double weight;
