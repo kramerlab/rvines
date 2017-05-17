@@ -29,8 +29,10 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -56,6 +58,7 @@ import weka.core.Utils;
 import weka.core.converters.Loader;
 import weka.estimators.MultivariateEstimator;
 import weka.estimators.vines.RegularVine;
+import weka.estimators.vines.copulas.Copula;
 import weka.gui.GenericObjectEditor;
 import weka.gui.Logger;
 import weka.gui.PropertyPanel;
@@ -268,6 +271,17 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 		gbC.insets = new Insets(3, 0, 1, 0);
 		gbL.setConstraints(m_CopulaOptions, gbC);
 		p2.add(m_CopulaOptions);
+		
+		m_CopulaOptions.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				RegularVine rvine = (RegularVine) m_RVineEditor.getValue();
+				String cname = rvine.getClass().getName();
+				
+				copulaFrame(rvine, cname+" :: Copula Selection");
+			}
+		});
 
 		JPanel buttons = new JPanel();
 		buttons.setLayout(new GridLayout(1, 2));
@@ -571,7 +585,6 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 									- trainTimeStart;
 
 							outBuff.append("=== Estimator model (full training set) ===\n\n");
-							outBuff.append(estimator.summary() + "\n");
 							outBuff.append("\nTime taken to build model: "
 									+ Utils.doubleToString(
 											trainTimeElapsed / 1000.0, 2)
@@ -609,7 +622,6 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 									- trainTimeStart;
 
 							outBuff.append("=== Estimator model (percent training set) ===\n\n");
-							outBuff.append(estimator.summary() + "\n");
 							outBuff.append("\nTime taken to build model: "
 									+ Utils.doubleToString(
 											trainTimeElapsed / 1000.0, 2)
@@ -654,6 +666,7 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 						m_Log.logMessage("Interrupted " + cname);
 						m_Log.statusMessage("Interrupted");
 					} else {
+						m_Log.logMessage("Finished " + cname);
 						m_Log.statusMessage("OK");
 					}
 
@@ -878,21 +891,6 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 			saveModel.setEnabled(false);
 		}
 
-		JMenuItem reEvaluate = new JMenuItem(
-				"Re-evaluate model on current test set");
-		if (estimator != null && m_TestLoader != null && selectedNames != null
-				&& selectedNames.size() == 1) {
-			reEvaluate.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					reevaluateModel(selectedNames.get(0), estimator,
-							trainHeader);
-				}
-			});
-		} else {
-			reEvaluate.setEnabled(false);
-		}
-
 		JMenuItem reApplyConfig = new JMenuItem(
 				"Re-apply this model's configuration");
 		if (estimator != null && selectedNames != null
@@ -907,13 +905,38 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 			reApplyConfig.setEnabled(false);
 		}
 
+		JMenuItem visSum = new JMenuItem("RVine Summary");
+		if (estimator != null && selectedNames != null
+				&& selectedNames.size() == 1) {
+			visSum.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					String name = selectedNames.get(0);
+					openFrame(estimator.summary(), name
+							+ " :: RVine Summary");
+				}
+			});
+		} else {
+			visSum.setEnabled(false);
+		}
+		
 		JMenuItem visGrph = new JMenuItem("Visualize tree");
 		if (estimator != null && selectedNames != null
 				&& selectedNames.size() == 1) {
 			visGrph.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					// TODO VISUALIZE
+					String name = selectedNames.get(0);
+					final JFrame jf = new RVineVisualization(estimator, name
+							+ " :: RVine Visualization");
+					jf.addWindowListener(new WindowAdapter() {
+						@Override
+						public void windowClosing(WindowEvent e) {
+							jf.dispose();
+						}
+					});
+					jf.pack();
+					jf.setVisible(true);
 				}
 			});
 		} else {
@@ -1019,9 +1042,9 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 		resultListMenu.addSeparator();
 		resultListMenu.add(loadModel);
 		resultListMenu.add(saveModel);
-		resultListMenu.add(reEvaluate);
 		resultListMenu.add(reApplyConfig);
 		resultListMenu.addSeparator();
+		resultListMenu.add(visSum);
 		resultListMenu.add(visGrph);
 		resultListMenu.add(visMat);
 		resultListMenu.add(visFam);
@@ -1178,7 +1201,6 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 				objectOutputStream.flush();
 				objectOutputStream.close();
 			} catch (Exception e) {
-
 				JOptionPane.showMessageDialog(null, e, "Save Failed",
 						JOptionPane.ERROR_MESSAGE);
 				saveOK = false;
@@ -1188,35 +1210,6 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 						+ sFile.getName() + "'");
 			}
 			m_Log.statusMessage("OK");
-		}
-	}
-
-	/**
-	 * Re-evaluates the named classifier with the current test set.
-	 * Unpredictable things will happen if the data set is not compatible with
-	 * the classifier.
-	 * 
-	 * @param name
-	 *            the name of the classifier entry
-	 * @param classifier
-	 *            the classifier to evaluate
-	 * @param trainHeader
-	 *            the header of the training set
-	 */
-	protected void reevaluateModel(final String name,
-			final RegularVine estimator, final Instances trainHeader) { 
-
-		if (m_RunThread == null) {
-			synchronized (this) {
-				m_StartBut.setEnabled(false);
-				m_StopBut.setEnabled(true);
-			}
-			m_RunThread = new Thread() {
-				// TODO re-evaluate RUN
-			};
-
-			m_RunThread.setPriority(Thread.MIN_PRIORITY);
-			m_RunThread.start();
 		}
 	}
 
@@ -1267,6 +1260,87 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 			jf.setSize(450, 350);
 			jf.setVisible(true);
 		}
+	}
+	
+	/**
+	 * Opens the copula selection in a separate frame.
+	 * 
+	 * @param matrix
+	 *            the matrix.
+	 * @param name
+	 *            the name of the matrix to open.
+	 */
+	public void copulaFrame(RegularVine rvine, String name) {
+		// Open the frame.
+		JPanel jp = new JPanel();
+		jp.setLayout(new BoxLayout(jp, BoxLayout.Y_AXIS));
+		
+		// initialize checkboxes
+		Copula[] cops = rvine.getLoadedCopulas();
+		JCheckBox[] copBox = new JCheckBox[cops.length];
+		boolean[] copSel = rvine.getSelected();
+		
+		for(int i=0; i<cops.length; i++){
+			copBox[i] = new JCheckBox(cops[i].name());
+			copBox[i].setSelected(copSel[i]);
+			jp.add(copBox[i]);
+		}
+		
+		// add buttons
+		JPanel buttons = new JPanel();
+		JButton ok = new JButton("Ok");
+		JButton cancel = new JButton("Cancel");
+		buttons.add(ok);
+		buttons.add(cancel);
+		jp.add(buttons);
+		final JFrame jf = new JFrame(name);
+		
+		ok.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String out = "";
+				boolean first = true;
+				for(int i=0; i<copBox.length; i++){
+					if(copBox[i].isSelected()){
+						if(first){
+							out += i;
+							first = false;
+						}
+						else{
+							out += ","+i;
+						}
+					}
+				}
+				if(!first){
+					rvine.setCopulaSelection(out);
+					m_RVineEditor.setValue(rvine);
+				}
+				else
+					m_Log.logMessage("Error: Select at least one Copula!");
+				jf.dispose();
+			}
+		});
+		
+		cancel.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				jf.dispose();
+			}
+		});
+		
+		jf.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e) {
+				jf.dispose();
+			}
+		});
+		jf.getContentPane().setLayout(new BorderLayout());
+		jf.getContentPane().add(new JScrollPane(jp), BorderLayout.CENTER);
+		jf.pack();
+		jf.setSize(450, 350);
+		jf.setVisible(true);
 	}
 
 	/**

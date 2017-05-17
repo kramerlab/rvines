@@ -1228,6 +1228,10 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		return rvine;
 	}
 	
+	public boolean[] getSelected() {
+		return selected;
+	}
+	
 	// Options
 	
 	@OptionMetadata(displayName = "Print Help ",
