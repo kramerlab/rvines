@@ -44,7 +44,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 	
 	public static void main(String[] args){
 		RegularVine rvine = new RegularVine();
-		double[][] data = loadData("src/main/data/random/random1.arff");
+		double[][] data = loadData("./src/main/data/daxreturns.arff");
 		if(data == null) return;
 		
 		double[] w = new double[data.length];
@@ -1486,8 +1486,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		
 		if(filepath.equals("")){
 			System.err.println("No source file specified! Use the fp command to pass a filepath.");
-			System.err.println("Performing on \"./src/main/data/daxreturns.arff\" (default file).");
-			filepath = "./src/main/data/daxreturns.arff";
+			return;
 		}
 		
 		double[][] data = loadData(filepath);

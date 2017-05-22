@@ -400,13 +400,7 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 		m_StartBut.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				boolean proceed = true;
-				if (Explorer.m_Memory.memoryIsLow()) {
-					proceed = Explorer.m_Memory.showMemoryIsLow();
-				}
-				if (proceed) {
-					start();
-				}
+				start();
 			}
 		});
 		m_StopBut.addActionListener(new ActionListener() {
@@ -1270,14 +1264,14 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 	 * @param name
 	 *            the name of the matrix to open.
 	 */
-	public void copulaFrame(RegularVine rvine, String name) {
+	public void copulaFrame(final RegularVine rvine, String name) {
 		// Open the frame.
 		JPanel jp = new JPanel();
 		jp.setLayout(new BoxLayout(jp, BoxLayout.Y_AXIS));
 		
 		// initialize checkboxes
 		Copula[] cops = rvine.getLoadedCopulas();
-		JCheckBox[] copBox = new JCheckBox[cops.length];
+		final JCheckBox[] copBox = new JCheckBox[cops.length];
 		boolean[] copSel = rvine.getSelected();
 		
 		for(int i=0; i<cops.length; i++){
