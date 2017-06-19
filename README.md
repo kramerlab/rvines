@@ -1,6 +1,8 @@
 # WEKA Package for Regular Vines
 This package provides a Regular Vine integration for the WEKA workbench.
-It uses several copula functions ([see here](doc/Copula Functions for Regular Vines Usage.pdf)) and a sequential selection method based on Kendall's tau and maximum likelihood estimation (Czado et al. 20??).
+
+It uses several copula functions ([see here](doc/Copula_Functions_for_Regular_Vines_Usage.pdf)) and a sequential selection method based on Kendall's tau and maximum likelihood estimation (Czado et al. 20??).
+
 (DAAD REFERENCE)
 
 ## How-To Build RVine Weka Package
@@ -24,4 +26,5 @@ java -cp (path)/weka.jar weka.Run RegularVine
 ```
 
 Or use the RVine Panel inside the WEKA Explorer.
+
 (Note: Make sure your data is normalized)
