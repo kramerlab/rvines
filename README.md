@@ -63,8 +63,7 @@ wavelets. Insurance: Mathematics and Economics, 44(2):170–181, 2009.
 Genest, C., Kojadinovic, I., NeÅa˛lehovÃa˛, J., and Yan, J. A goodness-of-fit test
 for bivariate extreme-value copulas. Bernoulli, 17(1):253–275, 2011.
 
-HU Berlin. Multivariate Time Series. http://fedc.wiwi.hu-berlin.de/
-xplore/tutorials/stfhtmlnode13.html. [Online; accessed 05-March-2017].
+HU Berlin. Multivariate Time Series. {link](http://sfb649.wiwi.hu-berlin.de/fedc_homepage/xplore/tutorials/stfhtmlnode13.html) [Online; accessed 19-June-2017].
 
 Schirmacher, D., and Schirmacher, E. Multivariate dependence modeling
 using pair-copulas. Technical report, pages 14–16, 2008.
