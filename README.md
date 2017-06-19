@@ -60,7 +60,7 @@ to two stock market indices. BMI Paper, 2012.
 Genest, C., Masiello, E., Tribouley, K. Estimating copula densities through
 wavelets. Insurance: Mathematics and Economics, 44(2):170–181, 2009.
 
-Genest, C., Kojadinovic, I., NeÅa˛lehovÃa˛, J., and Yan, J. A goodness-of-fit test
+Genest, C., Kojadinovic, I., Nešlehová˛, J., and Yan, J. A goodness-of-fit test
 for bivariate extreme-value copulas. Bernoulli, 17(1):253–275, 2011.
 
 HU Berlin. Multivariate Time Series. [link](http://sfb649.wiwi.hu-berlin.de/fedc_homepage/xplore/tutorials/stfhtmlnode13.html) [Online; accessed 19-June-2017].
