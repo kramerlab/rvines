@@ -1,22 +1,27 @@
-# rvines
-Build RVine Weka Package
-Navigate Console into the vines package.
-use the following ant command to build the package:
+# WEKA Package for Regular Vines
+This package provides a Regular Vine integration for the WEKA workbench.
+It uses several copula functions ([see here](doc/Copula Functions for Regular Vines Usage.pdf)) and a sequential selection method based on Kendall's tau and maximum likelihood estimation (Czado et al. 20??).
+(DAAD REFERENCE)
 
+## How-To Build RVine Weka Package
+To (re-)build the package an installation of Apache Ant is required.
+Navigate Console into the vines package and use the following ant command to build the package:
+
+```
 ant -f build_package.xml -Dpackage=vines-1.0.0 make_package
+```
 
-Use the weka package manager to list installed packages:
-(fill in the pathways to the file)
-java -cp path/weka.jar weka.core.WekaPackageManager -list-packages installed
+## How-To Install RVine Weka Package
 
-Use the weka package manager to install the package:
-(fill in the pathways to the files)
-java -cp path/weka.jar weka.core.WekaPackageManager -install-package path/vines-1.0.0.zip
+Use the [WEKA Package Manager](https://weka.wikispaces.com/How+do+I+use+the+package+manager%3F)
 
-Use the weka package manager to uninstall the package:
-(fill in the pathways to the file)
-java -cp path/weka.jar weka.core.WekaPackageManager -uninstall-package vines
+## How-To Run RVine Weka Package
 
-After installing, you can run the RegularVines using Weka:
-(fill in the pathways to the file)
-java -cp path/weka.jar weka.Run RegularVine
+You can run the package via console using:
+
+```
+java -cp (path)/weka.jar weka.Run RegularVine
+```
+
+Or use the RVine Panel inside the WEKA Explorer.
+(Note: Make sure your data is normalized)
