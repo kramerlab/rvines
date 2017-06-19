@@ -25,7 +25,7 @@ Use the [WEKA Package Manager](https://weka.wikispaces.com/How+do+I+use+the+pack
 You can run the package via console using:
 
 ```
-java -cp **_(path)_**/weka.jar weka.Run RegularVine
+java -cp (path)/weka.jar weka.Run RegularVine
 ```
 
 Or use the RVine Panel inside the WEKA Explorer.
