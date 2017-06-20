@@ -127,13 +127,13 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 	/** The field where the % split is entered. */
 	protected JTextField m_PercentText = new JTextField("66", 3);
 
-	/** Click to start running the classifier. */
+	/** Click to start running the rvine. */
 	protected JButton m_StartBut = new JButton("Start");
 
-	/** Click to stop a running classifier. */
+	/** Click to stop a running rvine. */
 	protected JButton m_StopBut = new JButton("Stop");
 
-	/** The output area for classification results. */
+	/** The output area for rvine results. */
 	protected JTextArea m_OutText = new JTextArea(20, 40);
 
 	/** A panel controlling results viewing. */
@@ -680,7 +680,7 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 	}
 
 	/**
-	 * Stops the currently running classifier (if any).
+	 * Stops the currently running rvine (if any).
 	 */
 	@SuppressWarnings("deprecation")
 	protected void stop() {
@@ -712,7 +712,7 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 
 	/**
 	 * Set the working instances for this panel. Passes the instances on to the
-	 * wrapped ForecastingPanel
+	 * wrapped Panel
 	 * 
 	 * @param inst
 	 *            the instances to use
@@ -855,21 +855,21 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 					.get(0));
 		}
 
-		RegularVine temp_classifier = null;
+		RegularVine temp_estimator = null;
 		Instances temp_trainHeader = null;
 
 		if (o != null) {
 			for (int i = 0; i < o.size(); i++) {
 				Object temp = o.get(i);
 				if (temp instanceof RegularVine) {
-					temp_classifier = (RegularVine) temp;
+					temp_estimator = (RegularVine) temp;
 				} else if (temp instanceof Instances) { // training header
 					temp_trainHeader = (Instances) temp;
 				}
 			}
 		}
 
-		final RegularVine estimator = temp_classifier;
+		final RegularVine estimator = temp_estimator;
 		final Instances trainHeader = temp_trainHeader;
 
 		JMenuItem saveModel = new JMenuItem("Save model");
@@ -878,7 +878,7 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 			saveModel.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					saveClassifier(selectedNames.get(0), estimator, trainHeader);
+					saveEstimator(selectedNames.get(0), estimator, trainHeader);
 				}
 			});
 		} else {
@@ -1050,7 +1050,7 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 	}
 
 	/**
-	 * Save the currently selected classifier output to a file.
+	 * Save the currently selected rvine output to a file.
 	 * 
 	 * @param name
 	 *            the name of the buffer to save
@@ -1138,7 +1138,7 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 					outBuff.append("\nTraining data unknown\n");
 				}
 
-				outBuff.append("\n=== Classifier model ===\n\n");
+				outBuff.append("\n=== Estimator model ===\n\n");
 				outBuff.append(estimator.toString() + "\n");
 
 				m_History.addResult(name, outBuff);
@@ -1159,12 +1159,12 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 	 * 
 	 * @param name
 	 *            the name of the run
-	 * @param classifier
-	 *            the classifier to save
+	 * @param estimator
+	 *            the regular vine to save
 	 * @param trainHeader
 	 *            the header of the training instances
 	 */
-	protected void saveClassifier(String name, RegularVine estimator,
+	protected void saveEstimator(String name, RegularVine estimator,
 			Instances trainHeader) {
 
 		File sFile = null;
@@ -1259,10 +1259,10 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 	/**
 	 * Opens the copula selection in a separate frame.
 	 * 
-	 * @param matrix
-	 *            the matrix.
+	 * @param rvine
+	 *            the regular vine.
 	 * @param name
-	 *            the name of the matrix to open.
+	 *            the name of the frame to open.
 	 */
 	public void copulaFrame(final RegularVine rvine, String name) {
 		// Open the frame.

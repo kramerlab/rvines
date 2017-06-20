@@ -23,6 +23,12 @@ import weka.estimators.vines.RegularVine;
 import java.awt.*;
 import java.util.ArrayList;
 
+/**
+ * Frame to visualize vine graphs with JavaScript jsd3 inside a
+ * swing frame using javafx libraries.
+ * 
+ * @author Christian Lamberty (clamber@students.uni-mainz.de)
+ */
 @SuppressWarnings("restriction")
 public class RVineVisualization extends JFrame {
 	private static final long serialVersionUID = -3023824577865793303L;
@@ -32,6 +38,9 @@ public class RVineVisualization extends JFrame {
 	private final JPanel panel = new JPanel(new BorderLayout());
 	private RegularVine rvine;
 
+	/**
+	 * HTML / JavaScript as String.
+	 */
 	private String htmlStr = "<!DOCTYPE html>                                                                \n"
 			+"<html lang=\"en\">                                                                             \n"
 			+"                                                                                               \n"
@@ -207,6 +216,14 @@ public class RVineVisualization extends JFrame {
 			+"</body>                                                                                        \n"
 			+"</html>                                                                                        ";
 	
+	/**
+	 * Constructor.
+	 * 
+	 * @param rvine
+	 *            the regular vine to visualize.
+	 * @param name
+	 *            the name of the frame to open.
+	 */
 	public RVineVisualization(RegularVine rvine, String name) {
 		super();
 		this.rvine = rvine;
@@ -215,6 +232,9 @@ public class RVineVisualization extends JFrame {
 		initComponents();
 	}
 
+	/**
+	 * initialize the frame.
+	 */
 	private void initComponents() {
 		start();
 		panel.add(jfxPanel, BorderLayout.CENTER);
@@ -224,6 +244,9 @@ public class RVineVisualization extends JFrame {
 		pack();
 	}
 
+	/**
+	 * Start the HTML / JavaScript Code inside the swing frame.
+	 */
 	private void start() {
 
 		Platform.runLater(new Runnable() {
@@ -296,6 +319,9 @@ public class RVineVisualization extends JFrame {
 		});
 	}
 
+	/**
+	 * Bridge Class to communicate with JavaScript.
+	 */
 	public static class JavaHelper {
 		Graph[] gs;
 

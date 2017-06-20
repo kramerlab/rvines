@@ -7,7 +7,7 @@ PackageName=vines
 Version=1.0.0
 
 #Date (year-month-day)
-Date=2017-03-29
+Date=2017-06-20
 
 # Title (required)
 Title=Regular Vines
@@ -25,13 +25,16 @@ Maintainer=Christian Lamberty <clamber@students.uni-mainz.de>
 License=GPL 3.0
 
 # Description (required)
-Description=This package provides a regular vines model using sequential structure selection with pairwise maximum likelihood estimation as copula fitting.
+Description=This package provides a regular vine model using sequential structure
+selection with pairwise maximum likelihood estimation as copula fitting method.
+This work was supported by a fellowship within the FITweltweit programme of the
+German Academic Exchange Service (DAAD).
 
 # Package URL for obtaining the package archive (required)
-PackageURL=NONE
+PackageURL=https://github.com/kramerlab/rvines
 
 # URL for further information
-URL=NONE
+URL=https://github.com/kramerlab/rvines
 
 # Enhances various other packages ?
 Enhances=NONE
