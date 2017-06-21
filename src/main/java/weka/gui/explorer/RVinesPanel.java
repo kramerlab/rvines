@@ -271,15 +271,15 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 		gbC.insets = new Insets(3, 0, 1, 0);
 		gbL.setConstraints(m_CopulaOptions, gbC);
 		p2.add(m_CopulaOptions);
-		
+
 		m_CopulaOptions.addActionListener(new ActionListener() {
-			
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				RegularVine rvine = (RegularVine) m_RVineEditor.getValue();
 				String cname = rvine.getClass().getName();
-				
-				copulaFrame(rvine, cname+" :: Copula Selection");
+
+				copulaFrame(rvine, cname + " :: Copula Selection");
 			}
 		});
 
@@ -906,14 +906,13 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					String name = selectedNames.get(0);
-					openFrame(estimator.summary(), name
-							+ " :: RVine Summary");
+					openFrame(estimator.summary(), name + " :: RVine Summary");
 				}
 			});
 		} else {
 			visSum.setEnabled(false);
 		}
-		
+
 		JMenuItem visGrph = new JMenuItem("Visualize tree");
 		if (estimator != null && selectedNames != null
 				&& selectedNames.size() == 1) {
@@ -974,10 +973,10 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					String name = selectedNames.get(0);
-					openFrame(matrixToString(estimator.getParMatrices()[0]), name
-							+ " :: Par1 Matrix");
-					openFrame(matrixToString(estimator.getParMatrices()[1]), name
-							+ " :: Par2 Matrix");
+					openFrame(matrixToString(estimator.getParMatrices()[0]),
+							name + " :: Par1 Matrix");
+					openFrame(matrixToString(estimator.getParMatrices()[1]),
+							name + " :: Par2 Matrix");
 				}
 			});
 		} else {
@@ -991,8 +990,8 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					String name = selectedNames.get(0);
-					openFrame(matrixToString(estimator.getLogliksMatrix()), name
-							+ " :: Log-Liks Matrix");
+					openFrame(matrixToString(estimator.getLogliksMatrix()),
+							name + " :: Log-Liks Matrix");
 				}
 			});
 		} else {
@@ -1207,6 +1206,14 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 		}
 	}
 
+	/**
+	 * Transforms a String matrix to a String representation.
+	 * 
+	 * @param matrix
+	 *            input matrix.
+	 * 
+	 * @return matrix as String format.
+	 */
 	public String matrixToString(String[][] matrix) {
 		String out = "";
 
@@ -1255,7 +1262,7 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 			jf.setVisible(true);
 		}
 	}
-	
+
 	/**
 	 * Opens the copula selection in a separate frame.
 	 * 
@@ -1268,18 +1275,18 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 		// Open the frame.
 		JPanel jp = new JPanel();
 		jp.setLayout(new BoxLayout(jp, BoxLayout.Y_AXIS));
-		
+
 		// initialize checkboxes
 		Copula[] cops = rvine.getLoadedCopulas();
 		final JCheckBox[] copBox = new JCheckBox[cops.length];
 		boolean[] copSel = rvine.getSelected();
-		
-		for(int i=0; i<cops.length; i++){
+
+		for (int i = 0; i < cops.length; i++) {
 			copBox[i] = new JCheckBox(cops[i].name());
 			copBox[i].setSelected(copSel[i]);
 			jp.add(copBox[i]);
 		}
-		
+
 		// add buttons
 		JPanel buttons = new JPanel();
 		JButton ok = new JButton("Ok");
@@ -1288,42 +1295,40 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 		buttons.add(cancel);
 		jp.add(buttons);
 		final JFrame jf = new JFrame(name);
-		
+
 		ok.addActionListener(new ActionListener() {
-			
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				String out = "";
 				boolean first = true;
-				for(int i=0; i<copBox.length; i++){
-					if(copBox[i].isSelected()){
-						if(first){
+				for (int i = 0; i < copBox.length; i++) {
+					if (copBox[i].isSelected()) {
+						if (first) {
 							out += i;
 							first = false;
-						}
-						else{
-							out += ","+i;
+						} else {
+							out += "," + i;
 						}
 					}
 				}
-				if(!first){
+				if (!first) {
 					rvine.setCopulaSelection(out);
 					m_RVineEditor.setValue(rvine);
-				}
-				else
+				} else
 					m_Log.logMessage("Error: Select at least one Copula!");
 				jf.dispose();
 			}
 		});
-		
+
 		cancel.addActionListener(new ActionListener() {
-			
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				jf.dispose();
 			}
 		});
-		
+
 		jf.addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {

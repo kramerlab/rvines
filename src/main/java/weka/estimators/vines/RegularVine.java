@@ -16,6 +16,7 @@ import weka.core.OptionHandler;
 import weka.core.OptionMetadata;
 import weka.estimators.MultivariateEstimator;
 import weka.estimators.vines.copulas.Copula;
+import weka.gui.ProgrammaticProperty;
 
 /**
  * This class represents the Regular Vine.
@@ -1240,6 +1241,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
             commandLineParamSynopsis = "-help",
             commandLineParamIsFlag = true,
             displayOrder = 1)
+	@ProgrammaticProperty
 	public void setHelp(boolean help) {
 		this.help = help;
 	}
@@ -1253,6 +1255,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
             commandLineParamSynopsis = "-copulas",
             commandLineParamIsFlag = true,
             displayOrder = 2)
+	@ProgrammaticProperty
 	public void setLoaded(boolean loaded) {
 		this.loaded = loaded;
 	}
@@ -1267,6 +1270,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		    commandLineParamSynopsis = "-fp <string>",
     		commandLineParamIsFlag = false,
 		    displayOrder = 3)
+	@ProgrammaticProperty
 	public void setFilepath(String filepath) {
 		this.filepath = filepath;
 	}
@@ -1281,6 +1285,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		    commandLineParamSynopsis = "-copulaSelection <string>",
 		    commandLineParamIsFlag = false,
 		    displayOrder = 4)
+	@ProgrammaticProperty
 	public void setCopulaSelection(String sel) {
 		String[] sels = sel.split(",");
 		int[] cop = new int[sels.length];
@@ -1320,6 +1325,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
             commandLineParamSynopsis = "-sum",
             commandLineParamIsFlag = true,
             displayOrder = 5)
+	@ProgrammaticProperty
 	public void setSum(boolean sum) {
 		this.sum = sum;
 	}
@@ -1333,6 +1339,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
             commandLineParamSynopsis = "-rvm",
             commandLineParamIsFlag = true,
             displayOrder = 6)
+	@ProgrammaticProperty
 	public void setRVM(boolean rvm) {
 		this.rvm = rvm;
 	}
@@ -1346,6 +1353,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
             commandLineParamSynopsis = "-fam",
             commandLineParamIsFlag = true,
             displayOrder = 7)
+	@ProgrammaticProperty
 	public void setFAM(boolean fam) {
 		this.fam = fam;
 	}
@@ -1359,6 +1367,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
             commandLineParamSynopsis = "-parm",
             commandLineParamIsFlag = true,
             displayOrder = 8)
+	@ProgrammaticProperty
 	public void setPARM(boolean parm) {
 		this.parm = parm;
 	}
@@ -1372,6 +1381,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
             commandLineParamSynopsis = "-pllm",
             commandLineParamIsFlag = true,
             displayOrder = 9)
+	@ProgrammaticProperty
 	public void setPLLM(boolean pllm) {
 		this.pllm = pllm;
 	}
@@ -1385,6 +1395,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
             commandLineParamSynopsis = "-taum",
             commandLineParamIsFlag = true,
             displayOrder = 10)
+	@ProgrammaticProperty
 	public void setTAUM(boolean taum) {
 		this.taum = taum;
 	}
@@ -1398,6 +1409,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
             commandLineParamSynopsis = "-etaum",
             commandLineParamIsFlag = true,
             displayOrder = 11)
+	@ProgrammaticProperty
 	public void setETAUM(boolean etaum) {
 		this.etaum = etaum;
 	}
@@ -1411,6 +1423,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
             commandLineParamSynopsis = "-times",
             commandLineParamIsFlag = true,
             displayOrder = 12)
+	@ProgrammaticProperty
 	public void setTimestamps(boolean timestamps) {
 		this.timestamps = timestamps;
 	}

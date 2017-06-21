@@ -331,7 +331,7 @@ public class RVineVisualization extends JFrame {
 
 		public String loadGraph(String tree) {
 			int num = Integer.parseInt(tree.substring(1));
-			return buildJsonObject(gs[num]).toString();
+			return buildJsonObject(gs[num-1]).toString();
 		}
 
 		public int graphSize() {
