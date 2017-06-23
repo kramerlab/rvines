@@ -5,6 +5,7 @@ It uses several copula functions ([see here](doc/Copula_Functions_for_Regular_Vi
 selection with pairwise maximum likelihood estimation as copula fitting method.
 
 **_Notes:_**
+
 The model returns a pseudo log-likelihood (sum and average) without respecting
 the marginal densities.
 Which means, that this model is only comparable to other vine models, not to
