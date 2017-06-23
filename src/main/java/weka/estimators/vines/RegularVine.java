@@ -740,7 +740,6 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		D.retainAll(U_b);
 		
 		TreeSet<Integer> C = new TreeSet<Integer>(U_a);
-		C.addAll(U_b);
 		C.removeAll(D);
 		
 		Node n = new Node(C,D);
@@ -786,7 +785,9 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		}
 		String out = "";
 		out += "Regular Vine Summary :\n";
-		out += "Log-Likelihood : "+logDensity(data)+"\n";
+		double logd = logDensity(data);
+		out += "Pseudo Log-Likelihood (Sum): "+logd+"\n";
+		out += "Pseudo Log-Likelihood (Average): "+(logd/data.length)+"\n";
 		// prepare statistics
 		HashMap<String, Integer> stats = new HashMap<String, Integer>();
 		

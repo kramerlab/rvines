@@ -4,6 +4,16 @@ This package provides a Regular Vine integration for the WEKA workbench.
 It uses several copula functions ([see here](doc/Copula_Functions_for_Regular_Vines_Usage.pdf)) and a sequential structure
 selection with pairwise maximum likelihood estimation as copula fitting method.
 
+**_Notes:_**
+The model returns a pseudo log-likelihood (sum and average) without respecting
+the marginal densities.
+Which means, that this model is only comparable to other vine models, not to
+other density models in general.
+
+Vines can only handle normalized data.
+So make sure your data is normalized before using.
+(You might use the WEKA preprocessing functions to do so.)
+
 This work was supported by a fellowship within the FITweltweit
 programme of the German Academic Exchange Service (DAAD).
 
@@ -31,8 +41,6 @@ java -cp (path)/weka.jar weka.Run RegularVine
 ```
 
 Or use the RVine Panel inside the WEKA Explorer.
-
-(**_Note:_** Make sure your data is normalized)
 
 ## References
 
