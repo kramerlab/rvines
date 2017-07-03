@@ -44,6 +44,15 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 	protected int[][] m;
 	protected Edge[][] edges;
 	protected double[][] data;
+	protected TrainMethod method = TrainMethod.CV;
+	protected int cvFolds = 10;
+	
+	/**
+	 * This is an enum class for possible training methods.
+	 */
+	protected enum TrainMethod {
+		KENDALL, CV
+	}
 	
 	public static void main(String[] args){
 		RegularVine rvine = new RegularVine();
@@ -55,10 +64,21 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 			w[i] = 1;
 		}
 		
-		rvine.timestamps = true;
+		rvine.selected[0] = true;
+		rvine.selected[1] = true;
+		rvine.selected[2] = true;
+		rvine.selected[3] = true;
+		rvine.selected[4] = true;
+		rvine.selected[5] = true;
+		rvine.selected[6] = true;
+		rvine.selected[7] = false;
 		
+		rvine.timestamps = true;
+
 		rvine.estimate(data, w);
 
+		System.out.println("Overall Density: "+rvine.logDensity(data));
+		
 		rvine.printSummary();
 		
 		System.out.println();
@@ -152,7 +172,6 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 				System.err.println("Data does not fit the [0,1] interval!");
 				return null;
 			}
-			
 			return data;
 		} catch (Exception e) {
 			System.err.println("Unable to load data!");
@@ -233,7 +252,109 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 
 	
 	public Graph nextLevel(Graph g, int lev, double start, double stamp){
-		return kendallNextLevel(g, lev, start, stamp);
+		if(method == TrainMethod.KENDALL){
+			return kendallNextLevel(g, lev, start, stamp);
+		}
+		if(method == TrainMethod.CV){
+			return cvNextLevel(g, lev, start, stamp);
+		}
+		System.err.println("Train Method not implemented!");
+		return null;
+	}
+	
+	public Graph cvNextLevel(Graph g, int lev, double start, double stamp){
+		Graph gNext = new Graph();
+		
+		if(lev == 0){
+			if(timestamps){
+				System.out.println("Building T1 ...");
+				System.out.print("\t Compute CVs / Fit Copula... ");
+			}
+			
+			// initialize nodes
+			for(int i=1;i<=data.length;i++){
+				Node n = new Node(i);
+				n.putData(i, data[i-1]);
+				gNext.addNode(n);
+			}
+			
+			// initialize edges
+			for(Node i : gNext.getNodeList()){
+				for(Node j : gNext.getNodeList()){
+					if(i != j){;
+						Edge e = new Edge(i, j, 0);
+						cvFitCopula(e, selected);
+						gNext.addEdge(e);
+					}
+				}
+			}
+			
+			if(timestamps){
+				double time = System.currentTimeMillis();
+				System.out.println("finished! ~ "+(time-stamp)+"ms");
+				System.out.print("\t Compute max. spanning tree... ");
+				stamp = time;
+			}
+			
+			// calculate maximal spanning tree of graph
+			gNext = Utils.maxSpanTree(gNext, new Id());
+			
+			if(timestamps){
+				double time = System.currentTimeMillis();
+				System.out.println("finished! ~ "+(time-stamp)+"ms");
+				stamp = time;
+			}
+		}else{
+			if(timestamps){
+				double time = System.currentTimeMillis();
+				System.out.println("Building T"+(lev+1)+"... ");
+				System.out.print("\t Merge Nodes... ");
+				stamp = time;
+			}
+			
+			//for all edges of MST, do
+			for(Edge e : g.getUndirectedEdgeList()){
+				gNext.addNode(mergeNodes(e));
+			}
+			
+			if(timestamps){
+				double time = System.currentTimeMillis();
+				System.out.println("finished! ~ "+(time-stamp)+"ms");
+				System.out.print("\t Compute CVs / Fit Copula... ");
+				stamp = time;
+			}
+			
+			//calculate kendall's tau and add edges to graph,
+			//for all possible edges (proximity condition)
+			for(Node i : gNext.getNodeList()){
+				for(Node j : gNext.getNodeList()){
+					if(i != j){
+						if(i.isIntersected(j)){
+							Edge e = new Edge(i, j, 0);
+							cvFitCopula(e, selected);
+							gNext.addEdge(e);
+						}
+					}
+				}
+			}
+			
+			if(timestamps){
+				double time = System.currentTimeMillis();
+				System.out.println("finished! ~ "+(time-stamp)+"ms");
+				System.out.print("\t Compute max. spanning tree... ");
+				stamp = time;
+			}
+			
+			//calculate maximal spanning tree of graph
+			gNext = Utils.maxSpanTree(gNext, new Id());
+			
+			if(timestamps){
+				double time = System.currentTimeMillis();
+				System.out.println("finished! ~ "+(time-stamp)+"ms");
+				stamp = time;
+			}
+		}
+		return gNext;
 	}
 	
 	public Graph kendallNextLevel(Graph g, int lev, double start, double stamp){
@@ -655,6 +776,87 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 	}
 	
 	/**
+	 * Fits Copula to the Edge e using CV method.
+	 * @param e Edge to be fitted to.
+	 * @param selected Copula selection array.
+	 */
+	private void cvFitCopula(Edge e, boolean[] selected) {
+		Copula[] copSet = ch.select(selected);
+		double[] lls = new double[copSet.length];
+		double[] w = new double[copSet.length];
+		double[] a, b;
+		
+		// get the corresponding data from a merged Node
+		int val1 = createConditionedSet(e.getFrom(), e.getTo()).get(0);
+		a = e.getFrom().getData(val1);
+		if(a == null){
+			a = e.getTo().getData(val1);
+		}
+		
+		// get the corresponding data from the other merged Node
+		int val2 = createConditionedSet(e.getFrom(), e.getTo()).get(1);
+		b = e.getFrom().getData(val2);
+		if(b == null){
+			b = e.getTo().getData(val2);
+		}
+		
+		// cvFold - Cross Validation		
+		for(int i=0; i<cvFolds; i++){
+			int foldSize = (int) Math.ceil(( (double) a.length ) / cvFolds);
+			int testSize = foldSize;
+			if(i == cvFolds-1){
+				// last fold is the rest
+				testSize = a.length - (cvFolds-1)*foldSize;
+			}
+			
+			// build CV train / validation sets
+			
+			double[] newA = new double[a.length-testSize];
+			double[] newB = new double[b.length-testSize];
+			
+			double[] testA = new double[testSize];
+			double[] testB = new double[testSize];
+			
+			for(int k=0; k<i*foldSize; k++){
+				newA[k] = a[k];
+				newB[k] = b[k];
+			}
+			
+			for(int k=i*foldSize; k<i*foldSize+testSize; k++){
+				testA[k-i*foldSize] = a[k];
+				testB[k-i*foldSize] = b[k];
+			}
+			
+			for(int k=i*foldSize+testSize; k<a.length; k++){
+				newA[k-testSize] = a[k];
+				newB[k-testSize] = b[k];
+			}
+			
+			// train with MLE and validate
+			
+			for(int k=0; k<copSet.length; k++){
+				Copula c = copSet[k];
+				c.mle(newA, newB);
+				for(int t=0; t<testSize; t++){
+					w[k] += Math.log(c.density(testA[t], testB[t]));
+				}
+				w[k] /= cvFolds;
+			}
+		}
+		
+		int out = 0;
+		for(int i=1; i<copSet.length; i++){
+			if(w[out] < w[i]) out = i;
+		}
+		
+		lls[out] = copSet[out].mle(a, b);
+		
+		e.setCopula(copSet[out]);
+		e.setLogLik(lls[out]);
+		e.setWeight(w[out]);
+	}
+	
+	/**
 	 * Merges two Nodes of a given Edge to
 	 * create the Node for the next dimension.
 	 * 
@@ -809,9 +1011,6 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		}
 		String out = "";
 		out += "Regular Vine Summary :\n";
-		double logd = logDensity(data);
-		out += "Pseudo Log-Likelihood (Sum): "+logd+"\n";
-		out += "Pseudo Log-Likelihood (Average): "+(logd/data.length)+"\n";
 		// prepare statistics
 		HashMap<String, Integer> stats = new HashMap<String, Integer>();
 		

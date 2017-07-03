@@ -547,7 +547,7 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 										+ inst.attribute(i).name() + '\n');
 							}
 						} else {
-							outBuff.append("              [list of attributes omitted]\n");
+							outBuff.append("[list of attributes omitted]\n");
 						}
 
 						outBuff.append("Test mode:    ");
@@ -591,7 +591,10 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 							testTimeElapsed = System.currentTimeMillis()
 									- testTimeStart;
 							outBuff.append("=== Evaluation on training set ===\n");
-							outBuff.append("Log-Density : " + dens + "\n");
+							outBuff.append("Pseudo-Log-Density : " + dens
+									+ "(sum) \n");
+							outBuff.append("Test-Set Size : " + test.length
+									+ " \n");
 							outBuff.append("\nTime taken to evaluate model: "
 									+ Utils.doubleToString(
 											testTimeElapsed / 1000.0, 2)
@@ -629,7 +632,10 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 									- testTimeStart;
 
 							outBuff.append("=== Evaluation on test split ===\n");
-							outBuff.append("Log-Density : " + dens + "\n");
+							outBuff.append("Pseudo-Log-Density : " + dens
+									+ "(sum) \n");
+							outBuff.append("Test-Set Size : " + test.length
+									+ " \n");
 							outBuff.append("\nTime taken to evaluate model: "
 									+ Utils.doubleToString(
 											testTimeElapsed / 1000.0, 2)

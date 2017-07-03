@@ -58,6 +58,7 @@ public class Graph implements Serializable{
 		// Add both to the corresponding edge list.
 		ArrayList<Edge> edgeList = adjacencyList.get(from);
 		ArrayList<Edge> edgeList2 = adjacencyList.get(to);
+		e2.setCopula(e.getCopula());
 		edgeList.add(e);
 		edgeList2.add(e2);
 	}
