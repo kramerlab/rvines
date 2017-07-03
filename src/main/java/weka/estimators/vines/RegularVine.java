@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.TreeSet;
 
+import weka.estimators.vines.functions.*;
+
 import weka.core.CommandlineRunnable;
 import weka.core.Instances;
 import weka.core.Option;
@@ -52,6 +54,8 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		for(int i=0; i<w.length; i++){
 			w[i] = 1;
 		}
+		
+		rvine.timestamps = true;
 		
 		rvine.estimate(data, w);
 
@@ -191,71 +195,109 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		rvine = new Graph[data.length-1];
 		this.data = data;
 		Graph g = new Graph();
-		Graph gNext = new Graph();
 		
 		double start = System.currentTimeMillis();
 		double stamp = start;
 		
-		if(timestamps){
-			System.out.println("Building T1 ...");
-			System.out.print("\t Compute Kendall's tau... ");
-		}
-		
-		// initialize nodes
-		for(int i=1;i<=data.length;i++){
-			Node n = new Node(i);
-			n.putData(i, data[i-1]);
-			g.addNode(n);
-		}
-		
-		// initialize edges
-		for(Node i : g.getNodeList()){
-			for(Node j : g.getNodeList()){
-				if(i != j){;
-					Edge e = new Edge(i, j, 0);
-					kendallWeight(e);
-					g.addEdge(e);
-				}
-			}
-		}
-		
-		if(timestamps){
-			double time = System.currentTimeMillis();
-			System.out.println("finished! ~ "+(time-stamp)+"ms");
-			System.out.print("\t Compute max. spanning tree... ");
-			stamp = time;
-		}
-		
-		// calculate maximal spanning tree of graph
-		g = Utils.maxSpanTree(g);
-		
-		if(timestamps){
-			double time = System.currentTimeMillis();
-			System.out.println("finished! ~ "+(time-stamp)+"ms");
-			System.out.print("\t Compute fitting Copulae... ");
-			stamp = time;
-		}
-		
-		// fit copulas to the edges
-		for(Edge e : g.getUndirectedEdgeList()){
-			fitCopula(e, selected);
-		}
-		
 		//add graph to rvine
-		rvine[0] = g;
+		rvine[0] = nextLevel(g, 0, start, stamp);
 		
 		//until regular vine is fully specified, do:
-		for(int count = 1; count < data.length-1; count++){
+		for(int lev = 1; lev < data.length-1; lev++){
+			stamp = System.currentTimeMillis();
+			rvine[lev] = nextLevel(rvine[lev-1], lev, start, stamp);
+		}
+		
+		// Use merge only to set last Edge label
+		for(Edge e : rvine[data.length-2].getUndirectedEdgeList()){
+			mergeNodes(e);
+		}
+		
+		if(timestamps){
+			double time = System.currentTimeMillis();
+			System.out.println("finished! ~ "+(time-stamp)+"ms");
+			System.out.print("Building Matrices... ");
+			stamp = time;
+		}
+		
+		createRVineMatrix();
+		built = true;
+		
+		if(timestamps){
+			double time = System.currentTimeMillis();
+			System.out.println("finished! ~ "+(time-stamp)+"ms");
+			System.out.println("Total time: "+(time-start)+"ms");
+			System.out.println();
+		}
+	}
+
+	
+	public Graph nextLevel(Graph g, int lev, double start, double stamp){
+		return kendallNextLevel(g, lev, start, stamp);
+	}
+	
+	public Graph kendallNextLevel(Graph g, int lev, double start, double stamp){
+		Graph gNext = new Graph();
+		
+		if(lev == 0){
+			if(timestamps){
+				System.out.println("Building T1 ...");
+				System.out.print("\t Compute Kendall's tau... ");
+			}
+			
+			// initialize nodes
+			for(int i=1;i<=data.length;i++){
+				Node n = new Node(i);
+				n.putData(i, data[i-1]);
+				gNext.addNode(n);
+			}
+			
+			// initialize edges
+			for(Node i : gNext.getNodeList()){
+				for(Node j : gNext.getNodeList()){
+					if(i != j){;
+						Edge e = new Edge(i, j, 0);
+						kendallWeight(e);
+						gNext.addEdge(e);
+					}
+				}
+			}
+			
 			if(timestamps){
 				double time = System.currentTimeMillis();
 				System.out.println("finished! ~ "+(time-stamp)+"ms");
-				System.out.println("Building T"+(count+1)+"... ");
-				System.out.print("\t Merge Nodes... ");
+				System.out.print("\t Compute max. spanning tree... ");
 				stamp = time;
 			}
 			
-			//prepare next graph
-			gNext = new Graph();
+			// calculate maximal spanning tree of graph
+			gNext = Utils.maxSpanTree(gNext, new Abs());
+			
+			if(timestamps){
+				double time = System.currentTimeMillis();
+				System.out.println("finished! ~ "+(time-stamp)+"ms");
+				System.out.print("\t Compute fitting Copulae... ");
+				stamp = time;
+			}
+			
+			// fit copulas to the edges
+			for(Edge e : gNext.getUndirectedEdgeList()){
+				fitCopula(e, selected);
+			}
+			
+			if(timestamps){
+				double time = System.currentTimeMillis();
+				System.out.println("finished! ~ "+(time-stamp)+"ms");
+				stamp = time;
+			}
+			
+		}else{
+			if(timestamps){
+				double time = System.currentTimeMillis();
+				System.out.println("Building T"+(lev+1)+"... ");
+				System.out.print("\t Merge Nodes... ");
+				stamp = time;
+			}
 			
 			//for all edges of MST, do
 			for(Edge e : g.getUndirectedEdgeList()){
@@ -291,7 +333,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 			}
 			
 			//calculate maximal spanning tree of graph
-			gNext = Utils.maxSpanTree(gNext);
+			gNext = Utils.maxSpanTree(gNext, new Abs());
 			
 			if(timestamps){
 				double time = System.currentTimeMillis();
@@ -305,34 +347,15 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 				fitCopula(e, selected);
 			}
 			
-			//add graph to rvine
-			rvine[count] = gNext;
-			g = gNext;
+			if(timestamps){
+				double time = System.currentTimeMillis();
+				System.out.println("finished! ~ "+(time-stamp)+"ms");
+				stamp = time;
+			}
 		}
-		
-		// Use merge only to set last Edge label
-		for(Edge e : g.getUndirectedEdgeList()){
-			mergeNodes(e);
-		}
-		
-		if(timestamps){
-			double time = System.currentTimeMillis();
-			System.out.println("finished! ~ "+(time-stamp)+"ms");
-			System.out.print("Building Matrices... ");
-			stamp = time;
-		}
-		
-		createRVineMatrix();
-		built = true;
-		
-		if(timestamps){
-			double time = System.currentTimeMillis();
-			System.out.println("finished! ~ "+(time-stamp)+"ms");
-			System.out.println("Total time: "+(time-start)+"ms");
-			System.out.println();
-		}
+		return gNext;
 	}
-
+	
 	/**
 	 * Creates a sample instance.
 	 * <br>
@@ -746,7 +769,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		Node n = new Node(C,D);
 		
 		e.setLabel(n.getName());
-		
+
 		return n;
 	}
 	
