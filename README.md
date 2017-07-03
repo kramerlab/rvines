@@ -80,3 +80,5 @@ using pair-copulas. Technical report, pages 14–16, 2008.
 
 Doyon, G. On densities of extreme value copulas. M.Sc. Thesis, ETH Zurich,
 2013.
+
+Panagiotelis, A., Czado, C., Joe, H., & Stöber, J. Model selection for discrete regular vine copulas. Computational Statistics & Data Analysis, 106:138-152, 2017.
