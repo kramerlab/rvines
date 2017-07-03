@@ -782,9 +782,14 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 	 */
 	private void cvFitCopula(Edge e, boolean[] selected) {
 		Copula[] copSet = ch.select(selected);
+		Copula[] bestCops = ch.select(selected);
 		double[] lls = new double[copSet.length];
-		double[] w = new double[copSet.length];
 		double[] a, b;
+		
+		// initialize lls
+		for(int i=0; i<lls.length; i++){
+			lls[i] = Double.NEGATIVE_INFINITY;
+		}
 		
 		// get the corresponding data from a merged Node
 		int val1 = createConditionedSet(e.getFrom(), e.getTo()).get(0);
@@ -837,23 +842,27 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 			for(int k=0; k<copSet.length; k++){
 				Copula c = copSet[k];
 				c.mle(newA, newB);
+				
+				double ll = 0;
 				for(int t=0; t<testSize; t++){
-					w[k] += Math.log(c.density(testA[t], testB[t]));
+					ll += Math.log(c.density(testA[t], testB[t]));
 				}
-				w[k] /= cvFolds;
+				
+				if(ll > lls[k]){
+					bestCops[k].setParams(c.getParams());
+					lls[k] = ll;
+				}
 			}
 		}
 		
 		int out = 0;
 		for(int i=1; i<copSet.length; i++){
-			if(w[out] < w[i]) out = i;
+			if(lls[out] < lls[i]) out = i;
 		}
 		
-		lls[out] = copSet[out].mle(a, b);
-		
-		e.setCopula(copSet[out]);
+		e.setCopula(bestCops[out]);
 		e.setLogLik(lls[out]);
-		e.setWeight(w[out]);
+		e.setWeight(lls[out]);
 	}
 	
 	/**
