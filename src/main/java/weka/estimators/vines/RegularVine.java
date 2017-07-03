@@ -740,6 +740,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		D.retainAll(U_b);
 		
 		TreeSet<Integer> C = new TreeSet<Integer>(U_a);
+		C.addAll(U_b);
 		C.removeAll(D);
 		
 		Node n = new Node(C,D);
