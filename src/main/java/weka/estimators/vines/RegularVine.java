@@ -9,7 +9,6 @@ import java.util.Iterator;
 import java.util.TreeSet;
 
 import weka.estimators.vines.functions.*;
-
 import weka.core.CommandlineRunnable;
 import weka.core.Instances;
 import weka.core.Option;
@@ -18,6 +17,7 @@ import weka.core.OptionHandler;
 import weka.core.OptionMetadata;
 import weka.estimators.MultivariateEstimator;
 import weka.estimators.vines.copulas.Copula;
+import weka.estimators.vines.copulas.IndependenceCopula;
 import weka.gui.ProgrammaticProperty;
 
 /**
@@ -44,14 +44,22 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 	protected int[][] m;
 	protected Edge[][] edges;
 	protected double[][] data;
-	protected TrainMethod method = TrainMethod.CV;
+	protected TrainMethod trainMethod = TrainMethod.KENDALL;
+	protected BuildMethod buildMethod = BuildMethod.SCATTERED_INDEP;
 	protected int cvFolds = 10;
 	
 	/**
 	 * This is an enum class for possible training methods.
 	 */
 	protected enum TrainMethod {
-		KENDALL, CV
+		KENDALL, CV, MIXED
+	}
+	
+	/**
+	 * This is an enum class for possible building methods.
+	 */
+	protected enum BuildMethod {
+		REGULAR, SCATTERED_INDEP
 	}
 	
 	public static void main(String[] args){
@@ -218,13 +226,136 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		double start = System.currentTimeMillis();
 		double stamp = start;
 		
+		if(timestamps){
+			System.out.println("Building T1 ...");
+			if(trainMethod == TrainMethod.CV){
+				System.out.print("\t Compute Cross-Validated Likelihood... ");
+			}else{
+				System.out.print("\t Compute Kendall's tau... ");
+			}
+		}
+		
+		// initialize nodes
+		for(int i=1;i<=data.length;i++){
+			Node n = new Node(i);
+			n.putData(i, data[i-1]);
+			g.addNode(n);
+		}
+		
+		// initialize edges
+		for(Node i : g.getNodeList()){
+			for(Node j : g.getNodeList()){
+				if(i != j){;
+					Edge e = new Edge(i, j, 0);
+					weight(e);
+					g.addEdge(e);
+				}
+			}
+		}
+		
+		if(timestamps){
+			double time = System.currentTimeMillis();
+			System.out.println("finished! ~ "+(time-stamp)+"ms");
+			System.out.print("\t Compute max. spanning tree... ");
+			stamp = time;
+		}
+		
+		// calculate maximal spanning tree of graph
+		g = Utils.maxSpanTree(g, new Abs());
+		
+		if(timestamps){
+			double time = System.currentTimeMillis();
+			System.out.println("finished! ~ "+(time-stamp)+"ms");
+			System.out.print("\t Compute fitting Copulae... ");
+			stamp = time;
+		}
+		
+		// fit copulas to the edges
+		for(Edge e : g.getUndirectedEdgeList()){
+			select(e, 0);
+		}
+		
+		if(timestamps){
+			double time = System.currentTimeMillis();
+			System.out.println("finished! ~ "+(time-stamp)+"ms");
+			stamp = time;
+		}
+		
 		//add graph to rvine
-		rvine[0] = nextLevel(g, 0, start, stamp);
+		rvine[0] = g;
 		
 		//until regular vine is fully specified, do:
 		for(int lev = 1; lev < data.length-1; lev++){
 			stamp = System.currentTimeMillis();
-			rvine[lev] = nextLevel(rvine[lev-1], lev, start, stamp);
+			Graph gNext = new Graph();
+			g = rvine[lev-1];
+			
+			if(timestamps){
+				double time = System.currentTimeMillis();
+				System.out.println("Building T"+(lev+1)+"... ");
+				System.out.print("\t Merge Nodes... ");
+				stamp = time;
+			}
+			
+			//for all edges of MST, do
+			for(Edge e : g.getUndirectedEdgeList()){
+				gNext.addNode(mergeNodes(e));
+			}
+			
+			if(timestamps){
+				double time = System.currentTimeMillis();
+				System.out.println("finished! ~ "+(time-stamp)+"ms");
+				if(trainMethod == TrainMethod.CV){
+					System.out.print("\t Compute Cross-Validated Likelihood... ");
+				}else{
+					System.out.print("\t Compute Kendall's tau... ");
+				}
+				stamp = time;
+			}
+			
+			//calculate kendall's tau and add edges to graph,
+			//for all possible edges (proximity condition)
+			for(Node i : gNext.getNodeList()){
+				for(Node j : gNext.getNodeList()){
+					if(i != j){
+						if(i.isIntersected(j)){
+							Edge e = new Edge(i, j, 0);
+							weight(e);
+							gNext.addEdge(e);
+						}
+					}
+				}
+			}
+			
+			if(timestamps){
+				double time = System.currentTimeMillis();
+				System.out.println("finished! ~ "+(time-stamp)+"ms");
+				System.out.print("\t Compute max. spanning tree... ");
+				stamp = time;
+			}
+			
+			//calculate maximal spanning tree of graph
+			gNext = Utils.maxSpanTree(gNext, new Abs());
+			
+			if(timestamps){
+				double time = System.currentTimeMillis();
+				System.out.println("finished! ~ "+(time-stamp)+"ms");
+				System.out.print("\t Compute fitting Copulae... ");
+				stamp = time;
+			}
+			
+			// fit copulas to the edges
+			for(Edge e : gNext.getUndirectedEdgeList()){
+				select(e, lev);
+			}
+			
+			if(timestamps){
+				double time = System.currentTimeMillis();
+				System.out.println("finished! ~ "+(time-stamp)+"ms");
+				stamp = time;
+			}
+			
+			rvine[lev] = gNext;
 		}
 		
 		// Use merge only to set last Edge label
@@ -250,231 +381,43 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		}
 	}
 
-	
-	public Graph nextLevel(Graph g, int lev, double start, double stamp){
-		if(method == TrainMethod.KENDALL){
-			return kendallNextLevel(g, lev, start, stamp);
+	/**
+	 * Weights the edge using the selected method.
+	 * @param e The Edge to be weighted.
+	 */
+	public void weight(Edge e){
+		if(trainMethod == TrainMethod.KENDALL || trainMethod == TrainMethod.MIXED){
+			kendallWeight(e);
 		}
-		if(method == TrainMethod.CV){
-			return cvNextLevel(g, lev, start, stamp);
+		if(trainMethod == TrainMethod.CV){
+			cvFitCopula(e, selected);
 		}
-		System.err.println("Train Method not implemented!");
-		return null;
 	}
 	
-	public Graph cvNextLevel(Graph g, int lev, double start, double stamp){
-		Graph gNext = new Graph();
-		
-		if(lev == 0){
-			if(timestamps){
-				System.out.println("Building T1 ...");
-				System.out.print("\t Compute CVs / Fit Copula... ");
-			}
-			
-			// initialize nodes
-			for(int i=1;i<=data.length;i++){
-				Node n = new Node(i);
-				n.putData(i, data[i-1]);
-				gNext.addNode(n);
-			}
-			
-			// initialize edges
-			for(Node i : gNext.getNodeList()){
-				for(Node j : gNext.getNodeList()){
-					if(i != j){;
-						Edge e = new Edge(i, j, 0);
-						cvFitCopula(e, selected);
-						gNext.addEdge(e);
-					}
-				}
-			}
-			
-			if(timestamps){
-				double time = System.currentTimeMillis();
-				System.out.println("finished! ~ "+(time-stamp)+"ms");
-				System.out.print("\t Compute max. spanning tree... ");
-				stamp = time;
-			}
-			
-			// calculate maximal spanning tree of graph
-			gNext = Utils.maxSpanTree(gNext, new Id());
-			
-			if(timestamps){
-				double time = System.currentTimeMillis();
-				System.out.println("finished! ~ "+(time-stamp)+"ms");
-				stamp = time;
-			}
-		}else{
-			if(timestamps){
-				double time = System.currentTimeMillis();
-				System.out.println("Building T"+(lev+1)+"... ");
-				System.out.print("\t Merge Nodes... ");
-				stamp = time;
-			}
-			
-			//for all edges of MST, do
-			for(Edge e : g.getUndirectedEdgeList()){
-				gNext.addNode(mergeNodes(e));
-			}
-			
-			if(timestamps){
-				double time = System.currentTimeMillis();
-				System.out.println("finished! ~ "+(time-stamp)+"ms");
-				System.out.print("\t Compute CVs / Fit Copula... ");
-				stamp = time;
-			}
-			
-			//calculate kendall's tau and add edges to graph,
-			//for all possible edges (proximity condition)
-			for(Node i : gNext.getNodeList()){
-				for(Node j : gNext.getNodeList()){
-					if(i != j){
-						if(i.isIntersected(j)){
-							Edge e = new Edge(i, j, 0);
-							cvFitCopula(e, selected);
-							gNext.addEdge(e);
-						}
-					}
-				}
-			}
-			
-			if(timestamps){
-				double time = System.currentTimeMillis();
-				System.out.println("finished! ~ "+(time-stamp)+"ms");
-				System.out.print("\t Compute max. spanning tree... ");
-				stamp = time;
-			}
-			
-			//calculate maximal spanning tree of graph
-			gNext = Utils.maxSpanTree(gNext, new Id());
-			
-			if(timestamps){
-				double time = System.currentTimeMillis();
-				System.out.println("finished! ~ "+(time-stamp)+"ms");
-				stamp = time;
+	/**
+	 * Selects a copula for the edge using the selected method.
+	 * @param e The Edge to select a copula for.
+	 * @param lev Edge level, needed to compute the spread_indep probability.
+	 */
+	public void select(Edge e, int lev){
+		if(buildMethod == BuildMethod.SCATTERED_INDEP){
+			double p = ((double) lev) / (data.length-1);
+			if(Math.random() < p){
+				e.setCopula(new IndependenceCopula());
+				e.setLogLik(0);
+				return;
 			}
 		}
-		return gNext;
-	}
-	
-	public Graph kendallNextLevel(Graph g, int lev, double start, double stamp){
-		Graph gNext = new Graph();
-		
-		if(lev == 0){
-			if(timestamps){
-				System.out.println("Building T1 ...");
-				System.out.print("\t Compute Kendall's tau... ");
-			}
-			
-			// initialize nodes
-			for(int i=1;i<=data.length;i++){
-				Node n = new Node(i);
-				n.putData(i, data[i-1]);
-				gNext.addNode(n);
-			}
-			
-			// initialize edges
-			for(Node i : gNext.getNodeList()){
-				for(Node j : gNext.getNodeList()){
-					if(i != j){;
-						Edge e = new Edge(i, j, 0);
-						kendallWeight(e);
-						gNext.addEdge(e);
-					}
-				}
-			}
-			
-			if(timestamps){
-				double time = System.currentTimeMillis();
-				System.out.println("finished! ~ "+(time-stamp)+"ms");
-				System.out.print("\t Compute max. spanning tree... ");
-				stamp = time;
-			}
-			
-			// calculate maximal spanning tree of graph
-			gNext = Utils.maxSpanTree(gNext, new Abs());
-			
-			if(timestamps){
-				double time = System.currentTimeMillis();
-				System.out.println("finished! ~ "+(time-stamp)+"ms");
-				System.out.print("\t Compute fitting Copulae... ");
-				stamp = time;
-			}
-			
-			// fit copulas to the edges
-			for(Edge e : gNext.getUndirectedEdgeList()){
-				fitCopula(e, selected);
-			}
-			
-			if(timestamps){
-				double time = System.currentTimeMillis();
-				System.out.println("finished! ~ "+(time-stamp)+"ms");
-				stamp = time;
-			}
-			
-		}else{
-			if(timestamps){
-				double time = System.currentTimeMillis();
-				System.out.println("Building T"+(lev+1)+"... ");
-				System.out.print("\t Merge Nodes... ");
-				stamp = time;
-			}
-			
-			//for all edges of MST, do
-			for(Edge e : g.getUndirectedEdgeList()){
-				gNext.addNode(mergeNodes(e));
-			}
-			
-			if(timestamps){
-				double time = System.currentTimeMillis();
-				System.out.println("finished! ~ "+(time-stamp)+"ms");
-				System.out.print("\t Compute Kendall's tau... ");
-				stamp = time;
-			}
-			
-			//calculate kendall's tau and add edges to graph,
-			//for all possible edges (proximity condition)
-			for(Node i : gNext.getNodeList()){
-				for(Node j : gNext.getNodeList()){
-					if(i != j){
-						if(i.isIntersected(j)){
-							Edge e = new Edge(i, j, 0);
-							kendallWeight(e);
-							gNext.addEdge(e);
-						}
-					}
-				}
-			}
-			
-			if(timestamps){
-				double time = System.currentTimeMillis();
-				System.out.println("finished! ~ "+(time-stamp)+"ms");
-				System.out.print("\t Compute max. spanning tree... ");
-				stamp = time;
-			}
-			
-			//calculate maximal spanning tree of graph
-			gNext = Utils.maxSpanTree(gNext, new Abs());
-			
-			if(timestamps){
-				double time = System.currentTimeMillis();
-				System.out.println("finished! ~ "+(time-stamp)+"ms");
-				System.out.print("\t Compute fitting Copulae... ");
-				stamp = time;
-			}
-			
-			// fit copulas to the edges
-			for(Edge e : gNext.getUndirectedEdgeList()){
-				fitCopula(e, selected);
-			}
-			
-			if(timestamps){
-				double time = System.currentTimeMillis();
-				System.out.println("finished! ~ "+(time-stamp)+"ms");
-				stamp = time;
-			}
+		if(trainMethod == TrainMethod.KENDALL){
+			fitCopula(e, selected);
 		}
-		return gNext;
+		if(trainMethod == TrainMethod.MIXED){
+			cvFitCopula(e, selected);
+		}
+		if(trainMethod == TrainMethod.CV){
+			// Already done in weight step
+			// cvFitCopula(e, selected);
+		}
 	}
 	
 	/**
@@ -862,7 +805,9 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		
 		e.setCopula(bestCops[out]);
 		e.setLogLik(lls[out]);
-		e.setWeight(lls[out]);
+		if(trainMethod == TrainMethod.CV){
+			e.setWeight(lls[out]);
+		}
 	}
 	
 	/**
@@ -1047,14 +992,16 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 			out += "Tree "+(i+1)+" : \n";
 			for(Edge e : rvine[i].getUndirectedEdgeList()){
 				Copula c = e.getCopula();
+				out += e.getLabel()+" : "+c.name()+"(";
+				
 				if(c.getParams() != null){
-					out += e.getLabel()+" : "+c.name()+"(pars:{";
+					out += "pars:{";
 					for(int k=0; k<c.getParams().length-1; k++){
 						out += round(c.getParams()[k])+", ";
 					}
 					out += round(c.getParams()[c.getParams().length-1])+"}, ";
 				}
-				out += "tau:"+round(c.tau())+", empTau:"+round(e.getWeight())+")\n";
+				out += "tau:"+round(c.tau())+", weight:"+round(e.getWeight())+")\n";
 			}
 			out += "\n";
 		}
@@ -1073,6 +1020,9 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		System.out.println(summary());
 	}
 	
+	/**
+	 * Returns the pairwise empirical Kendall's tau matrix concerned to the RVine matrix.
+	 */
 	public String[][] getEmpTauMatrix() {
 		if(!built){
 			System.err.println("Use estimate(data, w) first to build the estimator!");
@@ -1127,6 +1077,9 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		}
 	}
 
+	/**
+	 * Returns the pairwise Kendall's tau matrix concerned to the RVine matrix.
+	 */
 	public String[][] getTauMatrix() {
 		if(!built){
 			System.err.println("Use estimate(data, w) first to build the estimator!");
@@ -1181,6 +1134,9 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		}
 	}
 	
+	/**
+	 * Returns the RVine matrix.
+	 */
 	public String[][] getRVineMatrix2() {
 		if(!built){
 			System.err.println("Use estimate(data, w) first to build the estimator!");
@@ -1223,6 +1179,9 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		}
 	}
 	
+	/**
+	 * Returns the pairwise copula family matrix concerned to the RVine matrix.
+	 */
 	public String[][] getFamilyMatrix() {
 		if(!built){
 			System.err.println("Use estimate(data, w) first to build the estimator!");
@@ -1266,6 +1225,9 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		}
 	}
 	
+	/**
+	 * Returns the pairwise copula parameter matrix concerned to the RVine matrix.
+	 */
 	public String[][][] getParMatrices() {
 		if(!built){
 			System.err.println("Use estimate(data, w) first to build the estimator!");
@@ -1365,6 +1327,9 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		}
 	}
 	
+	/**
+	 * Returns the pairwise log-likelihood matrix concerned to the RVine matrix.
+	 */
 	public String[][] getLogliksMatrix() {
 		if(!built){
 			System.err.println("Use estimate(data, w) first to build the estimator!");
