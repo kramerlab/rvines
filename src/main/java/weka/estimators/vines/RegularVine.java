@@ -44,21 +44,21 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 	protected int[][] m;
 	protected Edge[][] edges;
 	protected double[][] data;
-	protected TrainMethod trainMethod = TrainMethod.KENDALL;
-	protected BuildMethod buildMethod = BuildMethod.SCATTERED_INDEP;
+	public TrainMethod trainMethod = TrainMethod.MIXED;
+	public BuildMethod buildMethod = BuildMethod.REGULAR;
 	protected int cvFolds = 10;
 	
 	/**
 	 * This is an enum class for possible training methods.
 	 */
-	protected enum TrainMethod {
+	public enum TrainMethod {
 		KENDALL, CV, MIXED
 	}
 	
 	/**
 	 * This is an enum class for possible building methods.
 	 */
-	protected enum BuildMethod {
+	public enum BuildMethod {
 		REGULAR, SCATTERED_INDEP
 	}
 	
@@ -79,7 +79,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		rvine.selected[4] = true;
 		rvine.selected[5] = true;
 		rvine.selected[6] = true;
-		rvine.selected[7] = false;
+		rvine.selected[7] = true;
 		
 		rvine.timestamps = true;
 
