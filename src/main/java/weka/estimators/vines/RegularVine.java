@@ -243,13 +243,13 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		}
 		
 		// initialize edges
-		for(Node i : g.getNodeList()){
-			for(Node j : g.getNodeList()){
-				if(i != j){;
-					Edge e = new Edge(i, j, 0);
-					weight(e);
-					g.addEdge(e);
-				}
+		for(int i=0; i<g.getNodeList().size(); i++){
+			for(int j=i+1; j<g.getNodeList().size(); j++){
+				Node a = g.getNodeList().get(i);
+				Node b = g.getNodeList().get(j);
+				Edge e = new Edge(a, b, 0);
+				weight(e);
+				g.addEdge(e);
 			}
 		}
 		
@@ -315,14 +315,15 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 			
 			//calculate kendall's tau and add edges to graph,
 			//for all possible edges (proximity condition)
-			for(Node i : gNext.getNodeList()){
-				for(Node j : gNext.getNodeList()){
-					if(i != j){
-						if(i.isIntersected(j)){
-							Edge e = new Edge(i, j, 0);
-							weight(e);
-							gNext.addEdge(e);
-						}
+			for(int i=0; i<gNext.getNodeList().size(); i++){
+				for(int j=i+1; j<gNext.getNodeList().size(); j++){
+					Node a = gNext.getNodeList().get(i);
+					Node b = gNext.getNodeList().get(j);
+					
+					if(a.isIntersected(b)){
+						Edge e = new Edge(a, b, 0);
+						weight(e);
+						gNext.addEdge(e);
 					}
 				}
 			}
@@ -748,14 +749,19 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 			b = e.getTo().getData(val2);
 		}
 		
-		// cvFold - Cross Validation		
+		// cvFold - Cross Validation
+		int foldSize = (int) Math.floor(( (double) a.length ) / cvFolds);
+		int[] foldSizes = new int[cvFolds];
 		for(int i=0; i<cvFolds; i++){
-			int foldSize = (int) Math.ceil(( (double) a.length ) / cvFolds);
-			int testSize = foldSize;
-			if(i == cvFolds-1){
-				// last fold is the rest
-				testSize = a.length - (cvFolds-1)*foldSize;
+			if(i < a.length%cvFolds){
+				foldSizes[i] = foldSize+1;
+			}else{
+				foldSizes[i] = foldSize;
 			}
+		}
+		
+		for(int i=0; i<cvFolds; i++){
+			int testSize = foldSizes[i];
 			
 			// build CV train / validation sets
 			
@@ -765,19 +771,29 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 			double[] testA = new double[testSize];
 			double[] testB = new double[testSize];
 			
-			for(int k=0; k<i*foldSize; k++){
-				newA[k] = a[k];
-				newB[k] = b[k];
-			}
+			int k2=0;
+			int ub = foldSizes[k2];
+			int lb = 0;
 			
-			for(int k=i*foldSize; k<i*foldSize+testSize; k++){
-				testA[k-i*foldSize] = a[k];
-				testB[k-i*foldSize] = b[k];
-			}
-			
-			for(int k=i*foldSize+testSize; k<a.length; k++){
-				newA[k-testSize] = a[k];
-				newB[k-testSize] = b[k];
+			for(int en = 0; en<a.length; en++){
+				if(en == ub){
+					k2++;
+					ub += foldSizes[k2];
+					lb = en;
+				}
+				
+				if(k2==i){
+					testA[en-lb] = a[en];
+					testB[en-lb] = b[en];
+				}
+				if(k2<i){
+					newA[en] = a[en];
+					newB[en] = b[en];
+				}
+				if(k2>i){
+					newA[en-testSize] = a[en];
+					newB[en-testSize] = b[en];
+				}
 			}
 			
 			// train with MLE and validate

@@ -2,9 +2,11 @@ package weka.estimators.vines;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.util.ArrayList;
 import java.util.Random;
 
 import weka.core.Instances;
+import weka.estimators.vines.functions.Abs;
 
 public class RVineTest {
 	public static void main(String[] args){
@@ -119,6 +121,100 @@ public class RVineTest {
 				
 			}catch(Exception e){
 				e.printStackTrace();
+			}
+		}
+	}
+	
+	public static void main1(String[] args){
+		try{
+			Instances inst = new Instances(new BufferedReader(new FileReader("./src/main/data/daxreturns.arff")));
+			double percent = 70;
+			
+			RegularVine.TrainMethod trainMethod = RegularVine.TrainMethod.KENDALL;
+			RegularVine.BuildMethod buildMethod = RegularVine.BuildMethod.REGULAR;
+			
+			inst.randomize(new Random());
+			
+			int trainSize = (int) Math.round(inst
+					.numInstances() * percent / 100);
+			int testSize = inst.numInstances() - trainSize;
+			double[][] train = RegularVine.transform(new Instances(inst,
+					0, trainSize));
+			double[][] test = RegularVine.transform(new Instances(inst,
+					trainSize, testSize));
+			
+			double[] w = new double[train.length];
+			for(int i=0; i<w.length; i++){
+				w[i] = 1;
+			}
+			
+			
+			
+		}catch(Exception e){
+			
+		}
+	}
+	
+	public static void main2(String[] args){
+		Graph g = new Graph();
+		g.addNode(new Node(0));
+		g.addNode(new Node(1));
+		g.addNode(new Node(2));
+		g.addNode(new Node(3));
+		g.addNode(new Node(4));
+		g.addNode(new Node(5));
+		g.addNode(new Node(6));
+		g.addNode(new Node(7));
+		
+		for(int i=0; i<g.getNodeList().size(); i++){
+			for(int j=i+1; j<g.getNodeList().size(); j++){
+				Node a = g.getNodeList().get(i);
+				Node b = g.getNodeList().get(j);
+				g.addEdge(a, b, Math.random());
+			}
+		}
+		
+		for(Node n : g.getNodeList()){
+			System.out.print(n.getName()+" : ");
+			for(Edge e : g.getGraph().get(n)){
+				System.out.print(e.getTo()+":"+e.getWeight()+", ");
+			}
+			System.out.println();
+		}
+		
+		g = Utils.maxSpanTree(g, new Abs());
+		
+		// filter edged beyond threshold
+		for(Node n : g.getNodeList()){
+			ArrayList<Edge> rem = new ArrayList<Edge>();
+			for(Edge e : g.getGraph().get(n)){
+				if(e.getWeight() < 0.7 ){
+					rem.add(e);
+				}
+			}
+			g.getGraph().get(n).removeAll(rem);
+		}
+		
+		System.out.println();
+		System.out.println();
+		
+		for(Node n : g.getNodeList()){
+			System.out.print(n.getName()+" : ");
+			for(Edge e : g.getGraph().get(n)){
+				System.out.print(e.getTo()+":"+e.getWeight()+", ");
+			}
+			System.out.println();
+		}
+		
+		System.out.println();
+		System.out.println();
+		
+		Node[][] comps = Utils.connectedComponents(g);
+		
+		for(int i=0; i<comps.length; i++){
+			System.out.println("Comp "+(i+1));
+			for(int j=0; j<comps[i].length; j++){
+				System.out.println(comps[i][j].getName());
 			}
 		}
 	}

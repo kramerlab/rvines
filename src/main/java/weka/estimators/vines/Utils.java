@@ -469,4 +469,36 @@ public class Utils {
 
 		return ans;
 	}
+	
+	public static Node[][] connectedComponents(Graph g){
+		ArrayList<Node[]> compList = new ArrayList<Node[]>();
+		ArrayList<Node> nodeList = new ArrayList<Node>();
+		ArrayList<Node> tempList = new ArrayList<Node>();
+		ArrayList<Node> fullList = new ArrayList<Node>();
+		fullList.addAll(g.getNodeList());
+		
+		while(!fullList.isEmpty()){
+			nodeList.clear();
+			tempList.clear();
+			Node n = fullList.remove(0);
+			nodeList.add(n);
+			tempList.add(n);
+			
+			while(!tempList.isEmpty()){
+				Node from = tempList.remove(0);
+				for(Edge e : g.getGraph().get(from)){
+					Node to = e.getTo();
+					if(fullList.contains(to)){
+						tempList.add(to);
+						nodeList.add(to);
+						fullList.remove(to);
+					}
+				}
+			}
+			
+			Node[] comp = nodeList.toArray(new Node[nodeList.size()]);
+			compList.add(comp);
+		}
+		return compList.toArray(new Node[compList.size()][]);
+	}
 }
