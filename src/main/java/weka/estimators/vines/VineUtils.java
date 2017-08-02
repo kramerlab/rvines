@@ -6,6 +6,7 @@ import java.util.HashMap;
 
 import org.apache.commons.math3.analysis.UnivariateFunction;
 
+import weka.core.Instances;
 import weka.estimators.vines.copulas.*;
 
 /**
@@ -13,7 +14,7 @@ import weka.estimators.vines.copulas.*;
  * 
  * @author Christian Lamberty (clamber@students.uni-mainz.de)
  */
-public class Utils {
+public class VineUtils {
 	private static boolean debug = false;
 
 	/**
@@ -500,5 +501,40 @@ public class Utils {
 			compList.add(comp);
 		}
 		return compList.toArray(new Node[compList.size()][]);
+	}
+	
+	/**
+	 * Transforms Instances to double array data.
+	 * 
+	 * @param in Data as Instances.
+	 * @return Data as double matrix.
+	 */
+	public static double[][] transform(Instances in){
+		double[][] data;			
+		int k = in.numAttributes();
+		
+		data = new double[k][];
+		
+		for(int i=0; i<k; i++){
+			data[i] = in.attributeToDoubleArray(i);
+		}
+		
+		return data;
+	}
+	
+	/**
+	 * Tests if the data input is correct for RVine usage.
+	 * 
+	 * @param data Data as double matrix.
+	 * @return Boolean if data is correct.
+	 */
+	public static boolean testData(Instances data){
+		for(int i=0; i<data.numAttributes(); i++){
+			double[] x = data.attributeToDoubleArray(i);
+			for(int j=0; j<data.size(); j++){
+				if(x[j] < 0 || x[j] > 1) return false; 
+			}
+		}
+		return true;
 	}
 }

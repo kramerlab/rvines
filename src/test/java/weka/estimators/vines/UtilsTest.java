@@ -4,7 +4,7 @@ import junit.framework.*;
 import weka.estimators.vines.Edge;
 import weka.estimators.vines.Graph;
 import weka.estimators.vines.Node;
-import weka.estimators.vines.Utils;
+import weka.estimators.vines.VineUtils;
 import weka.estimators.vines.functions.Abs;
 
 import java.util.ArrayList;
@@ -60,7 +60,7 @@ public class UtilsTest extends TestCase {
     	g.addEdge(ce);
     	g.addEdge(de);
     	
-    	g = Utils.maxSpanTree(g, new Abs());
+    	g = VineUtils.maxSpanTree(g, new Abs());
     	
     	int nodes = g.getNodeList().size();
     	int entries = 0;
@@ -72,11 +72,11 @@ public class UtilsTest extends TestCase {
     	assertEquals((nodes-1)*2, entries);
     	
     	g = new Graph();
-    	g = Utils.maxSpanTree(g, new Abs());
+    	g = VineUtils.maxSpanTree(g, new Abs());
     	assertEquals(null, g);
     	
     	g = new Graph();
-    	g = Utils.maxSpanTree(null, new Abs());
+    	g = VineUtils.maxSpanTree(null, new Abs());
     	assertEquals(null, g);
     }
 
@@ -99,7 +99,7 @@ public class UtilsTest extends TestCase {
 		b[3] = 2.5;
 		b[4] = -0.5;
 		
-		assertEquals(Utils.kendallsTau(a,b), -0.10540925533894598);
+		assertEquals(VineUtils.kendallsTau(a,b), -0.10540925533894598);
     }
     
     /**
@@ -112,11 +112,11 @@ public class UtilsTest extends TestCase {
 		double[] y4 = new double[]{2.0, 3.0, 3.0, 5.0, 5.5, 8.0, 10.0, 10.0};
 		double[] y5 = new double[]{1.5, 1.5, 4.0, 3.0, 1.0, 5.0, 5.0, 9.5};
 		
-		double[] x1 = Utils.rankNormalization(y1);
-		double[] x2 = Utils.rankNormalization(y2);
-		double[] x3 = Utils.rankNormalization(y3);
-		double[] x4 = Utils.rankNormalization(y4);
-		double[] x5 = Utils.rankNormalization(y5);
+		double[] x1 = VineUtils.rankNormalization(y1);
+		double[] x2 = VineUtils.rankNormalization(y2);
+		double[] x3 = VineUtils.rankNormalization(y3);
+		double[] x4 = VineUtils.rankNormalization(y4);
+		double[] x5 = VineUtils.rankNormalization(y5);
 		
 		assertTrue(Arrays.equals(x1, new double[]{0.8, 0.4, 1.0, 0.2, 0.6}));
 		assertTrue(Arrays.equals(x2, new double[]{1.0, 0.2, 0.8, 0.4, 0.6}));

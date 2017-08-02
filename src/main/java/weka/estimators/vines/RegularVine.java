@@ -1,5 +1,7 @@
 package weka.estimators.vines;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -9,13 +11,14 @@ import java.util.Iterator;
 import java.util.TreeSet;
 
 import weka.estimators.vines.functions.*;
+import weka.core.Capabilities;
 import weka.core.CommandlineRunnable;
+import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.Option;
-import weka.core.converters.ConverterUtils.DataSource;
 import weka.core.OptionHandler;
 import weka.core.OptionMetadata;
-import weka.estimators.MultivariateEstimator;
+import weka.estimators.DensityEstimator;
 import weka.estimators.vines.copulas.Copula;
 import weka.estimators.vines.copulas.IndependenceCopula;
 import weka.gui.ProgrammaticProperty;
@@ -34,7 +37,7 @@ import weka.gui.ProgrammaticProperty;
  * 
  * @author Christian Lamberty (clamber@students.uni-mainz.de)
  */
-public class RegularVine implements MultivariateEstimator, OptionHandler, CommandlineRunnable, Serializable {
+public class RegularVine implements DensityEstimator, OptionHandler, CommandlineRunnable, Serializable {
 	private static final long serialVersionUID = -5876664157542627697L;
 	protected boolean built, timestamps, help, loaded, rvm, fam, parm, pllm, taum, etaum, sum;
 	protected String filepath;
@@ -43,7 +46,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 	protected Graph[] rvine;
 	protected int[][] m;
 	protected Edge[][] edges;
-	protected double[][] data;
+	protected Instances data;
 	public TrainMethod trainMethod = TrainMethod.MIXED;
 	public BuildMethod buildMethod = BuildMethod.REGULAR;
 	protected int cvFolds = 10;
@@ -62,64 +65,6 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		REGULAR, SCATTERED_INDEP
 	}
 	
-	public static void main(String[] args){
-		RegularVine rvine = new RegularVine();
-		double[][] data = loadData("./src/main/data/daxreturns.arff");
-		if(data == null) return;
-		
-		double[] w = new double[data.length];
-		for(int i=0; i<w.length; i++){
-			w[i] = 1;
-		}
-		
-		rvine.selected[0] = true;
-		rvine.selected[1] = true;
-		rvine.selected[2] = true;
-		rvine.selected[3] = true;
-		rvine.selected[4] = true;
-		rvine.selected[5] = true;
-		rvine.selected[6] = true;
-		rvine.selected[7] = true;
-		
-		rvine.timestamps = true;
-
-		rvine.estimate(data, w);
-
-		System.out.println("Overall Density: "+rvine.logDensity(data));
-		
-		rvine.printSummary();
-		
-		System.out.println();
-		System.out.println();
-		
-		rvine.printRVineMatrix();
-		
-		System.out.println();
-		System.out.println();
-		
-		rvine.printFamilyMatrix();
-		
-		System.out.println();
-		System.out.println();
-		
-		rvine.printParameterMatrices();
-		
-		System.out.println();
-		System.out.println();
-		
-		rvine.printLogliksMatrix();
-		
-		System.out.println();
-		System.out.println();
-		
-		rvine.printTauMatrix();
-		
-		System.out.println();
-		System.out.println();
-		
-		rvine.printEmpTauMatrix();
-	}
-	
 	/**
 	 * Constructor
 	 */
@@ -129,7 +74,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		
 		built = false;
 		timestamps = false;
-		help = false;
+		help = false; 
 		loaded = false;
 		rvm = false;
 		fam = false;
@@ -142,84 +87,16 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 	}
 	
 	/**
-	 * Tests if the data input is correct for RVine usage.
-	 * 
-	 * @param data Data as double matrix.
-	 * @return Boolean if data is correct.
-	 */
-	public static boolean testData(double[][] data){
-		for(int i=0; i<data.length; i++){
-			for(int j=0; j<data[i].length; j++){
-				if(data[i][j] < 0 || data[i][j] > 1) return false; 
-			}
-		}
-		return true;
-	}
-	
-	/**
-	 * Loads data as double matrix from a given path to arff-file.
-	 * 
-	 * @param path Path to the arff-file.
-	 * @return Data as dobule matrix.
-	 */
-	public static double[][] loadData(String path){
-		double[][] data;
-		try{
-			DataSource source = new DataSource(path);
-			Instances instances = source.getDataSet();
-			
-			int k = instances.numAttributes();
-			
-			data = new double[k][];
-			
-			for(int i=0; i<k; i++){
-				data[i] = instances.attributeToDoubleArray(i);
-			}
-			
-			if(!testData(data)){
-				System.err.println("Data does not fit the [0,1] interval!");
-				return null;
-			}
-			return data;
-		} catch (Exception e) {
-			System.err.println("Unable to load data!");
-			System.err.println("Tried to load from "+path);
-			e.printStackTrace();
-		}
-		return null;
-	}
-	
-	/**
-	 * Transforms Instances to double array data.
-	 * 
-	 * @param in Data as Instances.
-	 * @return Data as double matrix.
-	 */
-	public static double[][] transform(Instances in){
-		double[][] data;			
-		int k = in.numAttributes();
-		
-		data = new double[k][];
-		
-		for(int i=0; i<k; i++){
-			data[i] = in.attributeToDoubleArray(i);
-		}
-		
-		return data;
-	}
-	
-	/**
-	 * Build the Regular Vine density estimator on the given data set and weights.
+	 * Build the Regular Vine density estimator on the given data set.
 	 * <br>
 	 * See the model selection algorithm presented
 	 * in J.F. Di&szlig;mann's diploma thesis.
 	 * 
 	 * @param data the training data set to build the estimator on.
-	 * @param w the attribute weights.
 	 */
 	@Override
-	public void estimate(double[][] data, double[] w) {
-		rvine = new Graph[data.length-1];
+	public void buildEstimator(Instances data) throws Exception {
+		rvine = new Graph[data.numAttributes()-1];
 		this.data = data;
 		Graph g = new Graph();
 		
@@ -236,9 +113,9 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		}
 		
 		// initialize nodes
-		for(int i=1;i<=data.length;i++){
+		for(int i=1;i<=data.numAttributes();i++){
 			Node n = new Node(i);
-			n.putData(i, data[i-1]);
+			n.putData(i, data.attributeToDoubleArray(i-1));
 			g.addNode(n);
 		}
 		
@@ -248,7 +125,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 				Node a = g.getNodeList().get(i);
 				Node b = g.getNodeList().get(j);
 				Edge e = new Edge(a, b, 0);
-				weight(e);
+				weightEdge(e);
 				g.addEdge(e);
 			}
 		}
@@ -261,7 +138,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		}
 		
 		// calculate maximal spanning tree of graph
-		g = Utils.maxSpanTree(g, new Abs());
+		g = VineUtils.maxSpanTree(g, new Abs());
 		
 		if(timestamps){
 			double time = System.currentTimeMillis();
@@ -272,7 +149,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		
 		// fit copulas to the edges
 		for(Edge e : g.getUndirectedEdgeList()){
-			select(e, 0);
+			selectCopula(e, 0);
 		}
 		
 		if(timestamps){
@@ -285,7 +162,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		rvine[0] = g;
 		
 		//until regular vine is fully specified, do:
-		for(int lev = 1; lev < data.length-1; lev++){
+		for(int lev = 1; lev < rvine.length; lev++){
 			stamp = System.currentTimeMillis();
 			Graph gNext = new Graph();
 			g = rvine[lev-1];
@@ -322,7 +199,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 					
 					if(a.isIntersected(b)){
 						Edge e = new Edge(a, b, 0);
-						weight(e);
+						weightEdge(e);
 						gNext.addEdge(e);
 					}
 				}
@@ -336,7 +213,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 			}
 			
 			//calculate maximal spanning tree of graph
-			gNext = Utils.maxSpanTree(gNext, new Abs());
+			gNext = VineUtils.maxSpanTree(gNext, new Abs());
 			
 			if(timestamps){
 				double time = System.currentTimeMillis();
@@ -347,7 +224,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 			
 			// fit copulas to the edges
 			for(Edge e : gNext.getUndirectedEdgeList()){
-				select(e, lev);
+				selectCopula(e, lev);
 			}
 			
 			if(timestamps){
@@ -360,7 +237,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		}
 		
 		// Use merge only to set last Edge label
-		for(Edge e : rvine[data.length-2].getUndirectedEdgeList()){
+		for(Edge e : rvine[rvine.length-1].getUndirectedEdgeList()){
 			mergeNodes(e);
 		}
 		
@@ -386,7 +263,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 	 * Weights the edge using the selected method.
 	 * @param e The Edge to be weighted.
 	 */
-	public void weight(Edge e){
+	protected void weightEdge(Edge e){
 		if(trainMethod == TrainMethod.KENDALL || trainMethod == TrainMethod.MIXED){
 			kendallWeight(e);
 		}
@@ -400,9 +277,9 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 	 * @param e The Edge to select a copula for.
 	 * @param lev Edge level, needed to compute the spread_indep probability.
 	 */
-	public void select(Edge e, int lev){
+	protected void selectCopula(Edge e, int lev){
 		if(buildMethod == BuildMethod.SCATTERED_INDEP){
-			double p = ((double) lev) / (data.length-1);
+			double p = ((double) lev) / (rvine.length);
 			if(Math.random() < p){
 				e.setCopula(new IndependenceCopula());
 				e.setLogLik(0);
@@ -525,11 +402,12 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 	 * @param x observation array.
 	 * @return returns the log-likelihood for the instance.
 	 */
-	public double logDensity(double[] x){
+	public double logDensity(Instance inst){
 		if(!built){
 			System.err.println("Use estimate(data, w) first to build the estimator!");
 			return 0;
 		}
+		double[] x = inst.toDoubleArray();
 		double loglik = 0;
 		int n = m.length;
 		double[][] v = new double[n][n];
@@ -576,17 +454,15 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 	 * @param data matrix of observations.
 	 * @return returns the log-likelihood for the instances.
 	 */
-	public double logDensity(double[][] data){
+	public double logDensity(Instances data){
 		if(!built){
 			System.err.println("Use estimate(data, w) first to build the estimator!");
 			return 0;
 		}
 		double loglik = 0;
-		double[] x = new double[data.length];
-		for(int j=0; j<data[0].length; j++){
-			for(int i=0; i<data.length; i++){
-				x[i] = data[i][j];
-			}
+		
+		for(int j=0; j<data.size(); j++){
+			Instance x = data.get(j);
 			loglik += logDensity(x);
 		}
 		return loglik;
@@ -678,7 +554,7 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		}
 		
 		// set the edge weight
-		e.setWeight(Utils.kendallsTau(a, b));
+		e.setWeight(VineUtils.kendallsTau(a, b));
 	}
 	
 	/**
@@ -1716,15 +1592,8 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 			return;
 		}
 		
-		double[][] data = loadData(filepath);
-		if(data == null) return;
-		
-		double[] w = new double[data.length];
-		for(int i=0; i<w.length; i++){
-			w[i] = 1;
-		}
-		
-		rvine.estimate(data, w);
+		Instances data = new Instances(new BufferedReader(new FileReader(filepath)));		
+		rvine.buildEstimator(data);
 
 		if(sum){
 			rvine.printSummary();
@@ -1765,5 +1634,10 @@ public class RegularVine implements MultivariateEstimator, OptionHandler, Comman
 		if(etaum){
 			rvine.printEmpTauMatrix();
 		}
+	}
+
+	@Override
+	public Capabilities getCapabilities() {
+		return null;
 	}
 }

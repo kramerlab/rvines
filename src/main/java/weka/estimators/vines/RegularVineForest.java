@@ -1,5 +1,7 @@
 package weka.estimators.vines;
 
+import weka.core.Instances;
+
 public class RegularVineForest extends RegularVine{
 	private static final long serialVersionUID = -4041681384371075830L;
 	
@@ -19,13 +21,13 @@ public class RegularVineForest extends RegularVine{
 	}
 
 	@Override
-	public void estimate(double[][] data, double[] w) {
+	public void buildEstimator(Instances data) {
 		Graph g = new Graph();
 		
 		// initialize nodes
-		for(int i=0; i<=data.length; i++){
+		for(int i=0;i<data.numAttributes();i++){
 			Node n = new Node(i);
-			n.putData(i, data[i]);
+			n.putData(i, data.attributeToDoubleArray(i));
 			g.addNode(n);
 		}
 		
@@ -35,7 +37,7 @@ public class RegularVineForest extends RegularVine{
 				Node a = g.getNodeList().get(i);
 				Node b = g.getNodeList().get(j);
 				Edge e = new Edge(a, b, 0);
-				weight(e);
+				weightEdge(e);
 				g.addEdge(e);
 			}
 		}
@@ -50,7 +52,7 @@ public class RegularVineForest extends RegularVine{
 		}
 		
 		// get connected components
-		Node[][] comps = Utils.connectedComponents(g);
+		Node[][] comps = VineUtils.connectedComponents(g);
 		rvines = new RegularVine[comps.length];
 		
 		for(int i=0; i<comps.length; i++){
@@ -59,7 +61,6 @@ public class RegularVineForest extends RegularVine{
 			double[] w2 = new double[comp.length];
 			for(int j=0; j<comp.length; j++){
 				compData[j] = comp[j].getData(comp[j].getCondSet().get(0));
-				w2[j] = w[comp[j].getCondSet().get(0)];
 			}
 			
 			rvines[i] = new RegularVine();
@@ -68,25 +69,8 @@ public class RegularVineForest extends RegularVine{
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			rvines[i].estimate(compData, w2);
+			//rvines[i].buildEstimator(compData);
 		}
-	}
-	
-	@Override
-	public double logDensity(double[][] data){
-		if(!built){
-			System.err.println("Use estimate(data, w) first to build the estimator!");
-			return 0;
-		}
-		double loglik = 0;
-		double[] x = new double[data.length];
-		for(int j=0; j<data[0].length; j++){
-			for(int i=0; i<data.length; i++){
-				x[i] = data[i][j];
-			}
-			loglik += logDensity(x);
-		}
-		return loglik;
 	}
 	
 	public double getThreshold() {

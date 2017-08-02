@@ -1,6 +1,6 @@
 package weka.estimators.vines.copulas;
 
-import weka.estimators.vines.Utils;
+import weka.estimators.vines.VineUtils;
 import weka.estimators.vines.functions.debyeSub;
 
 /**
@@ -47,8 +47,8 @@ public class FrankCopula extends AbstractCopula{
 	public double C(double x, double y) {
 		if(d == 0) return x*y;
 		
-		x = Utils.laplaceCorrection(x);
-		y = Utils.laplaceCorrection(y);
+		x = VineUtils.laplaceCorrection(x);
+		y = VineUtils.laplaceCorrection(y);
 		
 		double ed = Math.exp(-d)-1;
 		double edx = Math.exp(-d*x)-1;
@@ -61,8 +61,8 @@ public class FrankCopula extends AbstractCopula{
 	public double density(double x, double y) {
 		if(d == 0) return 1;
 		
-		x = Utils.laplaceCorrection(x);
-		y = Utils.laplaceCorrection(y);
+		x = VineUtils.laplaceCorrection(x);
+		y = VineUtils.laplaceCorrection(y);
 		
 		double ed = Math.exp(d);
 		double edx = Math.exp(d*x);
@@ -93,8 +93,8 @@ public class FrankCopula extends AbstractCopula{
 	public double hFunction(double x, double y) {
 		if(d == 0) return x;
 		
-		x = Utils.laplaceCorrection(x);
-		y = Utils.laplaceCorrection(y);
+		x = VineUtils.laplaceCorrection(x);
+		y = VineUtils.laplaceCorrection(y);
 		
 		double ed = Math.exp(-d);
 		double edx = Math.exp(-d*x);
@@ -121,7 +121,7 @@ public class FrankCopula extends AbstractCopula{
 		if(x == 0) return 1;
 		
 		double y = 1;
-		y = Utils.simpsonIntegrate(new debyeSub(), 1000, 0, x);
+		y = VineUtils.simpsonIntegrate(new debyeSub(), 1000, 0, x);
 		
 		return y/x;
 	}

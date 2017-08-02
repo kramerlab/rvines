@@ -1,6 +1,6 @@
 package weka.estimators.vines.copulas;
 
-import weka.estimators.vines.Utils;
+import weka.estimators.vines.VineUtils;
 
 /**
  * This is the class to represent Gumbel copula family for RVines.
@@ -48,8 +48,8 @@ public class GumbelCopula extends AbstractCopula{
 	
 	@Override
 	public double C(double x, double y){
-		x = Utils.laplaceCorrection(x);
-		y = Utils.laplaceCorrection(y);
+		x = VineUtils.laplaceCorrection(x);
+		y = VineUtils.laplaceCorrection(y);
 		
 		double xt = Math.pow(-Math.log(x), d);
 		double yt = Math.pow(-Math.log(y), d);
@@ -59,8 +59,8 @@ public class GumbelCopula extends AbstractCopula{
 	
 	@Override
 	public double density(double x, double y) {
-		x = Utils.laplaceCorrection(x);
-		y = Utils.laplaceCorrection(y);
+		x = VineUtils.laplaceCorrection(x);
+		y = VineUtils.laplaceCorrection(y);
 		
 		double lx = Math.log(x);
 		double ly = Math.log(y);
@@ -95,8 +95,8 @@ public class GumbelCopula extends AbstractCopula{
 	 * @return returns the conditioned value x|y.
 	 */
 	public double hFunction(double x, double y) {
-		x = Utils.laplaceCorrection(x);
-		y = Utils.laplaceCorrection(y);
+		x = VineUtils.laplaceCorrection(x);
+		y = VineUtils.laplaceCorrection(y);
 		
 		double lx = Math.log(x);
 		double ly = Math.log(y);

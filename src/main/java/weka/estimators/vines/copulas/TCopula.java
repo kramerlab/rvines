@@ -2,7 +2,7 @@ package weka.estimators.vines.copulas;
 
 import umontreal.ssj.probdist.StudentDist;
 import umontreal.ssj.probdistmulti.BiStudentDist;
-import weka.estimators.vines.Utils;
+import weka.estimators.vines.VineUtils;
 
 /**
  * This is the class to represent Student T copula family for RVines.
@@ -55,8 +55,8 @@ public class TCopula extends AbstractCopula{
 	
 	@Override
 	public double C(double x, double y) {
-		x = Utils.laplaceCorrection(x);
-		y = Utils.laplaceCorrection(y);
+		x = VineUtils.laplaceCorrection(x);
+		y = VineUtils.laplaceCorrection(y);
 		
 		double a = StudentDist.inverseF(v, x);
 		double b = StudentDist.inverseF(v, y);
@@ -66,8 +66,8 @@ public class TCopula extends AbstractCopula{
 	
 	@Override
 	public double density(double x, double y) {		
-		x = Utils.laplaceCorrection(x);
-		y = Utils.laplaceCorrection(y);
+		x = VineUtils.laplaceCorrection(x);
+		y = VineUtils.laplaceCorrection(y);
 		
 		double a = StudentDist.inverseF(v, x);
 		double b = StudentDist.inverseF(v, y);
@@ -100,8 +100,8 @@ public class TCopula extends AbstractCopula{
 	 * @return returns the conditioned value x|y.
 	 */
 	public double hFunction(double x, double y) {
-		x = Utils.laplaceCorrection(x);
-		y = Utils.laplaceCorrection(y);
+		x = VineUtils.laplaceCorrection(x);
+		y = VineUtils.laplaceCorrection(y);
 		
 		double a = StudentDist.inverseF(v, x);
 		double b = StudentDist.inverseF(v, y);

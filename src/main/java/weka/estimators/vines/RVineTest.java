@@ -25,15 +25,8 @@ public class RVineTest {
 				int trainSize = (int) Math.round(inst
 						.numInstances() * percent / 100);
 				int testSize = inst.numInstances() - trainSize;
-				double[][] train = RegularVine.transform(new Instances(inst,
-						0, trainSize));
-				double[][] test = RegularVine.transform(new Instances(inst,
-						trainSize, testSize));
-				
-				double[] w = new double[train.length];
-				for(int i=0; i<w.length; i++){
-					w[i] = 1;
-				}
+				Instances train = new Instances(inst, 0, trainSize);
+				Instances test = new Instances(inst, trainSize, testSize);
 				
 				rvine.selected[0] = true;
 				rvine.selected[1] = true;
@@ -48,7 +41,7 @@ public class RVineTest {
 				rvine.buildMethod = buildMethod;
 				
 				double trainTimeStart = System.currentTimeMillis();
-				rvine.estimate(train, w);
+				rvine.buildEstimator(train);
 				double trainTimeElapsed = System.currentTimeMillis()
 						- trainTimeStart;
 				
@@ -61,7 +54,7 @@ public class RVineTest {
 				rvine.buildMethod = buildMethod;
 				
 				trainTimeStart = System.currentTimeMillis();
-				rvine.estimate(train, w);
+				rvine.buildEstimator(train);
 				trainTimeElapsed = System.currentTimeMillis()
 						- trainTimeStart;
 				
@@ -74,7 +67,7 @@ public class RVineTest {
 				rvine.buildMethod = buildMethod;
 				
 				trainTimeStart = System.currentTimeMillis();
-				rvine.estimate(train, w);
+				rvine.buildEstimator(train);
 				trainTimeElapsed = System.currentTimeMillis()
 						- trainTimeStart;
 				
@@ -87,7 +80,7 @@ public class RVineTest {
 				rvine.buildMethod = buildMethod;
 				
 				trainTimeStart = System.currentTimeMillis();
-				rvine.estimate(train, w);
+				rvine.buildEstimator(train);
 				trainTimeElapsed = System.currentTimeMillis()
 						- trainTimeStart;
 				
@@ -100,7 +93,7 @@ public class RVineTest {
 				rvine.buildMethod = buildMethod;
 				
 				trainTimeStart = System.currentTimeMillis();
-				rvine.estimate(train, w);
+				rvine.buildEstimator(train);
 				trainTimeElapsed = System.currentTimeMillis()
 						- trainTimeStart;
 				
@@ -113,7 +106,7 @@ public class RVineTest {
 				rvine.buildMethod = buildMethod;
 				
 				trainTimeStart = System.currentTimeMillis();
-				rvine.estimate(train, w);
+				rvine.buildEstimator(train);
 				trainTimeElapsed = System.currentTimeMillis()
 						- trainTimeStart;
 				
@@ -138,16 +131,8 @@ public class RVineTest {
 			int trainSize = (int) Math.round(inst
 					.numInstances() * percent / 100);
 			int testSize = inst.numInstances() - trainSize;
-			double[][] train = RegularVine.transform(new Instances(inst,
-					0, trainSize));
-			double[][] test = RegularVine.transform(new Instances(inst,
-					trainSize, testSize));
-			
-			double[] w = new double[train.length];
-			for(int i=0; i<w.length; i++){
-				w[i] = 1;
-			}
-			
+			Instances train = new Instances(inst, 0, trainSize);
+			Instances test = new Instances(inst, trainSize, testSize);			
 			
 			
 		}catch(Exception e){
@@ -182,7 +167,7 @@ public class RVineTest {
 			System.out.println();
 		}
 		
-		g = Utils.maxSpanTree(g, new Abs());
+		g = VineUtils.maxSpanTree(g, new Abs());
 		
 		// filter edged beyond threshold
 		for(Node n : g.getNodeList()){
@@ -209,7 +194,7 @@ public class RVineTest {
 		System.out.println();
 		System.out.println();
 		
-		Node[][] comps = Utils.connectedComponents(g);
+		Node[][] comps = VineUtils.connectedComponents(g);
 		
 		for(int i=0; i<comps.length; i++){
 			System.out.println("Comp "+(i+1));
