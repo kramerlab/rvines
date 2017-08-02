@@ -47,8 +47,9 @@ public class RegularVine implements DensityEstimator, OptionHandler, Commandline
 	protected int[][] m;
 	protected Edge[][] edges;
 	protected Instances data;
-	public TrainMethod trainMethod = TrainMethod.MIXED;
+	public TrainMethod trainMethod = TrainMethod.KENDALL;
 	public BuildMethod buildMethod = BuildMethod.REGULAR;
+	public double threshold = 0.1;
 	protected int cvFolds = 10;
 	
 	/**
@@ -62,7 +63,7 @@ public class RegularVine implements DensityEstimator, OptionHandler, Commandline
 	 * This is an enum class for possible building methods.
 	 */
 	public enum BuildMethod {
-		REGULAR, SCATTERED_INDEP
+		REGULAR, SCATTERED_INDEP, THRESHOLD
 	}
 	
 	/**
@@ -281,6 +282,20 @@ public class RegularVine implements DensityEstimator, OptionHandler, Commandline
 		if(buildMethod == BuildMethod.SCATTERED_INDEP){
 			double p = ((double) lev) / (rvine.length);
 			if(Math.random() < p){
+				e.setCopula(new IndependenceCopula());
+				e.setLogLik(0);
+				return;
+			}
+		}
+		if(buildMethod == BuildMethod.THRESHOLD){
+			double weight = e.getWeight();
+			
+			if(trainMethod == TrainMethod.KENDALL ||
+					trainMethod == TrainMethod.MIXED){
+				weight = Math.abs(weight);
+			}
+			
+			if(weight < threshold){
 				e.setCopula(new IndependenceCopula());
 				e.setLogLik(0);
 				return;

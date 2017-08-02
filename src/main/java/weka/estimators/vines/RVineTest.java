@@ -60,6 +60,19 @@ public class RVineTest {
 				
 				System.out.println("TrainMethod:"+trainMethod+", BuildMethod:"+buildMethod+", TestDensity:"+rvine.logDensity(test)+", TrainTime:"+trainTimeElapsed);
 				
+				trainMethod = RegularVine.TrainMethod.KENDALL;
+				buildMethod = RegularVine.BuildMethod.THRESHOLD;
+				
+				rvine.trainMethod = trainMethod;
+				rvine.buildMethod = buildMethod;
+				
+				trainTimeStart = System.currentTimeMillis();
+				rvine.buildEstimator(train);
+				trainTimeElapsed = System.currentTimeMillis()
+						- trainTimeStart;
+				
+				System.out.println("TrainMethod:"+trainMethod+", BuildMethod:"+buildMethod+", TestDensity:"+rvine.logDensity(test)+", TrainTime:"+trainTimeElapsed);
+				
 				trainMethod = RegularVine.TrainMethod.CV;
 				buildMethod = RegularVine.BuildMethod.REGULAR;
 				
@@ -86,6 +99,19 @@ public class RVineTest {
 				
 				System.out.println("TrainMethod:"+trainMethod+", BuildMethod:"+buildMethod+", TestDensity:"+rvine.logDensity(test)+", TrainTime:"+trainTimeElapsed);
 				
+				trainMethod = RegularVine.TrainMethod.CV;
+				buildMethod = RegularVine.BuildMethod.THRESHOLD;
+				
+				rvine.trainMethod = trainMethod;
+				rvine.buildMethod = buildMethod;
+				
+				trainTimeStart = System.currentTimeMillis();
+				rvine.buildEstimator(train);
+				trainTimeElapsed = System.currentTimeMillis()
+						- trainTimeStart;
+				
+				System.out.println("TrainMethod:"+trainMethod+", BuildMethod:"+buildMethod+", TestDensity:"+rvine.logDensity(test)+", TrainTime:"+trainTimeElapsed);
+				
 				trainMethod = RegularVine.TrainMethod.MIXED;
 				buildMethod = RegularVine.BuildMethod.REGULAR;
 				
@@ -101,6 +127,19 @@ public class RVineTest {
 				
 				trainMethod = RegularVine.TrainMethod.MIXED;
 				buildMethod = RegularVine.BuildMethod.SCATTERED_INDEP;
+				
+				rvine.trainMethod = trainMethod;
+				rvine.buildMethod = buildMethod;
+				
+				trainTimeStart = System.currentTimeMillis();
+				rvine.buildEstimator(train);
+				trainTimeElapsed = System.currentTimeMillis()
+						- trainTimeStart;
+				
+				System.out.println("TrainMethod:"+trainMethod+", BuildMethod:"+buildMethod+", TestDensity:"+rvine.logDensity(test)+", TrainTime:"+trainTimeElapsed);
+				
+				trainMethod = RegularVine.TrainMethod.MIXED;
+				buildMethod = RegularVine.BuildMethod.THRESHOLD;
 				
 				rvine.trainMethod = trainMethod;
 				rvine.buildMethod = buildMethod;
@@ -115,28 +154,6 @@ public class RVineTest {
 			}catch(Exception e){
 				e.printStackTrace();
 			}
-		}
-	}
-	
-	public static void main1(String[] args){
-		try{
-			Instances inst = new Instances(new BufferedReader(new FileReader("./src/main/data/daxreturns.arff")));
-			double percent = 70;
-			
-			RegularVine.TrainMethod trainMethod = RegularVine.TrainMethod.KENDALL;
-			RegularVine.BuildMethod buildMethod = RegularVine.BuildMethod.REGULAR;
-			
-			inst.randomize(new Random());
-			
-			int trainSize = (int) Math.round(inst
-					.numInstances() * percent / 100);
-			int testSize = inst.numInstances() - trainSize;
-			Instances train = new Instances(inst, 0, trainSize);
-			Instances test = new Instances(inst, trainSize, testSize);			
-			
-			
-		}catch(Exception e){
-			
 		}
 	}
 	
@@ -155,7 +172,8 @@ public class RVineTest {
 			for(int j=i+1; j<g.getNodeList().size(); j++){
 				Node a = g.getNodeList().get(i);
 				Node b = g.getNodeList().get(j);
-				g.addEdge(a, b, Math.random());
+				Edge e = new Edge(a, b, Math.random());
+				g.addEdge(e);
 			}
 		}
 		

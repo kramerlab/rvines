@@ -64,20 +64,6 @@ public class Graph implements Serializable{
 	}
 	
 	/**
-	 * Adds an Edge to the Graph by a from Node, a to Node and an Edge weight.
-	 * <br>
-	 * A mirrored Edge will be added automatically
-	 * to create an undirected Edge.
-	 * @param from a Node where the Edge comes from.
-	 * @param to a Node where the Edge goes to.
-	 * @param weight the Kendall't tau value as weight.
-	 */
-	public void addEdge(Node from, Node to, double weight){
-		Edge e = new Edge(from, to, weight);
-		addEdge(e);
-	}
-	
-	/**
 	 * Get the Node list.
 	 * @return returns the Node list.
 	 */
