@@ -1,7 +1,7 @@
 # WEKA Package for Regular Vines
 This package provides a Regular Vine integration for the WEKA workbench.
 
-It uses several copula functions ([see here](doc/Copula_Functions_for_Regular_Vines_Usage.pdf)) and a sequential structure
+It uses several copula functions ([see here](src/main/doc/Copula_Functions_for_Regular_Vines_Usage.pdf)) and a sequential structure
 selection with pairwise maximum likelihood estimation as copula fitting method.
 
 **_Notes:_**
