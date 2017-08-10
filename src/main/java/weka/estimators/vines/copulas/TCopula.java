@@ -1,6 +1,6 @@
 package weka.estimators.vines.copulas;
 
-import umontreal.ssj.probdist.StudentDist;
+import umontreal.ssj.probdist.StudentDistQuick;
 import umontreal.ssj.probdistmulti.BiStudentDist;
 import weka.estimators.vines.VineUtils;
 
@@ -58,8 +58,8 @@ public class TCopula extends AbstractCopula{
 		x = VineUtils.laplaceCorrection(x);
 		y = VineUtils.laplaceCorrection(y);
 		
-		double a = StudentDist.inverseF(v, x);
-		double b = StudentDist.inverseF(v, y);
+		double a = StudentDistQuick.inverseF(v, x);
+		double b = StudentDistQuick.inverseF(v, y);
 		
 		return BiStudentDist.cdf(v, a, b, p);
 	}
@@ -69,13 +69,13 @@ public class TCopula extends AbstractCopula{
 		x = VineUtils.laplaceCorrection(x);
 		y = VineUtils.laplaceCorrection(y);
 		
-		double a = StudentDist.inverseF(v, x);
-		double b = StudentDist.inverseF(v, y);
+		double a = StudentDistQuick.inverseF(v, x);
+		double b = StudentDistQuick.inverseF(v, y);
 		
 		double pp = p*p;
 		
-		double ad = StudentDist.density(v, a);
-		double bd = StudentDist.density(v, b);
+		double ad = StudentDistQuick.density(v, a);
+		double bd = StudentDistQuick.density(v, b);
 		
 		double out = Math.pow(1 + (a*a + b*b - 2*p*a*b)/(v*(1-pp)), -(v+2)/2.0)
 				/(2*Math.PI*ad*bd*Math.sqrt(1-pp));
@@ -103,10 +103,10 @@ public class TCopula extends AbstractCopula{
 		x = VineUtils.laplaceCorrection(x);
 		y = VineUtils.laplaceCorrection(y);
 		
-		double a = StudentDist.inverseF(v, x);
-		double b = StudentDist.inverseF(v, y);
+		double a = StudentDistQuick.inverseF(v, x);
+		double b = StudentDistQuick.inverseF(v, y);
 		
-		double out = StudentDist.cdf(v+1, ((a-p*b)/Math.sqrt(((v+b*b)*(1-p*p))/(v+1))));
+		double out = StudentDistQuick.cdf(v+1, ((a-p*b)/Math.sqrt(((v+b*b)*(1-p*p))/(v+1))));
 		return out;
 	}
 	

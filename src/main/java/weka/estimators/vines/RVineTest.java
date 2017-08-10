@@ -11,7 +11,7 @@ import weka.estimators.vines.copulas.GaussCopula;
 import weka.estimators.vines.functions.Abs;
 
 public class RVineTest {
-	public static void main(String[] args) {
+	public static void main4(String[] args) {
 		GaussCopula g = new GaussCopula();
 		g.setParams(new double[]{0.5});
 		
@@ -27,7 +27,7 @@ public class RVineTest {
 		System.out.println(sum);
 	}
 	
-	public static void main4(String[] args) {
+	public static void main(String[] args) {
 		for (int k = 0; k < 25; k++) {
 
 			System.out.println("Run " + (k + 1) + ":");

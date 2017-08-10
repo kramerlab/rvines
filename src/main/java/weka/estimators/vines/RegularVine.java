@@ -71,10 +71,6 @@ public class RegularVine implements DensityEstimator, CommandlineRunnable, Seria
 		selected = new boolean[ch.loadedCopulas().length];
 		for(int i=0; i<selected.length; i++) selected[i] = true;
 		
-		//
-		selected[7] = false;
-		//
-		
 		built = false;
 		timestamps = false;
 		help = false; 
