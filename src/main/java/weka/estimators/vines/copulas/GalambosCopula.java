@@ -21,6 +21,7 @@ public class GalambosCopula extends AbstractCopula{
 	 */
 	public GalambosCopula() {
 		d = 2;
+		params = new double[]{d};
 		lb = new double[]{0+tol};
 		ub = new double[]{100};
 		start = new double[]{2};

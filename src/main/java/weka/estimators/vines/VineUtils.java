@@ -33,7 +33,7 @@ public class VineUtils {
 	 *            no manipulation is needed.
 	 * @return returns the maximum spanning tree of g.
 	 */
-	public static Graph maxSpanTree(Graph g, UnivariateFunction f) {
+	public static Graph maxSpanTree(Graph g) {
 		if (g == null) {
 			return null;
 		}
@@ -64,8 +64,8 @@ public class VineUtils {
 					if (maxEdge == null) {
 						maxEdge = e;
 					} else {
-						if (f.value(maxEdge.getWeight())
-								< f.value(e.getWeight())) {
+						if (maxEdge.getWeight()
+								< e.getWeight()) {
 							maxEdge = e;
 						}
 					}

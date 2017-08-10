@@ -7,10 +7,15 @@ import java.util.Random;
 
 import weka.core.Instances;
 import weka.estimators.meta.Bagging;
+import weka.estimators.meta.DataGenerator;
 import weka.estimators.vines.copulas.GaussCopula;
-import weka.estimators.vines.functions.Abs;
 
 public class RVineTest {
+	public static void main1(String[] args){
+		Instances generated = DataGenerator.randomGenerate(5, 100);
+		System.out.println(generated.toString());
+	}
+	
 	public static void main4(String[] args) {
 		GaussCopula g = new GaussCopula();
 		g.setParams(new double[]{0.5});
@@ -27,7 +32,7 @@ public class RVineTest {
 		System.out.println(sum);
 	}
 	
-	public static void main(String[] args) {
+	public static void main3(String[] args) {
 		for (int k = 0; k < 25; k++) {
 
 			System.out.println("Run " + (k + 1) + ":");
@@ -73,7 +78,7 @@ public class RVineTest {
 		}
 	}
 
-	public static void main3(String[] args) {
+	public static void main(String[] args) {
 		for (int k = 0; k < 25; k++) {
 			System.out.println("Run " + (k + 1) + ":");
 			try {
@@ -269,7 +274,7 @@ public class RVineTest {
 			System.out.println();
 		}
 
-		g = VineUtils.maxSpanTree(g, new Abs());
+		g = VineUtils.maxSpanTree(g);
 
 		// filter edged beyond threshold
 		for (Node n : g.getNodeList()) {

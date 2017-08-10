@@ -11,6 +11,12 @@ package weka.estimators.vines.copulas;
 public class IndependenceCopula extends AbstractCopula{
 	private static final long serialVersionUID = -4231585703348535818L;
 
+	public IndependenceCopula() {
+		params = new double[]{};
+		lb = new double[]{};
+		ub = new double[]{};
+	}
+	
 	@Override
 	public double C(double x, double y) {
 		return x*y;

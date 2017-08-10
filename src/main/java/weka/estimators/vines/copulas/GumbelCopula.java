@@ -27,6 +27,7 @@ public class GumbelCopula extends AbstractCopula{
 	public GumbelCopula() {
 		rotations = true;
 		d = 2;
+		params = new double[]{d};
 		lb = new double[]{1+tol};
 		ub = new double[]{20};
 		start = new double[]{2};

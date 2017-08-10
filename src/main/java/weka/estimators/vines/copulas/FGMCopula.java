@@ -23,6 +23,7 @@ public class FGMCopula extends AbstractCopula{
 	 */
 	public FGMCopula() {
 		d = 0;
+		params = new double[]{d};
 		lb = new double[]{-1+tol};
 		ub = new double[]{1-tol};
 		start = new double[]{0};

@@ -10,8 +10,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.TreeSet;
 
-import weka.estimators.vines.functions.*;
 import weka.core.CommandlineRunnable;
+import weka.core.DenseInstance;
 import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.Option;
@@ -52,13 +52,20 @@ public class RegularVine implements DensityEstimator, CommandlineRunnable, Seria
 	
 	/**
 	 * This is an enum class for possible training methods.
+	 * KENDALL - Use Kendall's Tau as dependence measure and MLE as Copula Selection.
+	 * CV - Use Cross-Validation as dependence measure and Copula Selection.
+	 * MIXED - Use Kendall's Tau as dependence measure and CV as Copula Selection.
+	 * RANDOM - Build a completely random RVine (only for data generation).
 	 */
 	public enum TrainMethod {
-		KENDALL, CV, MIXED
+		KENDALL, CV, MIXED, RANDOM
 	}
 	
 	/**
 	 * This is an enum class for possible building methods.
+	 * REGULAR - No special building method.
+	 * SCATTERED_INDEP - Scatter independence copulas dependent on tree level.
+	 * THRESHOLD - Use independence copula beyond a given threshold.
 	 */
 	public enum BuildMethod {
 		REGULAR, SCATTERED_INDEP, THRESHOLD
@@ -137,7 +144,7 @@ public class RegularVine implements DensityEstimator, CommandlineRunnable, Seria
 		}
 		
 		// calculate maximal spanning tree of graph
-		g = VineUtils.maxSpanTree(g, new Abs());
+		g = VineUtils.maxSpanTree(g);
 		
 		if(timestamps){
 			double time = System.currentTimeMillis();
@@ -212,7 +219,7 @@ public class RegularVine implements DensityEstimator, CommandlineRunnable, Seria
 			}
 			
 			//calculate maximal spanning tree of graph
-			gNext = VineUtils.maxSpanTree(gNext, new Abs());
+			gNext = VineUtils.maxSpanTree(gNext);
 			
 			if(timestamps){
 				double time = System.currentTimeMillis();
@@ -257,7 +264,7 @@ public class RegularVine implements DensityEstimator, CommandlineRunnable, Seria
 			System.out.println();
 		}
 	}
-
+	
 	/**
 	 * Weights the edge using the selected method.
 	 * @param e The Edge to be weighted.
@@ -269,6 +276,9 @@ public class RegularVine implements DensityEstimator, CommandlineRunnable, Seria
 		if(trainMethod == TrainMethod.CV){
 			cvFitCopula(e, selected);
 		}
+		if(trainMethod == TrainMethod.RANDOM){
+			e.setWeight(Math.random());
+		}
 	}
 	
 	/**
@@ -277,6 +287,23 @@ public class RegularVine implements DensityEstimator, CommandlineRunnable, Seria
 	 * @param lev Edge level, needed to compute the spread_indep probability.
 	 */
 	protected void selectCopula(Edge e, int lev){
+		if(trainMethod == TrainMethod.RANDOM){
+			Copula[] copSet = ch.select(selected);
+			//TODO Pick random Copula
+			
+			int c = (int) (Math.random()*copSet.length);
+			Copula cop = copSet[c];
+			
+			double[][] bounds = cop.getParBounds();
+			double[] pars = new double[bounds[0].length];
+			for(int i=0; i<pars.length; i++){
+				pars[i] = bounds[0][i] + Math.random()*(bounds[1][i]-bounds[0][i]);
+			}
+			
+			cop.setParams(pars);
+			e.setCopula(cop);
+			return;
+		}
 		if(buildMethod == BuildMethod.SCATTERED_INDEP){
 			double p = ((double) lev) / (rvine.length);
 			if(Math.random() < p){
@@ -331,7 +358,7 @@ public class RegularVine implements DensityEstimator, CommandlineRunnable, Seria
 	 * x if it shall be used as given value.
 	 * @return returns the sampled instance.
 	 */
-	public double[] createSample(double[] x, boolean[] given){
+	public Instance createSample(double[] x, boolean[] given){
 		if(!built){
 			System.err.println("Use estimate(data, w) first to build the estimator!");
 			return null;
@@ -392,7 +419,7 @@ public class RegularVine implements DensityEstimator, CommandlineRunnable, Seria
 			}
 		}
 		
-		return x;
+		return new DenseInstance(1.0, x);
 	}
 	
 	/**
@@ -402,7 +429,7 @@ public class RegularVine implements DensityEstimator, CommandlineRunnable, Seria
 	 * which are all flagged as not given.
 	 * @return returns a random sampled instance.
 	 */
-	public double[] createRandomSample(){
+	public Instance createRandomSample(){
 		int n = rvine.length+1;
 		return createSample(new double[n], new boolean[n]);
 	}
@@ -567,7 +594,7 @@ public class RegularVine implements DensityEstimator, CommandlineRunnable, Seria
 		}
 		
 		// set the edge weight
-		e.setWeight(VineUtils.kendallsTau(a, b));
+		e.setWeight(Math.abs(VineUtils.kendallsTau(a, b)));
 	}
 	
 	/**
@@ -899,7 +926,7 @@ public class RegularVine implements DensityEstimator, CommandlineRunnable, Seria
 				Copula c = e.getCopula();
 				out += e.getLabel()+" : "+c.name()+"(";
 				
-				if(c.getParams() != null){
+				if(c.getParams().length > 0){
 					out += "pars:{";
 					for(int k=0; k<c.getParams().length-1; k++){
 						out += round(c.getParams()[k])+", ";

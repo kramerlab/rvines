@@ -27,6 +27,7 @@ public class ClaytonCopula extends AbstractCopula{
 	public ClaytonCopula() {
 		rotations = true;
 		d = 2;
+		params = new double[]{d};
 		lb = new double[]{0+tol};
 		ub = new double[]{20};
 		start = new double[]{2};

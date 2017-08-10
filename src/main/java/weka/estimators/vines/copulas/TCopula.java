@@ -31,6 +31,7 @@ public class TCopula extends AbstractCopula{
 	public TCopula() {
 		p = 0;
 		v = 8;
+		params = new double[]{p, v};
 		lb = new double[]{-1, 2};
 		ub = new double[]{1, 30};
 		start = new double[]{0, 8};

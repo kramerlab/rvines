@@ -5,7 +5,6 @@ import weka.estimators.vines.Edge;
 import weka.estimators.vines.Graph;
 import weka.estimators.vines.Node;
 import weka.estimators.vines.VineUtils;
-import weka.estimators.vines.functions.Abs;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -60,7 +59,7 @@ public class UtilsTest extends TestCase {
     	g.addEdge(ce);
     	g.addEdge(de);
     	
-    	g = VineUtils.maxSpanTree(g, new Abs());
+    	g = VineUtils.maxSpanTree(g);
     	
     	int nodes = g.getNodeList().size();
     	int entries = 0;
@@ -72,11 +71,11 @@ public class UtilsTest extends TestCase {
     	assertEquals((nodes-1)*2, entries);
     	
     	g = new Graph();
-    	g = VineUtils.maxSpanTree(g, new Abs());
+    	g = VineUtils.maxSpanTree(g);
     	assertEquals(null, g);
     	
     	g = new Graph();
-    	g = VineUtils.maxSpanTree(null, new Abs());
+    	g = VineUtils.maxSpanTree(null);
     	assertEquals(null, g);
     }
 
