@@ -11,12 +11,10 @@ import java.util.Iterator;
 import java.util.TreeSet;
 
 import weka.estimators.vines.functions.*;
-import weka.core.Capabilities;
 import weka.core.CommandlineRunnable;
 import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.Option;
-import weka.core.OptionHandler;
 import weka.core.OptionMetadata;
 import weka.estimators.DensityEstimator;
 import weka.estimators.vines.copulas.Copula;
@@ -37,7 +35,7 @@ import weka.gui.ProgrammaticProperty;
  * 
  * @author Christian Lamberty (clamber@students.uni-mainz.de)
  */
-public class RegularVine implements DensityEstimator, OptionHandler, CommandlineRunnable, Serializable {
+public class RegularVine implements DensityEstimator, CommandlineRunnable, Serializable {
 	private static final long serialVersionUID = -5876664157542627697L;
 	protected boolean built, timestamps, help, loaded, rvm, fam, parm, pllm, taum, etaum, sum;
 	protected String filepath;
@@ -48,7 +46,7 @@ public class RegularVine implements DensityEstimator, OptionHandler, Commandline
 	protected Edge[][] edges;
 	protected Instances data;
 	public TrainMethod trainMethod = TrainMethod.KENDALL;
-	public BuildMethod buildMethod = BuildMethod.REGULAR;
+	public BuildMethod buildMethod = BuildMethod.THRESHOLD;
 	public double threshold = 0.1;
 	protected int cvFolds = 10;
 	
@@ -72,6 +70,10 @@ public class RegularVine implements DensityEstimator, OptionHandler, Commandline
 	public RegularVine(){
 		selected = new boolean[ch.loadedCopulas().length];
 		for(int i=0; i<selected.length; i++) selected[i] = true;
+		
+		//
+		selected[7] = false;
+		//
 		
 		built = false;
 		timestamps = false;
@@ -1649,10 +1651,5 @@ public class RegularVine implements DensityEstimator, OptionHandler, Commandline
 		if(etaum){
 			rvine.printEmpTauMatrix();
 		}
-	}
-
-	@Override
-	public Capabilities getCapabilities() {
-		return null;
 	}
 }

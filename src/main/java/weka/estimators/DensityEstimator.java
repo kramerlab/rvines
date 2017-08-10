@@ -1,15 +1,15 @@
 package weka.estimators;
 
-import weka.core.Capabilities;
 import weka.core.Instance;
 import weka.core.Instances;
+import weka.core.OptionHandler;
 
 /**
  * This is an interface for density estimators.
  *
  * @author Christian Lamberty (clamber@students.uni-mainz.de)
  */
-public interface DensityEstimator {
+public interface DensityEstimator extends OptionHandler{
 	/**
 	   * Generates an estimator. Must initialize all fields of the estimator
 	   * that are not being set via options (ie. multiple calls of buildEstimator
@@ -41,15 +41,4 @@ public interface DensityEstimator {
 	   * @exception Exception if an error occurred during the prediction
 	   */
 	  public double logDensity(Instances instances) throws Exception;
-
-	  /**
-	   * Returns the Capabilities of this classifier. Maximally permissive
-	   * capabilities are allowed by default. Derived classifiers should
-	   * override this method and first disable all capabilities and then
-	   * enable just those capabilities that make sense for the scheme.
-	   *
-	   * @return            the capabilities of this object
-	   * @see               Capabilities
-	   */
-	  public Capabilities getCapabilities();
 }
