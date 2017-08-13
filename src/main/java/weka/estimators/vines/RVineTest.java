@@ -11,8 +11,31 @@ import weka.estimators.meta.DataGenerator;
 import weka.estimators.vines.copulas.GaussCopula;
 
 public class RVineTest {
-	public static void main1(String[] args){
-		Instances generated = DataGenerator.randomGenerate(5, 100);
+	
+	public static void mainb(String[] args){
+		try{
+		Instances inst = new Instances(new BufferedReader(
+				new FileReader("./src/main/data/daxreturns.arff")));
+		
+		Instances samples = new Instances(inst, 0, 0);
+		
+		RegularVine rvine = new RegularVine();
+		rvine.buildEstimator(inst);
+		
+		for(int i=0; i<100; i++){
+			samples.add(rvine.createRandomSample());
+			System.out.println(rvine.logDensity(samples));
+		}
+		
+		System.out.println(rvine.logDensity(samples));
+		
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+	
+	public static void main(String[] args){
+		Instances generated = DataGenerator.randomGenerate(10, 100);
 		System.out.println(generated.toString());
 	}
 	
@@ -78,7 +101,7 @@ public class RVineTest {
 		}
 	}
 
-	public static void main(String[] args) {
+	public static void main5(String[] args) {
 		for (int k = 0; k < 25; k++) {
 			System.out.println("Run " + (k + 1) + ":");
 			try {

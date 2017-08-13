@@ -289,7 +289,6 @@ public class RegularVine implements DensityEstimator, CommandlineRunnable, Seria
 	protected void selectCopula(Edge e, int lev){
 		if(trainMethod == TrainMethod.RANDOM){
 			Copula[] copSet = ch.select(selected);
-			//TODO Pick random Copula
 			
 			int c = (int) (Math.random()*copSet.length);
 			Copula cop = copSet[c];
@@ -297,7 +296,9 @@ public class RegularVine implements DensityEstimator, CommandlineRunnable, Seria
 			double[][] bounds = cop.getParBounds();
 			double[] pars = new double[bounds[0].length];
 			for(int i=0; i<pars.length; i++){
-				pars[i] = bounds[0][i] + Math.random()*(bounds[1][i]-bounds[0][i]);
+				double lb = Math.max(-5, bounds[0][i]);
+				double ub = Math.min(5, bounds[1][i]);
+				pars[i] = lb + Math.random()*(ub-lb);
 			}
 			
 			cop.setParams(pars);

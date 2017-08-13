@@ -24,11 +24,11 @@ public class DataGenerator {
 		}
 		
 		Instances dataRaw = new Instances("RandomInstances", attributes , 0);
-		for(int i=0; i<1000; i++){
+		for(int i=0; i<10; i++){
 			// generate random Instance
 			double[] raw = new double[attrSize];
 			for(int j=0; j<attrSize; j++){
-				raw[j] = dists[j].cdf(Math.random());
+				raw[j] = Math.random();
 			}
 			
 			dataRaw.add(new DenseInstance(1.0, raw));
@@ -60,7 +60,8 @@ public class DataGenerator {
 				given[j] = true;
 			}
 			
-			Instance sample = rvine.createSample(raw, given);
+			//Instance sample = rvine.createSample(raw, given);
+			Instance sample = rvine.createRandomSample();
 			double dens = rvine.logDensity(sample);
 			
 			System.out.println(dens);

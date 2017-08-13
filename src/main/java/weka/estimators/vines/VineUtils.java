@@ -537,4 +537,22 @@ public class VineUtils {
 		}
 		return true;
 	}
+	
+	/**
+	 * Method for Kullback Leibler Divergence, Base 2.
+	 * 
+	 * @param p Data as double array.
+	 * @param q Data as double array.
+	 * @return Kullback Leibler Divergence of p,q
+	 */
+	public static double KullbackLeiblerDivergence(double[] p, double[] q){
+		double out = 0.0;
+		
+		for(int i=0; i<p.length; i++){
+			if(p[i] == 0 || q[i] == 0 ) continue;
+			out += p[i]*(Math.log(p[i])- Math.log(q[i]));
+		}
+		
+		return out/Math.log(2);
+	}
 }
