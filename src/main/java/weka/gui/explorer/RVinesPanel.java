@@ -56,7 +56,7 @@ import weka.core.SerializationHelper;
 import weka.core.SerializedObject;
 import weka.core.Utils;
 import weka.core.converters.Loader;
-import weka.estimators.MultivariateEstimator;
+import weka.estimators.DensityEstimator;
 import weka.estimators.vines.RegularVine;
 import weka.estimators.vines.copulas.Copula;
 import weka.estimators.vines.VineUtils;
@@ -298,7 +298,7 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 		historyHolder.setBorder(BorderFactory
 				.createTitledBorder("Result list (right-click for options)"));
 		historyHolder.add(m_History, BorderLayout.CENTER);
-		m_RVineEditor.setClassType(MultivariateEstimator.class);
+		m_RVineEditor.setClassType(DensityEstimator.class);
 		m_RVineEditor.setValue(new RegularVine());
 
 		JPanel p3 = new JPanel();
@@ -494,8 +494,10 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 										"Percentage must be between 0 and 100");
 							}
 
-							test = new Instances(inst,
+							train = new Instances(inst, 0,
 									(int) (inst.size() * percent / 100));
+							test = new Instances(inst, train.size(),
+									inst.size());
 
 						} else if (m_TrainBut.isSelected()) {
 							testMode = 3;

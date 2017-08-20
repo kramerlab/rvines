@@ -45,9 +45,9 @@ public class RegularVine implements DensityEstimator, CommandlineRunnable, Seria
 	protected int[][] m;
 	protected Edge[][] edges;
 	protected Instances data;
-	public TrainMethod trainMethod = TrainMethod.KENDALL;
-	public BuildMethod buildMethod = BuildMethod.THRESHOLD;
-	public double threshold = 0.1;
+	protected TrainMethod trainMethod = TrainMethod.KENDALL;
+	protected BuildMethod buildMethod = BuildMethod.SCATTERED_INDEP;
+	protected double threshold = 0.1;
 	protected int cvFolds = 10;
 	
 	/**
@@ -55,10 +55,9 @@ public class RegularVine implements DensityEstimator, CommandlineRunnable, Seria
 	 * KENDALL - Use Kendall's Tau as dependence measure and MLE as Copula Selection.
 	 * CV - Use Cross-Validation as dependence measure and Copula Selection.
 	 * MIXED - Use Kendall's Tau as dependence measure and CV as Copula Selection.
-	 * RANDOM - Build a completely random RVine (only for data generation).
 	 */
 	public enum TrainMethod {
-		KENDALL, CV, MIXED, RANDOM
+		KENDALL, CV, MIXED
 	}
 	
 	/**
@@ -276,9 +275,6 @@ public class RegularVine implements DensityEstimator, CommandlineRunnable, Seria
 		if(trainMethod == TrainMethod.CV){
 			cvFitCopula(e, selected);
 		}
-		if(trainMethod == TrainMethod.RANDOM){
-			e.setWeight(Math.random());
-		}
 	}
 	
 	/**
@@ -287,24 +283,6 @@ public class RegularVine implements DensityEstimator, CommandlineRunnable, Seria
 	 * @param lev Edge level, needed to compute the spread_indep probability.
 	 */
 	protected void selectCopula(Edge e, int lev){
-		if(trainMethod == TrainMethod.RANDOM){
-			Copula[] copSet = ch.select(selected);
-			
-			int c = (int) (Math.random()*copSet.length);
-			Copula cop = copSet[c];
-			
-			double[][] bounds = cop.getParBounds();
-			double[] pars = new double[bounds[0].length];
-			for(int i=0; i<pars.length; i++){
-				double lb = Math.max(-5, bounds[0][i]);
-				double ub = Math.min(5, bounds[1][i]);
-				pars[i] = lb + Math.random()*(ub-lb);
-			}
-			
-			cop.setParams(pars);
-			e.setCopula(cop);
-			return;
-		}
 		if(buildMethod == BuildMethod.SCATTERED_INDEP){
 			double p = ((double) lev) / (rvine.length);
 			if(Math.random() < p){
@@ -440,7 +418,7 @@ public class RegularVine implements DensityEstimator, CommandlineRunnable, Seria
 	 * <br>
 	 * The method is based on an
 	 * algorithm presented in J.F. Di&szlig;mann's diploma thesis.
-	 * @param x observation array.
+	 * @param inst observation instance.
 	 * @return returns the log-likelihood for the instance.
 	 */
 	public double logDensity(Instance inst){
@@ -955,6 +933,7 @@ public class RegularVine implements DensityEstimator, CommandlineRunnable, Seria
 	
 	/**
 	 * Returns the pairwise empirical Kendall's tau matrix concerned to the RVine matrix.
+	 * @return pairwise emp tau matrix.
 	 */
 	public String[][] getEmpTauMatrix() {
 		if(!built){
@@ -1012,6 +991,7 @@ public class RegularVine implements DensityEstimator, CommandlineRunnable, Seria
 
 	/**
 	 * Returns the pairwise Kendall's tau matrix concerned to the RVine matrix.
+	 * @return pairwise tau matrix.
 	 */
 	public String[][] getTauMatrix() {
 		if(!built){
@@ -1069,6 +1049,7 @@ public class RegularVine implements DensityEstimator, CommandlineRunnable, Seria
 	
 	/**
 	 * Returns the RVine matrix.
+	 * @return RVine matrix as string matrix.
 	 */
 	public String[][] getRVineMatrix2() {
 		if(!built){
@@ -1114,6 +1095,7 @@ public class RegularVine implements DensityEstimator, CommandlineRunnable, Seria
 	
 	/**
 	 * Returns the pairwise copula family matrix concerned to the RVine matrix.
+	 * @return pairwise family matrix.
 	 */
 	public String[][] getFamilyMatrix() {
 		if(!built){
@@ -1160,6 +1142,7 @@ public class RegularVine implements DensityEstimator, CommandlineRunnable, Seria
 	
 	/**
 	 * Returns the pairwise copula parameter matrix concerned to the RVine matrix.
+	 * @return pairwise parameter matrices.
 	 */
 	public String[][][] getParMatrices() {
 		if(!built){
@@ -1262,6 +1245,7 @@ public class RegularVine implements DensityEstimator, CommandlineRunnable, Seria
 	
 	/**
 	 * Returns the pairwise log-likelihood matrix concerned to the RVine matrix.
+	 * @return pairwise weights matrix.
 	 */
 	public String[][] getLogliksMatrix() {
 		if(!built){
@@ -1320,6 +1304,7 @@ public class RegularVine implements DensityEstimator, CommandlineRunnable, Seria
 	/**
 	 * Rounding function for better readability to the output.
 	 * @param val Value to be rounded.
+	 * @return the rounded value.
 	 */
 	private static double round(double val){
 		return Math.round(val*Math.pow(10, 4))/Math.pow(10, 4);
@@ -1450,12 +1435,65 @@ public class RegularVine implements DensityEstimator, CommandlineRunnable, Seria
 	 	return out;
 	}
 	
+	@OptionMetadata(displayName = "Train Method",
+            description = "Choose between Kendall, CV and Mixed.",
+            commandLineParamName = "tm",
+            commandLineParamSynopsis = "-tm",
+            commandLineParamIsFlag = false,
+            displayOrder = 5)
+	public void setTrainMethod(TrainMethod tm){
+		this.trainMethod = tm;
+	}
+	public TrainMethod getTrainMethod(){
+		return trainMethod;
+	}
+	
+	@OptionMetadata(displayName = "Build Method",
+            description = "Choose between Regular, Scattered_Indep and Threshold.",
+            commandLineParamName = "bm",
+            commandLineParamSynopsis = "-bm",
+            commandLineParamIsFlag = false,
+            displayOrder = 6)
+	public void setBuildMethod(BuildMethod bm){
+		this.buildMethod = bm;
+	}
+	public BuildMethod getBuildMethod(){
+		return buildMethod;
+	}
+	
+	@OptionMetadata(displayName = "Threshold parameter",
+            description = "Parameter for the threshold build method.",
+            commandLineParamName = "t",
+            commandLineParamSynopsis = "-t",
+            commandLineParamIsFlag = false,
+            displayOrder = 7)
+	public void setThreshold(double t){
+		this.threshold = t;
+	}
+	public double getThreshold(){
+		return threshold;
+	}
+	
+	@OptionMetadata(displayName = "CV fold parameter",
+            description = "Parameter for the amount of cv folds.",
+            commandLineParamName = "cvfolds",
+            commandLineParamSynopsis = "-cvfolds",
+            commandLineParamIsFlag = false,
+            displayOrder = 8)
+	public void setCVFolds(int f){
+		if(f > 0)
+			this.cvFolds = f;
+	}
+	public int getCVFolds(){
+		return cvFolds;
+	}
+	
 	@OptionMetadata(displayName = "Print Summary",
             description = "Print the RVine summary.",
             commandLineParamName = "sum",
             commandLineParamSynopsis = "-sum",
             commandLineParamIsFlag = true,
-            displayOrder = 5)
+            displayOrder = 9)
 	@ProgrammaticProperty
 	public void setSum(boolean sum) {
 		this.sum = sum;
@@ -1469,7 +1507,7 @@ public class RegularVine implements DensityEstimator, CommandlineRunnable, Seria
             commandLineParamName = "rvm",
             commandLineParamSynopsis = "-rvm",
             commandLineParamIsFlag = true,
-            displayOrder = 6)
+            displayOrder = 10)
 	@ProgrammaticProperty
 	public void setRVM(boolean rvm) {
 		this.rvm = rvm;
@@ -1483,7 +1521,7 @@ public class RegularVine implements DensityEstimator, CommandlineRunnable, Seria
             commandLineParamName = "fam",
             commandLineParamSynopsis = "-fam",
             commandLineParamIsFlag = true,
-            displayOrder = 7)
+            displayOrder = 11)
 	@ProgrammaticProperty
 	public void setFAM(boolean fam) {
 		this.fam = fam;
@@ -1497,7 +1535,7 @@ public class RegularVine implements DensityEstimator, CommandlineRunnable, Seria
             commandLineParamName = "parm",
             commandLineParamSynopsis = "-parm",
             commandLineParamIsFlag = true,
-            displayOrder = 8)
+            displayOrder = 12)
 	@ProgrammaticProperty
 	public void setPARM(boolean parm) {
 		this.parm = parm;
@@ -1511,7 +1549,7 @@ public class RegularVine implements DensityEstimator, CommandlineRunnable, Seria
             commandLineParamName = "pllm",
             commandLineParamSynopsis = "-pllm",
             commandLineParamIsFlag = true,
-            displayOrder = 9)
+            displayOrder = 13)
 	@ProgrammaticProperty
 	public void setPLLM(boolean pllm) {
 		this.pllm = pllm;
@@ -1525,7 +1563,7 @@ public class RegularVine implements DensityEstimator, CommandlineRunnable, Seria
             commandLineParamName = "taum",
             commandLineParamSynopsis = "-taum",
             commandLineParamIsFlag = true,
-            displayOrder = 10)
+            displayOrder = 14)
 	@ProgrammaticProperty
 	public void setTAUM(boolean taum) {
 		this.taum = taum;
@@ -1539,7 +1577,7 @@ public class RegularVine implements DensityEstimator, CommandlineRunnable, Seria
             commandLineParamName = "etaum",
             commandLineParamSynopsis = "-etaum",
             commandLineParamIsFlag = true,
-            displayOrder = 11)
+            displayOrder = 15)
 	@ProgrammaticProperty
 	public void setETAUM(boolean etaum) {
 		this.etaum = etaum;
@@ -1553,7 +1591,7 @@ public class RegularVine implements DensityEstimator, CommandlineRunnable, Seria
             commandLineParamName = "times",
             commandLineParamSynopsis = "-times",
             commandLineParamIsFlag = true,
-            displayOrder = 12)
+            displayOrder = 16)
 	@ProgrammaticProperty
 	public void setTimestamps(boolean timestamps) {
 		this.timestamps = timestamps;

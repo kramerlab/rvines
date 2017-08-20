@@ -49,6 +49,10 @@ public class Bagging implements DensityEstimator {
 	public Bagging() {
 		m_Estimator = new weka.estimators.vines.RegularVine();
 	}
+	
+	public Bagging(DensityEstimator m_Estimator) {
+		this.m_Estimator = m_Estimator;
+	}
 
 	/**
 	 * Returns a training set for a particular iteration.
@@ -59,7 +63,7 @@ public class Bagging implements DensityEstimator {
 	 * @throws Exception
 	 *             if something goes wrong when generating a training set.
 	 */
-	protected synchronized Instances getTrainingSet(int iteration)
+	protected Instances getTrainingSet(int iteration)
 			throws Exception {
 		int bagSize = (int) (m_data.numInstances() * (m_BagSizePercent / 100.0));
 		Instances bagData = null;

@@ -178,6 +178,8 @@
        <fileset dir="${lib}">
          <include name="*.jar"/>
          <include name="*.zip"/>
+       	 <exclude name="weka.jar"/>
+       	 <exclude name="mtj-1.0.4.jar"/>
        </fileset>
     </copy>
     <mkdir dir="${dist}/${package}/doc"/>

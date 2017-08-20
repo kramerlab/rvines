@@ -28,9 +28,6 @@ public class VineUtils {
 	 * 
 	 * @param g
 	 *            a connected Graph.
-	 * @param f
-	 *            a function to manipulate the edge weights. Use Id function if
-	 *            no manipulation is needed.
 	 * @return returns the maximum spanning tree of g.
 	 */
 	public static Graph maxSpanTree(Graph g) {
@@ -471,38 +468,6 @@ public class VineUtils {
 		return ans;
 	}
 	
-	public static Node[][] connectedComponents(Graph g){
-		ArrayList<Node[]> compList = new ArrayList<Node[]>();
-		ArrayList<Node> nodeList = new ArrayList<Node>();
-		ArrayList<Node> tempList = new ArrayList<Node>();
-		ArrayList<Node> fullList = new ArrayList<Node>();
-		fullList.addAll(g.getNodeList());
-		
-		while(!fullList.isEmpty()){
-			nodeList.clear();
-			tempList.clear();
-			Node n = fullList.remove(0);
-			nodeList.add(n);
-			tempList.add(n);
-			
-			while(!tempList.isEmpty()){
-				Node from = tempList.remove(0);
-				for(Edge e : g.getGraph().get(from)){
-					Node to = e.getTo();
-					if(fullList.contains(to)){
-						tempList.add(to);
-						nodeList.add(to);
-						fullList.remove(to);
-					}
-				}
-			}
-			
-			Node[] comp = nodeList.toArray(new Node[nodeList.size()]);
-			compList.add(comp);
-		}
-		return compList.toArray(new Node[compList.size()][]);
-	}
-	
 	/**
 	 * Transforms Instances to double array data.
 	 * 
@@ -543,16 +508,34 @@ public class VineUtils {
 	 * 
 	 * @param p Data as double array.
 	 * @param q Data as double array.
-	 * @return Kullback Leibler Divergence of p,q
+	 * @return Kullback Leibler Divergence of q,p
 	 */
-	public static double KullbackLeiblerDivergence(double[] p, double[] q){
+	public static double KullbackLeiblerDivergence(double[] q, double[] p){
 		double out = 0.0;
 		
 		for(int i=0; i<p.length; i++){
 			if(p[i] == 0 || q[i] == 0 ) continue;
-			out += p[i]*(Math.log(p[i])- Math.log(q[i]));
+			out += q[i]*(Math.log(q[i])- Math.log(p[i]));
 		}
 		
 		return out/Math.log(2);
+	}
+	
+	/**
+	 * Method for Kullback Leibler Divergence.
+	 * Use this one if your data already is log-data.
+	 * 
+	 * @param p Data as double array (log).
+	 * @param q Data as double array (log).
+	 * @return Kullback Leibler Divergence of q,p
+	 */
+	public static double KullbackLeiblerDivergenceLog(double[] q, double[] p){
+		double out = 0.0;
+		
+		for(int i=0; i<p.length; i++){
+			out += Math.exp(q[i])*(q[i]- p[i]);
+		}
+		
+		return out;
 	}
 }

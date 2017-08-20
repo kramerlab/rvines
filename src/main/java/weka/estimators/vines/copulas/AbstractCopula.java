@@ -66,4 +66,17 @@ public abstract class AbstractCopula implements Copula{
 		}
 		return -cmle.getMinFunction();
 	}
+	
+	public double[][] simulate(int n){
+		if(n <= 0 ) return null;
+		
+		double[][] data = new double[n][2];
+		
+		for(int i=0; i<n; i++){
+			data[i][0] = Math.random();
+			data[i][1] = h1inverse(data[i][0], Math.random());
+		}
+		
+		return data;
+	}
 }
