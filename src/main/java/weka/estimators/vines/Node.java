@@ -165,7 +165,7 @@ public class Node implements Comparable<Node>, Serializable{
 	 */
 	public void putData(int key, double[] data) {
 		this.data.put(key, data);
-		this.rankNormData.put(key, Utils.rankNormalization(data));
+		this.rankNormData.put(key, VineUtils.rankNormalization(data));
 	}
 	
 	/**

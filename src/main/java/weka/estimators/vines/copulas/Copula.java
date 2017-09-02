@@ -93,8 +93,8 @@ public interface Copula extends Serializable{
 	
 	/**
 	 * The inverse h2-function for the copula.
-	 * It is used to de-transform the values for sampling.
-	 *
+	 * It is used to de-transform the values for sampling
+	 * 
 	 * @param	x	to be unconditioned parameter
 	 * @param	y	the conditioning parameter
 	 * @return returns the unconditioned value.<br>
@@ -104,6 +104,7 @@ public interface Copula extends Serializable{
 	
 	/**
 	 * MLE to estimate the copula parameters.
+	 * 
 	 * @param	a	data of variable.
 	 * @param	b	data of another variable.
 	 * @return returns the maximum likelihood.
@@ -115,20 +116,21 @@ public interface Copula extends Serializable{
 	 * <br>
 	 * This is a function to get the tau value, based on a
 	 * Kendall's tau calculation function for the copula family.
-	 *
+	 * 
 	 * @return returns the tau value of the copula.
 	 */
 	public double tau();
 	
 	/**
 	 * Information if copula can be rotated.
+	 * 
 	 * @return boolean if copula can be rotated.
 	 */
 	public boolean rotations();
 	
 	/**
 	 * Get the copula name.
-	 *
+	 * 
 	 * @return	The copula name.
 	 */
 	public String name();
@@ -136,7 +138,7 @@ public interface Copula extends Serializable{
 	/**
 	 * Get the copula token.
 	 * It is used to differentiate the copulae for visualization.
-	 *
+	 * 
 	 * @return	The copula name(In short).
 	 * G = Gauss,
 	 * T = StudentT,
@@ -148,4 +150,12 @@ public interface Copula extends Serializable{
 	 * In = Independent.
 	 */
 	public String token();
+	
+	/**
+	 * Simulates the copula.
+	 * 
+	 * @param n the number of samples.
+	 * @return	The copula samples.
+	 */
+	public double[][] simulate(int n);
 }

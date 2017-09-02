@@ -2,7 +2,7 @@ package weka.estimators.vines.functions;
 
 import org.apache.commons.math3.analysis.UnivariateFunction;
 
-import weka.estimators.vines.Utils;
+import weka.estimators.vines.VineUtils;
 
 /**
  * This class represents the inner function for Kendall's
@@ -29,7 +29,7 @@ public class GalambosTauf implements UnivariateFunction {
 	 * @return A(x).
 	 */
 	public double A(double x){
-		x = Utils.laplaceCorrection(x);
+		x = VineUtils.laplaceCorrection(x);
 		double y = 1-Math.pow(Math.pow(x, -d)+Math.pow(1-x, -d), -1/d);
 		return y;
 	}
@@ -41,7 +41,7 @@ public class GalambosTauf implements UnivariateFunction {
 	 * @return A''(x).
 	 */
     private double ddA(double x) {
-		x = Utils.laplaceCorrection(x);
+		x = VineUtils.laplaceCorrection(x);
 		
 		double edx = Math.pow(x, d);
 		double edx2 = Math.pow(1-x, d);

@@ -1,6 +1,6 @@
 package weka.estimators.vines.copulas;
 
-import weka.estimators.vines.Utils;
+import weka.estimators.vines.VineUtils;
 import weka.estimators.vines.functions.CopulaMLE;
 import weka.estimators.vines.functions.H1;
 import weka.estimators.vines.functions.H2;
@@ -42,12 +42,12 @@ public abstract class AbstractCopula implements Copula{
 	
 	public double h1inverse(double x, double y) {
 		H1 h = new H1(this, x);
-		return Utils.bisectionInvert(h, y, 0, 1);
+		return VineUtils.bisectionInvert(h, y, 0, 1);
 	}
 
 	public double h2inverse(double x, double y) {
 		H2 h = new H2(this, y);
-		return Utils.bisectionInvert(h, x, 0, 1);
+		return VineUtils.bisectionInvert(h, x, 0, 1);
 	}
 	
 	public double mle(double[] a, double[] b){
@@ -65,5 +65,18 @@ public abstract class AbstractCopula implements Copula{
 			// e.printStackTrace();
 		}
 		return -cmle.getMinFunction();
+	}
+	
+	public double[][] simulate(int n){
+		if(n <= 0 ) return null;
+		
+		double[][] data = new double[n][2];
+		
+		for(int i=0; i<n; i++){
+			data[i][0] = Math.random();
+			data[i][1] = h1inverse(data[i][0], Math.random());
+		}
+		
+		return data;
 	}
 }

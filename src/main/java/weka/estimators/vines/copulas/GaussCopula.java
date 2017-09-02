@@ -2,7 +2,7 @@ package weka.estimators.vines.copulas;
 
 import umontreal.ssj.probdist.NormalDist;
 import umontreal.ssj.probdistmulti.BiNormalDist;
-import weka.estimators.vines.Utils;
+import weka.estimators.vines.VineUtils;
 
 /**
  * This is the class to represent Gauss copula family for RVines.
@@ -28,6 +28,7 @@ public class GaussCopula extends AbstractCopula{
 	 */
 	public GaussCopula() {
 		p = 0;
+		params = new double[]{p};
 		lb = new double[]{-1+tol};
 		ub = new double[]{1-tol};
 		start = new double[]{0};
@@ -49,8 +50,8 @@ public class GaussCopula extends AbstractCopula{
 	public double C(double x, double y) {
 		if(p==0) return x*y;
 		
-		x = Utils.laplaceCorrection(x);
-		y = Utils.laplaceCorrection(y);
+		x = VineUtils.laplaceCorrection(x);
+		y = VineUtils.laplaceCorrection(y);
 		
 		double a = NormalDist.inverseF01(x);
 		double b = NormalDist.inverseF01(y);
@@ -61,8 +62,8 @@ public class GaussCopula extends AbstractCopula{
 	public double density(double x, double y) {
 		if(p==0) return 1;
 		
-		x = Utils.laplaceCorrection(x);
-		y = Utils.laplaceCorrection(y);
+		x = VineUtils.laplaceCorrection(x);
+		y = VineUtils.laplaceCorrection(y);
 		
 		double a = NormalDist.inverseF01(x);
 		double b = NormalDist.inverseF01(y);
@@ -94,8 +95,8 @@ public class GaussCopula extends AbstractCopula{
 	 * @return returns the conditioned value x|y.
 	 */
 	public double hFunction(double x, double y) {
-		x = Utils.laplaceCorrection(x);
-		y = Utils.laplaceCorrection(y);
+		x = VineUtils.laplaceCorrection(x);
+		y = VineUtils.laplaceCorrection(y);
 		
 		double a = NormalDist.inverseF01(x);
 		double b = NormalDist.inverseF01(y);

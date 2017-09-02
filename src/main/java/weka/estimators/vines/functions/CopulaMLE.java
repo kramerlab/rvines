@@ -1,7 +1,7 @@
 package weka.estimators.vines.functions;
 
 import weka.core.Optimization;
-import weka.estimators.vines.Utils;
+import weka.estimators.vines.VineUtils;
 import weka.estimators.vines.copulas.Copula;
 
 /**
@@ -39,7 +39,7 @@ public class CopulaMLE extends Optimization {
 		c.setParams(params);
 		
 		// Using negative value because it's a minimizing function
-		double out = -Utils.logLikelihood(c, a, b);
+		double out = -VineUtils.logLikelihood(c, a, b);
 		
 		if(Double.isNaN(out) || Math.abs(out) == Double.POSITIVE_INFINITY){
 			return 0;

@@ -56,9 +56,10 @@ import weka.core.SerializationHelper;
 import weka.core.SerializedObject;
 import weka.core.Utils;
 import weka.core.converters.Loader;
-import weka.estimators.MultivariateEstimator;
+import weka.estimators.DensityEstimator;
 import weka.estimators.vines.RegularVine;
 import weka.estimators.vines.copulas.Copula;
+import weka.estimators.vines.VineUtils;
 import weka.gui.GenericObjectEditor;
 import weka.gui.Logger;
 import weka.gui.PropertyPanel;
@@ -297,7 +298,7 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 		historyHolder.setBorder(BorderFactory
 				.createTitledBorder("Result list (right-click for options)"));
 		historyHolder.add(m_History, BorderLayout.CENTER);
-		m_RVineEditor.setClassType(MultivariateEstimator.class);
+		m_RVineEditor.setClassType(DensityEstimator.class);
 		m_RVineEditor.setValue(new RegularVine());
 
 		JPanel p3 = new JPanel();
@@ -472,8 +473,8 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 					long testTimeStart = 0, testTimeElapsed = 0;
 
 					try {
-						double[][] train = RegularVine.transform(inst);
-						double[][] test = train;
+						Instances train = inst;
+						Instances test = new Instances(train);
 
 						if (m_CVBut.isSelected()) {
 							testMode = 1;
@@ -493,9 +494,10 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 										"Percentage must be between 0 and 100");
 							}
 
-							Instances inst2 = new Instances(inst,
+							train = new Instances(inst, 0,
 									(int) (inst.size() * percent / 100));
-							test = RegularVine.transform(inst2);
+							test = new Instances(inst, train.size(),
+									inst.size());
 
 						} else if (m_TrainBut.isSelected()) {
 							testMode = 3;
@@ -547,7 +549,7 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 										+ inst.attribute(i).name() + '\n');
 							}
 						} else {
-							outBuff.append("              [list of attributes omitted]\n");
+							outBuff.append("[list of attributes omitted]\n");
 						}
 
 						outBuff.append("Test mode:    ");
@@ -574,7 +576,7 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 						switch (testMode) {
 						case 3: // Test on training
 							trainTimeStart = System.currentTimeMillis();
-							estimator.estimate(train, new double[train.length]);
+							estimator.buildEstimator(train);
 							trainTimeElapsed = System.currentTimeMillis()
 									- trainTimeStart;
 
@@ -591,7 +593,10 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 							testTimeElapsed = System.currentTimeMillis()
 									- testTimeStart;
 							outBuff.append("=== Evaluation on training set ===\n");
-							outBuff.append("Log-Density : " + dens + "\n");
+							outBuff.append("Pseudo-Log-Density : " + dens
+									+ "(sum) \n");
+							outBuff.append("Test-Set Size : " + test.size()
+									+ " \n");
 							outBuff.append("\nTime taken to evaluate model: "
 									+ Utils.doubleToString(
 											testTimeElapsed / 1000.0, 2)
@@ -603,15 +608,13 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 							int trainSize = (int) Math.round(inst
 									.numInstances() * percent / 100);
 							int testSize = inst.numInstances() - trainSize;
-							train = RegularVine.transform(new Instances(inst,
-									0, trainSize));
-							test = RegularVine.transform(new Instances(inst,
-									trainSize, testSize));
+							train = new Instances(inst,	0, trainSize);
+							test = new Instances(inst, trainSize, testSize);
 							m_Log.statusMessage("Building model on training split ("
 									+ trainSize + " instances)...");
 
 							trainTimeStart = System.currentTimeMillis();
-							estimator.estimate(train, new double[train.length]);
+							estimator.buildEstimator(train);
 							trainTimeElapsed = System.currentTimeMillis()
 									- trainTimeStart;
 
@@ -629,7 +632,10 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 									- testTimeStart;
 
 							outBuff.append("=== Evaluation on test split ===\n");
-							outBuff.append("Log-Density : " + dens + "\n");
+							outBuff.append("Pseudo-Log-Density : " + dens
+									+ "(sum) \n");
+							outBuff.append("Test-Set Size : " + test.size()
+									+ " \n");
 							outBuff.append("\nTime taken to evaluate model: "
 									+ Utils.doubleToString(
 											testTimeElapsed / 1000.0, 2)
@@ -720,9 +726,7 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 	@Override
 	public void setInstances(Instances inst) {
 		m_Instances = inst;
-
-		double[][] data = RegularVine.transform(inst);
-		boolean correct = RegularVine.testData(data);
+		boolean correct = VineUtils.testData(inst);
 
 		if (correct) {
 			m_StartBut.setEnabled(m_RunThread == null);

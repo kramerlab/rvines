@@ -1,6 +1,6 @@
 package weka.estimators.vines.copulas;
 
-import weka.estimators.vines.Utils;
+import weka.estimators.vines.VineUtils;
 import weka.estimators.vines.functions.GalambosTauf;
 
 /**
@@ -21,6 +21,7 @@ public class GalambosCopula extends AbstractCopula{
 	 */
 	public GalambosCopula() {
 		d = 2;
+		params = new double[]{d};
 		lb = new double[]{0+tol};
 		ub = new double[]{100};
 		start = new double[]{2};
@@ -34,8 +35,8 @@ public class GalambosCopula extends AbstractCopula{
 	
 	@Override
 	public double C(double x, double y) {
-		x = Utils.laplaceCorrection(x);
-		y = Utils.laplaceCorrection(y);
+		x = VineUtils.laplaceCorrection(x);
+		y = VineUtils.laplaceCorrection(y);
 		
 		double xl = -Math.log(x);
 		double yl = -Math.log(y);
@@ -48,8 +49,8 @@ public class GalambosCopula extends AbstractCopula{
 	
 	@Override
 	public double density(double x, double y) {
-		x = Utils.laplaceCorrection(x);
-		y = Utils.laplaceCorrection(y);
+		x = VineUtils.laplaceCorrection(x);
+		y = VineUtils.laplaceCorrection(y);
 		
 		double xl = -Math.log(x);
 		double yl = -Math.log(y);
@@ -83,8 +84,8 @@ public class GalambosCopula extends AbstractCopula{
 	 * @return returns the conditioned value x|y.
 	 */
 	public double hFunction(double x, double y) {
-		x = Utils.laplaceCorrection(x);
-		y = Utils.laplaceCorrection(y);
+		x = VineUtils.laplaceCorrection(x);
+		y = VineUtils.laplaceCorrection(y);
 		
 		double xl = -Math.log(x);
 		double yl = -Math.log(y);
@@ -99,7 +100,7 @@ public class GalambosCopula extends AbstractCopula{
 	
 	@Override
 	public double tau() {
-		return Utils.simpsonIntegrate(new GalambosTauf(d), 1000, 0, 1);
+		return VineUtils.simpsonIntegrate(new GalambosTauf(d), 1000, 0, 1);
 	}
 
 	@Override

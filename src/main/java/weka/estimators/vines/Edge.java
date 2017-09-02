@@ -8,7 +8,7 @@ import weka.estimators.vines.copulas.Copula;
  * This is the Edge class to for the RVine.
  * <br>
  * For every Edge we assert two nodes that are connected with the Edge,
- * a Kendall's tau value as weight and a copula function.
+ * a weight value and a copula function.
  * 
  * @author Christian Lamberty (clamber@students.uni-mainz.de)
  */

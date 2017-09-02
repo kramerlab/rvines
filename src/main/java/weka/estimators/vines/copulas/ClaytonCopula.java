@@ -1,6 +1,6 @@
 package weka.estimators.vines.copulas;
 
-import weka.estimators.vines.Utils;
+import weka.estimators.vines.VineUtils;
 
 /**
  * This is the class to represent Clayton copula family for RVines.
@@ -27,6 +27,7 @@ public class ClaytonCopula extends AbstractCopula{
 	public ClaytonCopula() {
 		rotations = true;
 		d = 2;
+		params = new double[]{d};
 		lb = new double[]{0+tol};
 		ub = new double[]{20};
 		start = new double[]{2};
@@ -49,16 +50,16 @@ public class ClaytonCopula extends AbstractCopula{
 	
 	@Override
 	public double C(double x, double y){
-		x = Utils.laplaceCorrection(x);
-		y = Utils.laplaceCorrection(y);
+		x = VineUtils.laplaceCorrection(x);
+		y = VineUtils.laplaceCorrection(y);
 		
 		return Math.pow(Math.pow(x, -d)+Math.pow(y, -d)-1, -1/d);
 	}
 	
 	@Override
 	public double density(double x, double y) {
-		x = Utils.laplaceCorrection(x);
-		y = Utils.laplaceCorrection(y);
+		x = VineUtils.laplaceCorrection(x);
+		y = VineUtils.laplaceCorrection(y);
 		
 		double out = (1+d)*Math.pow(x*y, -1-d)
 				*Math.pow(Math.pow(x, -d)+Math.pow(y, -d)-1, -1/d-2);
@@ -82,8 +83,8 @@ public class ClaytonCopula extends AbstractCopula{
 	 * @return returns the conditioned value x|y.
 	 */
 	public double hFunction(double x, double y) {
-		x = Utils.laplaceCorrection(x);
-		y = Utils.laplaceCorrection(y);
+		x = VineUtils.laplaceCorrection(x);
+		y = VineUtils.laplaceCorrection(y);
 		
 		double xpd = Math.pow(x, -d);
 		double ypd = Math.pow(y, -d);

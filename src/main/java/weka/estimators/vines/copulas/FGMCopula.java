@@ -1,6 +1,6 @@
 package weka.estimators.vines.copulas;
 
-import weka.estimators.vines.Utils;
+import weka.estimators.vines.VineUtils;
 
 /**
  * This is the class to represent Farlie-Gumbel-Morgenstern (FGM) copula family for RVines.
@@ -23,6 +23,7 @@ public class FGMCopula extends AbstractCopula{
 	 */
 	public FGMCopula() {
 		d = 0;
+		params = new double[]{d};
 		lb = new double[]{-1+tol};
 		ub = new double[]{1-tol};
 		start = new double[]{0};
@@ -43,16 +44,16 @@ public class FGMCopula extends AbstractCopula{
 	
 	@Override
 	public double C(double x, double y) {
-		x = Utils.laplaceCorrection(x);
-		y = Utils.laplaceCorrection(y);
+		x = VineUtils.laplaceCorrection(x);
+		y = VineUtils.laplaceCorrection(y);
 		
 		return x*y+d*x*y*(1-x)*(1-y);
 	}
 	
 	@Override
 	public double density(double x, double y) {
-		x = Utils.laplaceCorrection(x);
-		y = Utils.laplaceCorrection(y);
+		x = VineUtils.laplaceCorrection(x);
+		y = VineUtils.laplaceCorrection(y);
 		
 		return 1+d*(1-2*x)*(1-2*y);
 	}
@@ -74,8 +75,8 @@ public class FGMCopula extends AbstractCopula{
 	 * @return returns the conditioned value x|y.
 	 */
 	public double hFunction(double x, double y) {
-		x = Utils.laplaceCorrection(x);
-		y = Utils.laplaceCorrection(y);
+		x = VineUtils.laplaceCorrection(x);
+		y = VineUtils.laplaceCorrection(y);
 		
 		return x*(1+d*(1-x)*(1-2*y));
 	}
