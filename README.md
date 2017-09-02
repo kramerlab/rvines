@@ -24,7 +24,7 @@ To (re-)build the package an installation of Apache Ant is required.
 Navigate Console into the vines package and use the following ant command to build the package:
 
 ```
-ant -f build_package.xml -Dpackage=vines-1.0.0 make_package
+ant -f build_package.xml -Dpackage=vines-1.0.1 make_package
 ```
 
 The **_.zip_** is placed inside the **_dist_** folder.

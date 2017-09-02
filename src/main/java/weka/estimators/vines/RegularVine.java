@@ -46,7 +46,7 @@ public class RegularVine implements DensityEstimator, CommandlineRunnable, Seria
 	protected Edge[][] edges;
 	protected Instances data;
 	protected TrainMethod trainMethod = TrainMethod.KENDALL;
-	protected BuildMethod buildMethod = BuildMethod.SCATTERED_INDEP;
+	protected BuildMethod buildMethod = BuildMethod.REGULAR;
 	protected double threshold = 0.1;
 	protected int cvFolds = 10;
 	
@@ -1345,6 +1345,11 @@ public class RegularVine implements DensityEstimator, CommandlineRunnable, Seria
 		return rvine;
 	}
 	
+	/**
+	 * Get the Copula selection array.
+	 * 
+	 * @return returns the Copula selection array.
+	 */
 	public boolean[] getSelected() {
 		return selected;
 	}

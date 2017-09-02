@@ -2,11 +2,20 @@ package weka.estimators.meta;
 
 import java.util.Enumeration;
 import java.util.Random;
+
 import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.Option;
+import weka.core.OptionMetadata;
 import weka.estimators.DensityEstimator;
 
+/**
+ * This class is a meta estimator using Bootstrap Aggregation methhod.
+ * <br>
+ * The code is based on the WEKA Bagging classifier.
+ * 
+ * @author Christian Lamberty (clamber@students.uni-mainz.de)
+ */
 public class Bagging implements DensityEstimator {
 	static final long serialVersionUID = -115879962237199703L;
 
@@ -21,14 +30,6 @@ public class Bagging implements DensityEstimator {
 
 	public int getBagSizePercent() {
 		return m_BagSizePercent;
-	}
-
-	public void setBagSizePercent(int m_BagSizePercent) {
-		this.m_BagSizePercent = m_BagSizePercent;
-	}
-
-	public void setEstimator(DensityEstimator m_Estimator) {
-		this.m_Estimator = m_Estimator;
 	}
 
 	/** Random number generator */
@@ -127,6 +128,19 @@ public class Bagging implements DensityEstimator {
 			loglik += logDensity(x);
 		}
 		return loglik;
+	}
+	
+	@OptionMetadata(displayName = "Base estimator",
+            description = "Select the base estimator.",
+            commandLineParamName = "base",
+            commandLineParamSynopsis = "-base",
+            commandLineParamIsFlag = false,
+            displayOrder = 1)
+	public DensityEstimator getM_Estimator() {
+		return m_Estimator;
+	}
+	public void setM_Estimator(DensityEstimator m_Estimator) {
+		this.m_Estimator = m_Estimator;
 	}
 	
 	// Option Handler

@@ -504,24 +504,6 @@ public class VineUtils {
 	}
 	
 	/**
-	 * Method for Kullback Leibler Divergence, Base 2.
-	 * 
-	 * @param p Data as double array.
-	 * @param q Data as double array.
-	 * @return Kullback Leibler Divergence of q,p
-	 */
-	public static double KullbackLeiblerDivergence(double[] q, double[] p){
-		double out = 0.0;
-		
-		for(int i=0; i<p.length; i++){
-			if(p[i] == 0 || q[i] == 0 ) continue;
-			out += q[i]*(Math.log(q[i])- Math.log(p[i]));
-		}
-		
-		return out/Math.log(2);
-	}
-	
-	/**
 	 * Method for Kullback Leibler Divergence.
 	 * Use this one if your data already is log-data.
 	 * 
