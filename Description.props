@@ -31,7 +31,7 @@ fitting method. This work was supported by a fellowship within the \
 FITweltweit programme of the German Academic Exchange Service (DAAD).
 
 # Package URL for obtaining the package archive (required)
-PackageURL=https://github.com/kramerlab/rvines
+PackageURL=https://github.com/kramerlab/rvines/releases/download/1.0.0/vines-1.0.0.zip
 
 # URL for further information
 URL=https://github.com/kramerlab/rvines
