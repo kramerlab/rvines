@@ -27,11 +27,11 @@ public class GaussCopula extends AbstractCopula{
 	 * Constructor
 	 */
 	public GaussCopula() {
-		p = 0;
+		p = 0.5;
 		params = new double[]{p};
 		lb = new double[]{-1+tol};
 		ub = new double[]{1-tol};
-		start = new double[]{0};
+		start = new double[]{0.5};
 	}
 
 	/**

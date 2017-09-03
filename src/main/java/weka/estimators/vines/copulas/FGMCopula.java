@@ -22,11 +22,11 @@ public class FGMCopula extends AbstractCopula{
 	 * Constructor
 	 */
 	public FGMCopula() {
-		d = 0;
+		d = 0.5;
 		params = new double[]{d};
 		lb = new double[]{-1+tol};
 		ub = new double[]{1-tol};
-		start = new double[]{0};
+		start = new double[]{0.5};
 	}
 
 	/**

@@ -24,11 +24,11 @@ public class FrankCopula extends AbstractCopula{
 	 * Constructor
 	 */
 	public FrankCopula() {
-		d = 0;
+		d = 0.5;
 		params = new double[]{d};
 		lb = new double[]{-100};
 		ub = new double[]{100};
-		start = new double[]{0};
+		start = new double[]{0.5};
 	}
 
 	/**
