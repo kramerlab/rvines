@@ -360,7 +360,7 @@ public class RegularVine implements DensityEstimator, CommandlineRunnable, Seria
 			if(!given[m[k][k]-1]){
 				for(int i=k+1;i<n-1;i++){
 					//run path down to get x_i with inverse h-function
-					c = edges[n-1][k].getCopula();
+					c = edges[i][k].getCopula();
 					if(m[k][k] > m[i][k]){
 						u[m[k][k]-1] = c.h1inverse(v[m[i][k]-1][m[i+1][k]-1], u[m[k][k]-1]);
 					}else{
