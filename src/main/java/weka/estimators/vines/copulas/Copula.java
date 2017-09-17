@@ -122,6 +122,16 @@ public interface Copula extends Serializable{
 	public double tau();
 	
 	/**
+	 * Compute copula parameter using Kendall's tau inversion.
+	 * <br>
+	 * This function uses a given Kendall's tau value
+	 * to compute the copula parameter(s).
+	 * 
+	 * @param tau Kendall's tau value in [-1, 1].
+	 */
+	public void tauInverse(double tau);
+	
+	/**
 	 * Information if copula can be rotated.
 	 * 
 	 * @return boolean if copula can be rotated.

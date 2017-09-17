@@ -28,12 +28,15 @@ public class CopulaHandler implements Serializable{
 	 * Loads copulas from the package when initialized.
 	 */
 	public CopulaHandler(){
-		Vector<String> copulaclasses = ClassDiscovery.find(Copula.class, "weka.estimators.vines.copulas");
+		Vector<String> copulaclasses = ClassDiscovery.find(
+				Copula.class,
+				"weka.estimators.vines.copulas");
 		copulas = new Copula[copulaclasses.size()];
 		
 		for(int i=0; i<copulaclasses.size(); i++){
 			try {
-				copulas[i] = (Copula) WekaPackageClassLoaderManager.forName(copulaclasses.get(i)).newInstance();
+				copulas[i] = (Copula) WekaPackageClassLoaderManager.forName(
+						copulaclasses.get(i)).newInstance();
 			} catch (ClassNotFoundException e) {
 				System.err.println("Cannot find "+copulaclasses.get(i));
 				// e.printStackTrace();
@@ -54,7 +57,8 @@ public class CopulaHandler implements Serializable{
 	 */
 	public Copula[] select(boolean[] c){
 		if(c.length != copulas.length){
-			System.out.println("Selection array needs to fit the copula array size!");
+			System.out.println("Selection array needs to fit "
+					+ "the copula array size!");
 			return null;
 		}
 		
@@ -65,9 +69,15 @@ public class CopulaHandler implements Serializable{
 				try{
 					out.add(copulas[i].getClass().newInstance());
 					if(copulas[i].rotations()){
-						out.add(new CopulaRotation(copulas[i].getClass().newInstance(), CopulaRotation.Mode.ROT90));
-						out.add(new CopulaRotation(copulas[i].getClass().newInstance(), CopulaRotation.Mode.ROT180));
-						out.add(new CopulaRotation(copulas[i].getClass().newInstance(), CopulaRotation.Mode.ROT270));
+						out.add(new CopulaRotation(
+								copulas[i].getClass().newInstance(),
+								CopulaRotation.Mode.ROT90));
+						out.add(new CopulaRotation(
+								copulas[i].getClass().newInstance(),
+								CopulaRotation.Mode.ROT180));
+						out.add(new CopulaRotation(
+								copulas[i].getClass().newInstance(),
+								CopulaRotation.Mode.ROT270));
 					}
 				} catch (Exception e){
 					System.out.println("Failed to load "+copulas[i].name());

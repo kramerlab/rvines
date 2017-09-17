@@ -3,7 +3,8 @@ package weka.estimators.vines.copulas;
 import weka.estimators.vines.VineUtils;
 
 /**
- * This is the class to represent Farlie-Gumbel-Morgenstern (FGM) copula family for RVines.
+ * This is the class to represent Farlie-Gumbel-Morgenstern (FGM) copula family
+ * for RVines.
  * <br>
  * The density function is provided by Bekrizadeh, Parham and Zadkarmi:
  * The New Generalization of Farlie-Gumbel-Morgenstern Copulas.

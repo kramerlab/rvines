@@ -29,7 +29,7 @@ public class GumbelCopula extends AbstractCopula{
 		d = 2;
 		params = new double[]{d};
 		lb = new double[]{1+tol};
-		ub = new double[]{20};
+		ub = new double[]{30};
 		start = new double[]{2};
 	}
 	

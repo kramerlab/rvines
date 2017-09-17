@@ -42,7 +42,7 @@ public class CopulaMLE extends Optimization {
 		double out = -VineUtils.logLikelihood(c, a, b);
 		
 		if(Double.isNaN(out) || Math.abs(out) == Double.POSITIVE_INFINITY){
-			return 0;
+			return Math.pow(10, 100);
 		}
 		
 		return out;

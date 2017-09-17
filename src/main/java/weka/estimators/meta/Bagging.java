@@ -83,7 +83,7 @@ public class Bagging implements DensityEstimator {
 	}
 
 	@Override
-	public void buildEstimator(Instances data) throws Exception {
+	public void buildEstimator(Instances data) throws Exception{
 		// get fresh Instances object
 		m_data = new Instances(data);
 		m_random = new Random(m_Seed);
@@ -110,7 +110,7 @@ public class Bagging implements DensityEstimator {
 	}
 
 	@Override
-	public double logDensity(Instance instance) throws Exception {
+	public double logDensity(Instance instance) throws Exception{
 		// Average over Ensemble
 		double sum = 0;
 		for (int i = 0; i < m_Estimators.length; i++) {

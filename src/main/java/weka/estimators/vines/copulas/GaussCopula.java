@@ -7,7 +7,8 @@ import weka.estimators.vines.VineUtils;
 /**
  * This is the class to represent Gauss copula family for RVines.
  * <br>
- * The Kendall's tau calculation was presented by H. B. Fang, K. T. Fang and S. Kotz (2002):
+ * The Kendall's tau calculation was presented by H. B. Fang, K. T. Fang and
+ * S. Kotz (2002):
  * The meta-elliptical distributions with given marginals.
  * <br>
  * The cumulative distribution function was presented in P.X.-K. Song (2000):

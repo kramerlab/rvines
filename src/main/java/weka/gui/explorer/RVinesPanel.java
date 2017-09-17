@@ -417,7 +417,8 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 			@SuppressWarnings("unchecked")
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				if (((e.getModifiers() & InputEvent.BUTTON1_MASK) != InputEvent.BUTTON1_MASK)
+				if (((e.getModifiers() & InputEvent.BUTTON1_MASK)
+						!= InputEvent.BUTTON1_MASK)
 						|| e.isAltDown()) {
 					int index = m_History.getList().locationToIndex(
 							e.getPoint());
@@ -580,7 +581,8 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 							trainTimeElapsed = System.currentTimeMillis()
 									- trainTimeStart;
 
-							outBuff.append("=== Estimator model (full training set) ===\n\n");
+							outBuff.append("=== Estimator model "
+									+ "(full training set) ===\n\n");
 							outBuff.append("\nTime taken to build model: "
 									+ Utils.doubleToString(
 											trainTimeElapsed / 1000.0, 2)
@@ -618,7 +620,8 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 							trainTimeElapsed = System.currentTimeMillis()
 									- trainTimeStart;
 
-							outBuff.append("=== Estimator model (percent training set) ===\n\n");
+							outBuff.append("=== Estimator model "
+									+ "(percent training set) ===\n\n");
 							outBuff.append("\nTime taken to build model: "
 									+ Utils.doubleToString(
 											trainTimeElapsed / 1000.0, 2)
@@ -1135,7 +1138,7 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 									+ trainHeader.attribute(i).name() + '\n');
 						}
 					} else {
-						outBuff.append("              [list of attributes omitted]\n");
+						outBuff.append("       [list of attributes omitted]\n");
 					}
 				} else {
 					outBuff.append("\nTraining data unknown\n");
@@ -1380,7 +1383,7 @@ public class RVinesPanel extends JPanel implements ExplorerPanel, LogHandler {
 				sp.setInstances(i);
 			}
 			if (args.length == 0) {
-				args = new String[] { "./src/main/data/daxreturns.arff" };
+				args = new String[] { "./src/main/data/noisedata.arff" };
 				System.err.println("Loading instances from " + args[0]);
 				java.io.Reader r = new java.io.BufferedReader(
 						new java.io.FileReader(args[0]));

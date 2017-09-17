@@ -26,8 +26,8 @@ public class FrankCopula extends AbstractCopula{
 	public FrankCopula() {
 		d = 0.5;
 		params = new double[]{d};
-		lb = new double[]{-100};
-		ub = new double[]{100};
+		lb = new double[]{-30};
+		ub = new double[]{30};
 		start = new double[]{0.5};
 	}
 

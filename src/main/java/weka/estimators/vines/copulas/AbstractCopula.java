@@ -4,6 +4,7 @@ import weka.estimators.vines.VineUtils;
 import weka.estimators.vines.functions.CopulaMLE;
 import weka.estimators.vines.functions.H1;
 import weka.estimators.vines.functions.H2;
+import weka.estimators.vines.functions.Tau;
 
 /**
  * This is the abstract class to represent copula families for RVines.
@@ -48,6 +49,11 @@ public abstract class AbstractCopula implements Copula{
 	public double h2inverse(double x, double y) {
 		H2 h = new H2(this, y);
 		return VineUtils.bisectionInvert(h, x, 0, 1);
+	}
+	
+	public void tauInverse(double tau) {
+		Tau t = new Tau(this);
+		VineUtils.bisectionInvert(t, tau, lb[0], ub[0]);
 	}
 	
 	public double mle(double[] a, double[] b){

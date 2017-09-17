@@ -7,7 +7,8 @@ import weka.estimators.vines.VineUtils;
 /**
  * This is the class to represent Student T copula family for RVines.
  * <br>
- * The Kendall's tau calculation was presented by H. B. Fang, K. T. Fang and S. Kotz (2002):
+ * The Kendall's tau calculation was presented by H. B. Fang, K. T. Fang and
+ * S. Kotz (2002):
  * The meta-elliptical distributions with given marginals.
  * <br>
  * The cumulative distribution function was presented in P.X.-K. Song (2000):
@@ -15,8 +16,8 @@ import weka.estimators.vines.VineUtils;
  * <br>
  * <br>
  * The cumulative distribution function, the density function, the h-function
- * and its inverse were presented by K. Aas et al. (2009): Pair-copula constructions of
- * multiple dependence.
+ * and its inverse were presented by K. Aas et al. (2009): Pair-copula
+ * constructions of multiple dependence.
  * 
  * @author Christian Lamberty (clamber@students.uni-mainz.de)
  */
@@ -106,7 +107,8 @@ public class TCopula extends AbstractCopula{
 		double a = StudentDist.inverseF(v, x);
 		double b = StudentDist.inverseF(v, y);
 		
-		double out = StudentDist.cdf(v+1, ((a-p*b)/Math.sqrt(((v+b*b)*(1-p*p))/(v+1))));
+		double out = StudentDist.cdf(v+1, ((a-p*b)/Math.sqrt(((v+b*b)*(1-p*p))
+				/(v+1))));
 		return out;
 	}
 	

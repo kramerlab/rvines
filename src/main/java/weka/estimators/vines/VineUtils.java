@@ -6,7 +6,9 @@ import java.util.HashMap;
 
 import org.apache.commons.math3.analysis.UnivariateFunction;
 
+import weka.core.Instance;
 import weka.core.Instances;
+import weka.estimators.DensityEstimator;
 import weka.estimators.vines.copulas.*;
 
 /**
@@ -507,15 +509,20 @@ public class VineUtils {
 	 * Method for Kullback Leibler Divergence.
 	 * Use this one if your data already is log-data.
 	 * 
-	 * @param p Data as double array (log).
-	 * @param q Data as double array (log).
+	 * @param q A density model.
+	 * @param p Another density model.
+	 * @param v Validation set.
 	 * @return Kullback Leibler Divergence of q,p
+	 * @throws Exception Exceptions during logDensity computation.
 	 */
-	public static double KullbackLeiblerDivergenceLog(double[] q, double[] p){
+	public static double KullbackLeiblerDivergenceLog(DensityEstimator q,
+			DensityEstimator p, Instances v) throws Exception{
 		double out = 0.0;
 		
-		for(int i=0; i<p.length; i++){
-			out += Math.exp(q[i])*(q[i]- p[i]);
+		for(Instance i : v){
+			double qi = q.logDensity(i);
+			double pi = p.logDensity(i);
+			out += Math.exp(qi)*(qi-pi);
 		}
 		
 		return out;
