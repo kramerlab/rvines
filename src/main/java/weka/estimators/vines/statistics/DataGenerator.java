@@ -30,6 +30,8 @@ public class DataGenerator {
 	 * Constructor
 	 * <br>
 	 * Initializes the true model.
+	 * 
+	 * @param path The path of the base dataset.
 	 */
 	public DataGenerator(String path){
 		try {

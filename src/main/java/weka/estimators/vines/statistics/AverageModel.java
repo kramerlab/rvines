@@ -64,6 +64,8 @@ public class AverageModel implements DensityEstimator {
 	 * 
 	 * @param m
 	 *            A density model to be added.
+	 * @param weight
+	 *            The weight of the density model.
 	 */
 	public void addModel(DensityEstimator m, double weight) {
 		ensemble.add(m);

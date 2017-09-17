@@ -123,6 +123,8 @@ public class BiasVarianceAnalysis {
 	/**
 	 * Method to compute the error, bias and variance of the given models. The
 	 * results are stored in the stats folder.
+	 * 
+	 * @throws Exception Exceptions thrown by the writers.
 	 */
 	public void statistics() throws Exception {
 		bf[0] = new BufferedWriter(new FileWriter(savepath
